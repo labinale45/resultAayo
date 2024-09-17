@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import "../app/globals.css";
 import Image from "next/image";
@@ -12,6 +12,18 @@ import Login from "./Login";
 export default function Navbar() {
   const [nav, setNav] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50); // Adjust this value based on when you want the background to change
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const navhandle = async () => {
     setNav(!nav);
@@ -19,9 +31,11 @@ export default function Navbar() {
   };
 
   return (
-    <div className="fixed bg-[#253553] w-full h-20 shadow-xl z-[100]">
-      <div className="flex justify-between items-center w-full h-full px-2 2xl-px-16">
-        <Image src="/assets/Logo.png " width="135" height="55" />
+    <div
+      className={`fixed w-full h-20 z-[100] ${scrolled ? 'bg-[#0f172a] shadow-md' : 'bg-transparent'} transition-all duration-300`}
+    >
+      <div className="flex justify-between items-center w-full h-full px-2 2xl:px-16 pl-12 pr-12">
+        <Image src="/assets/Logo.png" width="135" height="55" alt="Logo" />
         <div className="flex-grow flex justify-center">
           <ul className="hidden md:flex items-center space-x-20">
             <Link href="Home">
@@ -60,10 +74,10 @@ export default function Navbar() {
           <AiOutlineMenu size={35} />
         </div>
       </div>
+
+      {/* Overlay and Mobile Menu */}
       <div
-        className={
-          nav ? "md:hidden fixed left-0 top-0 w-full h-screen bg-black/70" : ""
-        }
+        className={nav ? "md:hidden fixed left-0 top-0 w-full h-screen bg-black/50" : ""}
       >
         <div
           className={
@@ -74,7 +88,7 @@ export default function Navbar() {
         >
           <div>
             <div className="flex w-full items-center justify-between">
-              <Image src="/assets/Logo.png" width="200" height="35" />
+              <Image src="/assets/Logo.png" width="200" height="35" alt="Logo" />
               <div
                 onClick={navhandle}
                 className="rounded-full shadow-lg shadow-gray-500 p-3 cursor-pointer"
@@ -133,7 +147,7 @@ export default function Navbar() {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <div className="rounded-full shadow-lg shadow-gray-400 p-3 cursor-pointer hover:scale-205 ease-in duration-300">
+                    <div className="rounded-full shadow-lg shadow-gray-400 p-3 cursor-pointer hover:scale-105 ease-in duration-300">
                       <FaGithub />
                     </div>
                   </a>
