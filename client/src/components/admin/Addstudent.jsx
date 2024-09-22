@@ -3,106 +3,91 @@ import React, { useState, useEffect } from "react";
 import supabase from "@/utils/client";
 
 function Addstudent({ onClose, student, onSave }) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-
+  const [first_name, setFirstName] = useState("");
+  const [last_name, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [contact, setContact] = useState("");
+  const [phone_number, setContact] = useState("");
   const [address, setAddress] = useState("");
   const [dob, setDob] = useState("");
+  const [role, setRole] = useState("Student");
   const [gender, setGender] = useState("Male");
   const [joinedYear, setJoinedYear] = useState("2080");
   const [studentClass, setStudentClass] = useState("8");
   const [rollNo, setRollNo] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [parentName, setParentName] = useState("");
+  const [parent_name, setParentName] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  useEffect(() => {
-    if (student) {
-      setFullName(student.Fullname);
-      setEmail(student.Email);
-      setContact(student.Contact);
-      setAddress(student.Address);
-      setDob(student.DOB);
-      setGender(student.Gender);
-      setJoinedYear(student.Year);
-      setStudentClass(student.Class);
-      setRollNo(student.Rollno);
-      setUsername(student.username);
-      setPassword(student.password);
-      setParentName(student.Parentsname);
-    }
-  }, [student]);
+  // useEffect(() => {
+  //   if (student) {
+  //     setFullName(student.Fullname);
+  //     setEmail(student.Email);
+  //     setContact(student.Contact);
+  //     setAddress(student.Address);
+  //     setDob(student.DOB);
+  //     setGender(student.Gender);
+  //     setJoinedYear(student.Year);
+  //     setStudentClass(student.Class);
+  //     setRollNo(student.Rollno);
+  //     setUsername(student.username);
+  //     setPassword(student.password);
+  //     setParentName(student.Parentsname);
+  //   }
+  // }, [student]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      let data, error;
-      if (student) {
-        // Update existing student
-        const { data: updateData, error: updateError } = await supabase
-          .from("students")
-          .update({
-            Fullname: fullName,
-            Email: email,
-            Contact: contact,
-            Address: address,
-            DOB: dob,
-            Gender: gender,
-            Year: joinedYear,
-            Class: studentClass,
-            Rollno: rollNo,
-            Parentsname: parentName,
-            username: username,
-            password: password,
-          })
-          .eq("id", student.id);
-
-        data = updateData;
-        error = updateError;
-      } else {
-        // Add new student
-        const { data: insertData, error: insertError } = await supabase
-          .from("students")
-          .insert([
-            {
-              Fullname: fullName,
-              Email: email,
-              Contact: contact,
-              Address: address,
-              DOB: dob,
-              Gender: gender,
-              Year: joinedYear,
-              Class: studentClass,
-              Rollno: rollNo,
-              Parentsname: parentName,
-              username: username,
-              password: password,
-              role: "student",
+        const responseRegister = await fetch("http://localhost:4000/api/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
             },
-          ]);
+            body: JSON.stringify({
+                first_name,
+                last_name,
+                email,
+                phone_number,
+                address,
+                dob,
+                gender,
+                parent_name,
+                role,
+               studentClass,
+            })
+        });
 
-        data = insertData;
-        error = insertError;
-      }
+        if (!responseRegister.ok) {
+            // Handle non-200 responses
+            const errorData = await responseRegister.json();
+            throw new Error(errorData.message || 'Failed adding Teacher');
+        }
+        if(responseRegister.ok){
+          const data = await responseRegister.json();
+          alert(data.message);
+          setErrorMessage(null);
+          setFirstName("");
+          setLastName("");
+          setEmail("");
+          setContact("");
+          setAddress("");
+          setDob("");
+          setParentName("");
+           // Clear the success message after 3 seconds
+        setTimeout(() => {
+          setSuccessMessage("");
+      }, 3000);
+        }
+        // Handle successful login, maybe set some state or redirect
 
-      if (error) {
-        console.error("Error saving data:", error.message);
-        alert("Error saving student: " + error.message);
-        return;
-      }
-
-      setSuccessMessage("Student saved successfully!");
-      onSave(data[0]);
-      onClose();
     } catch (error) {
-      console.error("Unexpected error occurred:", error.message);
-      alert("Unexpected error occurred: " + error.message);
+        console.log('Error:', error.message);
+        setErrorMessage(error.message);
     }
-  };
+};
+
 
   return (
     <div>
@@ -132,12 +117,35 @@ function Addstudent({ onClose, student, onSave }) {
           )}
 
           <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
-            <div>
+            
+            <div className="row-span-2">
+              <label className="block text-sm font-medium text-gray-700">
+                First Name
+              </label>
+              <input
+                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
+                type="text"
+                value={first_name}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+               <label className="block mt-4 text-sm font-medium text-gray-700">
+                Last Name
+              </label>
+              <input
+                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
+                type="text"
+                value={last_name}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex w-64">
               <label className="block text-sm font-medium text-gray-700">
                 Class
               </label>
               <select
-                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
+                className="txt p-2 mt-6  w-full rounded-xl border shadow-xl"
                 value={studentClass}
                 onChange={(e) => setStudentClass(e.target.value)}
               >
@@ -145,19 +153,19 @@ function Addstudent({ onClose, student, onSave }) {
                 <option value="9">9</option>
                 <option value="10">10</option>
               </select>
-            </div>
 
-            <div>
               <label className="block text-sm font-medium text-gray-700">
-                Full Name
+                Gender
               </label>
-              <input
-                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
-              />
+              <select
+                className="txt p-2 mt-6 w-full rounded-xl border shadow-xl"
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Others">Others</option>
+              </select>
             </div>
 
             <div>
@@ -179,7 +187,7 @@ function Addstudent({ onClose, student, onSave }) {
               <input
                 className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
                 type="text"
-                value={parentName}
+                value={parent_name}
                 onChange={(e) => setParentName(e.target.value)}
                 required
               />
@@ -191,9 +199,9 @@ function Addstudent({ onClose, student, onSave }) {
               <input
                 className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
                 type="tel"
-                pattern="[0-9]{10}"
-                maxLength="10"
-                value={contact}
+                pattern="(\+977?)?[9][6-9]\d{8}"
+                //maxLength="10"
+                value={phone_number}
                 onChange={(e) => setContact(e.target.value)}
                 required
               />
@@ -222,20 +230,7 @@ function Addstudent({ onClose, student, onSave }) {
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Gender
-              </label>
-              <select
-                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-              >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
+            
 
             <div className="col-span-2 flex justify-center">
               <button
@@ -259,7 +254,7 @@ function Addstudent({ onClose, student, onSave }) {
             </div>
           </label>
           <input type="file" id="photo-upload" className="hidden" />
-          <img className="rounded-3xl h-full" src="/assets/popup.png" alt="" />
+          <img className="ml-3 rounded-3xl h-full" src="/assets/popup.png" alt="" />
         </div>
       </div>
     </div>

@@ -8,26 +8,56 @@ const Spinner = () => (
 );
 
 export default function Login({ onClose }) {
-  const [Username, setUsername] = useState("");
-  const [Password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const route= useRouter();
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrorMessage("");
-
     await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+        const responseLogin = await fetch("http://localhost:4000/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+        });
 
-    if (Username === "admin" && Password === "admin") {
-      router.push("/admin");
-    } else if (Username === "user" && Password === "user") {
-      router.push("/user");
-    } else {
-      setErrorMessage("Invalid login credentials");
-      setIsLoading(false);
+        if (!responseLogin.ok) {
+            // Handle non-200 responses
+            const errorData = await responseLogin.json();
+            throw new Error(errorData.message || 'Login failed');
+        }
+        if(responseLogin.ok){
+          const data = await responseLogin.json();
+          
+          if(data.message === "Admin")
+            {
+          route.push("/admin");
+        }
+          if(data.message === "Teacher")
+            {
+            route.push("/teacher");
+          }
+          if (data.message === "Student")
+            {
+            route.push("/student");
+          }
+          setErrorMessage(null);
+        }
+        // Handle successful login, maybe set some state or redirect
+
+    } catch (error) {
+        console.log('Error:', error.message);
+        setErrorMessage(error.message);
+    }
+    finally {
+        setIsLoading(false);
     }
   };
 
@@ -56,7 +86,7 @@ export default function Login({ onClose }) {
             className="txt p-3 mt-8 w-72 rounded-xl border"
             type="text"
             placeholder="Username"
-            value={Username}
+            value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
@@ -65,7 +95,7 @@ export default function Login({ onClose }) {
             className="txt p-3 mt-8 w-72 rounded-xl border"
             type="password"
             placeholder="Password"
-            value={Password}
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
