@@ -12,8 +12,7 @@ export default function Login({ onClose }) {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const route= useRouter();
-
+  const route = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -62,20 +61,20 @@ export default function Login({ onClose }) {
   };
 
   return (
-    <div className="bg-gray-100 flex rounded-xl shadow-lg max-w-4xl p-6 relative">
+    <div className=" bg-white dark:bg-[#253553] dark:text-white  flex rounded-xl shadow-lg max-w-4xl p-6 relative">
       <button
         onClick={onClose}
         className="absolute top-2 right-2 text-red-600 hover:text-gray-300 text-3xl font-bold"
       >
         &times;
       </button>
-      <div className="sm:w-1/2 px=18">
+      <div className="sm:w-1/2 px=18 dark:text-white">
         <br />
         <br />
-        <h1 className="text-[#253553] text-3xl font-bold flex items-center justify-center">
+        <h1 className="text-[#253553] dark:text-white text-3xl font-bold flex items-center justify-center">
           L O G I N
         </h1>
-        <p className="text-[#253553] text-l mt-4 flex items-center justify-center">
+        <p className="text-[#253553] dark:text-white text-l mt-4 flex items-center justify-center">
           If you're a registered member, log in here.
         </p>
         {errorMessage && (
@@ -101,7 +100,9 @@ export default function Login({ onClose }) {
           />
           <br />
           <button
-            className="text-white font-bold bg-[#8AA4D6] w-72 p-3 mt-10 rounded-xl hover:bg-[#253553] duration-300 flex items-center justify-center"
+            className="text-white  bbg-[#7ba0e4] bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white
+                shadow-lgtext-center w-72 p-3 mt-10 rounded-xl  duration-300 flex items-center justify-center
+                 dark:bg-[#8AA4D6]     text-center  shadow-xl font-bold"
             type="submit"
             disabled={isLoading}
           >

@@ -31,44 +31,36 @@ export default function Studenttable() {
           <option value="8">8</option>
           <option value="9">9</option>
         </select>
-        <button className="bg-[#8AA4D6] hover:bg-[#253553] hover:text-white text-gray-700 py-2 px-4 rounded text-xs absolute right-4">
+        <button className="bg-[#437FC7] dark:bg-[#8AA4D6] hover:bg-[#253553] hover:text-white text-gray-700 py-2 px-4 rounded text-xs absolute right-4">
           Save
         </button>
         <button
           onClick={() => setShowAddStudent(true)}
-          className="bg-[#8AA4D6] hover:bg-[#253553] hover:text-white text-gray-700 py-2 px-4 rounded text-xs absolute right-4"
+          className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs absolute right-4"
         >
           +Add Student
         </button>
       </div>
       {showAddStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[101]">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
           <Addstudent onClose={() => setShowAddStudent(false)} />
         </div>
       )}
       {showTable && (
         <div className="overflow-x-auto relative">
-          <div className="max-h-[500px] overflow-y-auto">
+          <div className="max-h-[400px] overflow-y-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-20">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
                 <tr>
                   <th
-                    scope="col"
-                    className="px-6 py-3 sticky left-0 z-10 bg-gray-50 dark:bg-gray-700"
+                    className="sticky left-0 z-30 bg-gray-200 dark:bg-gray-700"
+                    style={{ width: "400px" }}
                   >
-                    Joined Year
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 sticky left-[120px] z-10 bg-gray-50 dark:bg-gray-700"
-                  >
-                    Class
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 sticky left-[200px] z-10 bg-gray-50 dark:bg-gray-700"
-                  >
-                    Full Name
+                    <div className="flex">
+                      <div className="w-[120px] px-6 py-3">Joined Year</div>
+                      <div className="w-[80px] px-6 py-3">Class</div>
+                      <div className="w-[200px] px-6 py-3">Full Name</div>
+                    </div>
                   </th>
                   <th scope="col" className="px-6 py-3">
                     Roll No
@@ -100,237 +92,47 @@ export default function Studenttable() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <td className="px-6 py-4 sticky left-0 z-10 bg-white dark:bg-gray-800">
-                    2080
-                  </td>
-                  <td className="px-6 py-4 sticky left-[120px] z-10 bg-white dark:bg-gray-800">
-                    8
-                  </td>
-                  <td className="px-6 py-4 sticky left-[200px] z-10 bg-white dark:bg-gray-800">
-                    Supriya Shrestha
-                  </td>
-                  <td className="px-6 py-4">1</td>
-                  <td className="px-6 py-4">supriyabicte@gmail.com</td>
-                  <td className="px-6 py-4">Parent Name</td>
-                  <td className="px-6 py-4">1234567890</td>
-                  <td className="px-6 py-4">Address</td>
-                  <td className="px-6 py-4">2002-12-23</td>
-                  <td className="px-6 py-4">username123</td>
-                  <td className="px-6 py-4">password123</td>
-                  <td className="px-6 py-4">
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                {[...Array(20)].map((_, index) => (
+                  <tr
+                    key={index}
+                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                  >
+                    <td
+                      className="sticky left-0 z-20 bg-white dark:bg-gray-800"
+                      style={{ width: "400px" }}
                     >
-                      Edit
-                    </a>
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline ml-2"
-                    >
-                      Delete
-                    </a>
-                  </td>
-                </tr>
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <td className="px-6 py-4 sticky left-0 z-10 bg-white dark:bg-gray-800">
-                    2080
-                  </td>
-                  <td className="px-6 py-4 sticky left-[120px] z-10 bg-white dark:bg-gray-800">
-                    8
-                  </td>
-                  <td className="px-6 py-4 sticky left-[200px] z-10 bg-white dark:bg-gray-800">
-                    Supriya Shrestha
-                  </td>
-                  <td className="px-6 py-4">1</td>
-                  <td className="px-6 py-4">supriyabicte@gmail.com</td>
-                  <td className="px-6 py-4">Parent Name</td>
-                  <td className="px-6 py-4">1234567890</td>
-                  <td className="px-6 py-4">Address</td>
-                  <td className="px-6 py-4">2002-12-23</td>
-                  <td className="px-6 py-4">username123</td>
-                  <td className="px-6 py-4">password123</td>
-                  <td className="px-6 py-4">
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    >
-                      Edit
-                    </a>
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline ml-2"
-                    >
-                      Delete
-                    </a>
-                  </td>
-                </tr>
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <td className="px-6 py-4 sticky left-0 z-10 bg-white dark:bg-gray-800">
-                    2080
-                  </td>
-                  <td className="px-6 py-4 sticky left-[120px] z-10 bg-white dark:bg-gray-800">
-                    8
-                  </td>
-                  <td className="px-6 py-4 sticky left-[200px] z-10 bg-white dark:bg-gray-800">
-                    Supriya Shrestha
-                  </td>
-                  <td className="px-6 py-4">1</td>
-                  <td className="px-6 py-4">supriyabicte@gmail.com</td>
-                  <td className="px-6 py-4">Parent Name</td>
-                  <td className="px-6 py-4">1234567890</td>
-                  <td className="px-6 py-4">Address</td>
-                  <td className="px-6 py-4">2002-12-23</td>
-                  <td className="px-6 py-4">username123</td>
-                  <td className="px-6 py-4">password123</td>
-                  <td className="px-6 py-4">
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    >
-                      Edit
-                    </a>
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline ml-2"
-                    >
-                      Delete
-                    </a>
-                  </td>
-                </tr>
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <td className="px-6 py-4 sticky left-0 z-10 bg-white dark:bg-gray-800">
-                    2080
-                  </td>
-                  <td className="px-6 py-4 sticky left-[120px] z-10 bg-white dark:bg-gray-800">
-                    8
-                  </td>
-                  <td className="px-6 py-4 sticky left-[200px] z-10 bg-white dark:bg-gray-800">
-                    Supriya Shrestha
-                  </td>
-                  <td className="px-6 py-4">1</td>
-                  <td className="px-6 py-4">supriyabicte@gmail.com</td>
-                  <td className="px-6 py-4">Parent Name</td>
-                  <td className="px-6 py-4">1234567890</td>
-                  <td className="px-6 py-4">Address</td>
-                  <td className="px-6 py-4">2002-12-23</td>
-                  <td className="px-6 py-4">username123</td>
-                  <td className="px-6 py-4">password123</td>
-                  <td className="px-6 py-4">
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    >
-                      Edit
-                    </a>
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline ml-2"
-                    >
-                      Delete
-                    </a>
-                  </td>
-                </tr>
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <td className="px-6 py-4 sticky left-0 z-10 bg-white dark:bg-gray-800">
-                    2080
-                  </td>
-                  <td className="px-6 py-4 sticky left-[120px] z-10 bg-white dark:bg-gray-800">
-                    8
-                  </td>
-                  <td className="px-6 py-4 sticky left-[200px] z-10 bg-white dark:bg-gray-800">
-                    Supriya Shrestha
-                  </td>
-                  <td className="px-6 py-4">1</td>
-                  <td className="px-6 py-4">supriyabicte@gmail.com</td>
-                  <td className="px-6 py-4">Parent Name</td>
-                  <td className="px-6 py-4">1234567890</td>
-                  <td className="px-6 py-4">Address</td>
-                  <td className="px-6 py-4">2002-12-23</td>
-                  <td className="px-6 py-4">username123</td>
-                  <td className="px-6 py-4">password123</td>
-                  <td className="px-6 py-4">
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    >
-                      Edit
-                    </a>
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline ml-2"
-                    >
-                      Delete
-                    </a>
-                  </td>
-                </tr>
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <td className="px-6 py-4 sticky left-0 z-10 bg-white dark:bg-gray-800">
-                    2080
-                  </td>
-                  <td className="px-6 py-4 sticky left-[120px] z-10 bg-white dark:bg-gray-800">
-                    8
-                  </td>
-                  <td className="px-6 py-4 sticky left-[200px] z-10 bg-white dark:bg-gray-800">
-                    Supriya Shrestha
-                  </td>
-                  <td className="px-6 py-4">1</td>
-                  <td className="px-6 py-4">supriyabicte@gmail.com</td>
-                  <td className="px-6 py-4">Parent Name</td>
-                  <td className="px-6 py-4">1234567890</td>
-                  <td className="px-6 py-4">Address</td>
-                  <td className="px-6 py-4">2002-12-23</td>
-                  <td className="px-6 py-4">username123</td>
-                  <td className="px-6 py-4">password123</td>
-                  <td className="px-6 py-4">
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    >
-                      Edit
-                    </a>
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline ml-2"
-                    >
-                      Delete
-                    </a>
-                  </td>
-                </tr>
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <td className="px-6 py-4 sticky left-0 z-10 bg-white dark:bg-gray-800">
-                    2080
-                  </td>
-                  <td className="px-6 py-4 sticky left-[120px] z-10 bg-white dark:bg-gray-800">
-                    8
-                  </td>
-                  <td className="px-6 py-4 sticky left-[200px] z-10 bg-white dark:bg-gray-800">
-                    Supriya Shrestha
-                  </td>
-                  <td className="px-6 py-4">1</td>
-                  <td className="px-6 py-4">supriyabicte@gmail.com</td>
-                  <td className="px-6 py-4">Parent Name</td>
-                  <td className="px-6 py-4">1234567890</td>
-                  <td className="px-6 py-4">Address</td>
-                  <td className="px-6 py-4">2002-12-23</td>
-                  <td className="px-6 py-4">username123</td>
-                  <td className="px-6 py-4">password123</td>
-                  <td className="px-6 py-4">
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    >
-                      Edit
-                    </a>
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline ml-2"
-                    >
-                      Delete
-                    </a>
-                  </td>
-                </tr>
+                      <div className="flex">
+                        <div className="w-[120px] px-6 py-4">2080</div>
+                        <div className="w-[80px] px-6 py-4">8</div>
+                        <div className="w-[200px] px-6 py-4">
+                          Supriya Shrestha
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">1</td>
+                    <td className="px-6 py-4">supriyabicte@gmail.com</td>
+                    <td className="px-6 py-4">Parent Name</td>
+                    <td className="px-6 py-4">1234567890</td>
+                    <td className="px-6 py-4">Address</td>
+                    <td className="px-6 py-4">2002-12-23</td>
+                    <td className="px-6 py-4">username123</td>
+                    <td className="px-6 py-4">password123</td>
+                    <td className="px-6 py-4">
+                      <a
+                        href="#"
+                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                      >
+                        Edit
+                      </a>
+                      <a
+                        href="#"
+                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline ml-2"
+                      >
+                        Delete
+                      </a>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

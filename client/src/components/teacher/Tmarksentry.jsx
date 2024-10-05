@@ -76,42 +76,39 @@ export default function Tmarksentry() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Subject</option>
-          <option value="Math">Computer Science</option>
+          <option value="Computer Science">Computer Science</option>
         </select>
       </div>
       {showTable && (
         <div className="overflow-x-auto relative">
-          <div className="max-h-[500px] overflow-y-auto">
+          <div className="max-h-[400px] overflow-y-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30 ">
                 <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 sticky left-0 z-30 bg-gray-50 dark:bg-gray-700"
-                  >
+                  <th scope="col" className="px-6 py-3 sticky left-0 z-30 ">
                     Roll No
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 sticky left-[120px] z-30 bg-gray-50 dark:bg-gray-700"
+                    className="px-6 py-3 sticky left-[120px] z-30  "
                   >
                     Full Name
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 sticky left-[240px] z-30 bg-gray-50 dark:bg-gray-700"
+                    className="px-6 py-3 sticky left-[240px] z-30 "
                   >
                     TH
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 sticky left-[360px] z-30 bg-gray-50 dark:bg-gray-700"
+                    className="px-6 py-3 sticky left-[360px] z-30 "
                   >
                     PR
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 sticky left-[480px] z-30 bg-gray-50 dark:bg-gray-700"
+                    className="px-6 py-3 sticky left-[480px] z-30 "
                   >
                     Total
                   </th>
@@ -157,7 +154,7 @@ export default function Tmarksentry() {
                 <tr>
                   <td colSpan="5" className="px-6 py-4">
                     <div className="flex justify-end">
-                      <button className="bg-[#8AA4D6] hover:bg-[#253553] hover:text-white text-gray-700 py-2 px-4 rounded text-xs">
+                      <button className=" w-20 bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec]  text-black dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs ">
                         Save
                       </button>
                     </div>

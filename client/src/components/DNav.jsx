@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Darklightmode from "./Mini Component/Darklightmode";
 import Search from "./Mini Component/Search";
+import Viewprofile from "./Viewprofile";
+import Editprofile from "./Editprofile";
 import {
   FaUser,
   FaEdit,
@@ -15,6 +17,8 @@ import {
 export default function Dnav({ currentPath }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
+  const [showViewProfile, setShowViewProfile] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const router = useRouter();
   const menuRef = useRef(null);
 
@@ -59,7 +63,7 @@ export default function Dnav({ currentPath }) {
   };
 
   return (
-    <div className="fixed bg-[#253553] w-full h-20 shadow-xl z-[100]">
+    <div className="fixed bg-[#437FC7] dark:bg-[#253553] dark:text-white text-black w-full h-20 shadow-xl z-[100]">
       <div className="flex justify-between items-center w-full h-full px-2 2xl:px-16">
         <Image src="/assets/Logo.png" width={135} height={55} alt="Logo" />
         <Search />
@@ -77,18 +81,24 @@ export default function Dnav({ currentPath }) {
                 alt="Admin"
                 className="rounded-full"
               />
-              <span className="text-white">Admin</span>
+              <span className="">User</span>
             </button>
             {showProfileMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
                 <button
-                  onClick={() => handleMenuItemClick("/admin/Adminprofile")}
+                  onClick={() => {
+                    setShowViewProfile(true);
+                    setShowProfileMenu(false);
+                  }}
                   className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <FaUser className="mr-2" /> View Profile
                 </button>
                 <button
-                  onClick={() => handleMenuItemClick("/admin/Editprofile")}
+                  onClick={() => {
+                    setShowEditProfile(true);
+                    setShowProfileMenu(false);
+                  }}
                   className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <FaEdit className="mr-2" /> Edit Profile
@@ -105,8 +115,8 @@ export default function Dnav({ currentPath }) {
         </div>
       </div>
       {showLogoutConfirmation && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="bg-white p-5 rounded-lg shadow-xl">
+        <div className="fixed inset-0 bg-gray-600  bg-opacity-50  backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center">
+          <div className="bg-white p-5 rounded-lg dark:bg-[#253553]  dark:text-white shadow-xl">
             <div className="flex items-center mb-4">
               <FaExclamationTriangle
                 className="text-yellow-500 mr-2"
@@ -118,7 +128,7 @@ export default function Dnav({ currentPath }) {
             <div className="flex justify-end">
               <button
                 onClick={handleLogoutCancel}
-                className="mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                className="mr-2 px-4 py-2 bg-gray-300 text-gray-800  rounded hover:bg-gray-400"
               >
                 Cancel
               </button>
@@ -130,6 +140,16 @@ export default function Dnav({ currentPath }) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {showViewProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
+          <Viewprofile onClose={() => setShowViewProfile(false)} />
+        </div>
+      )}
+      {showEditProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
+          <Editprofile onClose={() => setShowEditProfile(false)} />
         </div>
       )}
     </div>

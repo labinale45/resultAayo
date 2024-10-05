@@ -1,39 +1,98 @@
 import React from "react";
+import Link from "next/link";
+import {
+  FaHome,
+  FaBell,
+  FaInfoCircle,
+  FaCubes,
+  FaPhone,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaLock,
+  FaFileAlt,
+} from "react-icons/fa";
 
 function Footer() {
   return (
-    <div className="m-0 grid sm:grid-cols-12 grid-cols-1 p-4 h-auto bg-blue-300 text-black dark:bg-gray-600 dark:text-white">
-      <div className="sm:col-span-4  ms-20">
+    <div className="m-0 grid sm:grid-cols-12 grid-cols-1 p-4 h-auto bg-[#437FC7] dark:bg-[#253553] text-white">
+      <div className="sm:col-span-4 ms-20">
         <img
           src="/assets/Logo.png"
           alt="Logo"
           className="mb-4 mt-0 flex items-start"
         />
-
         <div>
           The Result Management System (RMS) is an academic software tailored
           for educational institutions to efficiently handle academic results.
         </div>
       </div>
 
-      <div className="sm:col-span-4 p-4 ms-20 flex items-start ">
+      <div className="sm:col-span-4 p-4 ms-20 flex items-start">
         <ul>
-          <div className="text-lg font-semibold mb-2 ">Quick Links</div>
-          <li className="mb-1">Home</li>
-          <li className="mb-1">Notice</li>
-          <li className="mb-1">About</li>
-          <li className="mb-1">Services</li>
+          <div className="text-lg font-semibold mb-2">Quick Links</div>
+          <li className="mb-1">
+            <Link
+              href="/Home"
+              className="flex items-center hover:text-gray-300"
+            >
+              <FaHome className="mr-2" /> Home
+            </Link>
+          </li>
+          <li className="mb-1">
+            <Link
+              href="/Notice"
+              className="flex items-center hover:text-gray-300"
+            >
+              <FaBell className="mr-2" /> Notice
+            </Link>
+          </li>
+          <li className="mb-1">
+            <Link
+              href="/About"
+              className="flex items-center hover:text-gray-300"
+            >
+              <FaInfoCircle className="mr-2" /> About
+            </Link>
+          </li>
+          <li className="mb-1">
+            <Link
+              href="/Module"
+              className="flex items-center hover:text-gray-300"
+            >
+              <FaCubes className="mr-2" /> Modules
+            </Link>
+          </li>
         </ul>
       </div>
 
-      <div className="sm:col-span-4 p-4 ms-20 me-20 flex items-start ">
+      <div className="sm:col-span-4 p-4 ms-20 me-20 flex items-start">
         <ul>
-          <div className="text-lg font-semibold mb-2 ">Contact Us</div>
-          <li className="mb-1">912222122</li>
-          <li className="mb-1">rays@gmail.com</li>
-          <li className="mb-1">Tanahun, Nepal</li>
-          <li className="mb-1">Privacy and Policy</li>
-          <li className="mb-1">Terms and Conditions</li>
+          <div className="text-lg font-semibold mb-2">Contact Us</div>
+          <li className="mb-1 flex items-center">
+            <FaPhone className="mr-2" /> 912222122
+          </li>
+          <li className="mb-1 flex items-center">
+            <FaEnvelope className="mr-2" /> rays@gmail.com
+          </li>
+          <li className="mb-1 flex items-center">
+            <FaMapMarkerAlt className="mr-2" /> Tanahun, Nepal
+          </li>
+          <li className="mb-1">
+            <Link
+              href="/privacy-policy"
+              className="flex items-center hover:text-gray-300"
+            >
+              <FaLock className="mr-2" /> Privacy and Policy
+            </Link>
+          </li>
+          <li className="mb-1">
+            <Link
+              href="/terms-conditions"
+              className="flex items-center hover:text-gray-300"
+            >
+              <FaFileAlt className="mr-2" /> Terms and Conditions
+            </Link>
+          </li>
         </ul>
       </div>
     </div>

@@ -32,7 +32,11 @@ export default function Navbar() {
 
   return (
     <div
-      className={`fixed w-full h-20 z-[100] ${scrolled ? 'bg-[#0f172a] shadow-md' : 'bg-transparent'} transition-all duration-300`}
+      className={`fixed w-full h-20 z-[100] ${
+        scrolled
+          ? "  bg-[#437FC7] dark:bg-[#253553] dark:text-white text-black shadow-md"
+          : "bg-transparent"
+      } transition-all duration-300`}
     >
       <div className="flex justify-between items-center w-full h-full px-2 2xl:px-16 pl-12 pr-12">
         <Image src="/assets/Logo.png" width="135" height="55" alt="Logo" />
@@ -64,7 +68,7 @@ export default function Navbar() {
           <Darklightmode />
           <button
             onClick={() => setShowLogin(true)}
-            className="bg-[#8AA4D6] hover:bg-[#253553] hover:text-white text-gray-700 py-2 px-4 rounded text-sm"
+            className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553]  text-white py-2 px-4 rounded text-sm"
           >
             LOGIN
           </button>
@@ -77,7 +81,9 @@ export default function Navbar() {
 
       {/* Overlay and Mobile Menu */}
       <div
-        className={nav ? "md:hidden fixed left-0 top-0 w-full h-screen bg-black/50" : ""}
+        className={
+          nav ? "md:hidden fixed left-0 top-0 w-full h-screen bg-black/50" : ""
+        }
       >
         <div
           className={
@@ -88,7 +94,12 @@ export default function Navbar() {
         >
           <div>
             <div className="flex w-full items-center justify-between">
-              <Image src="/assets/Logo.png" width="200" height="35" alt="Logo" />
+              <Image
+                src="/assets/Logo.png"
+                width="200"
+                height="35"
+                alt="Logo"
+              />
               <div
                 onClick={navhandle}
                 className="rounded-full shadow-lg shadow-gray-500 p-3 cursor-pointer"
@@ -166,7 +177,7 @@ export default function Navbar() {
         </div>
       </div>
       {showLogin && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[101]">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm  flex items-center justify-center z-[101]">
           <Login onClose={() => setShowLogin(false)} />
         </div>
       )}

@@ -1,10 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const TLedger = () => {
   const [year, setYear] = useState("");
   const [className, setClassName] = useState("");
   const [examType, setExamType] = useState("");
+  const [isPublished, setIsPublished] = useState(false);
+
   const [students, setStudents] = useState([
     {
       rollNo: 1,
@@ -31,6 +33,28 @@ const TLedger = () => {
       gpa: 0,
     },
   ]);
+  useEffect(() => {
+    if (isFormComplete) {
+      checkPublicationStatus();
+    }
+  }, [year, className, examType]);
+  
+  const checkPublicationStatus = async () => {
+    try {
+      const response = await fetch('/api/ledger-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ year, className, examType }),
+      });
+      const data = await response.json();
+      setIsPublished(data.isPublished);
+    } catch (error) {
+      console.error('Error checking publication status:', error);
+    }
+  };
+  
 
   const handlePrint = () => {
     const printContent = document.getElementById("ledger").innerHTML;
@@ -122,104 +146,111 @@ const TLedger = () => {
       </div>
 
       {isFormComplete && (
-        <div id="ledger" className="border border-gray-300 rounded-lg p-4">
-          <div className="mb-8 text-center">
-            <h2 className="text-4xl font-semibold">XYZ School</h2>
-            <p>123 Street Name, City</p>
-            <p>Estd: 1990</p>
-            <p className="text-3xl">
-              {examType}-{year}
-            </p>
-            <p className="text-left text-2xl">Class: {className}</p>
-          </div>
+        <>
+          {isPublished ? (
+            <div id="ledger" className="border border-gray-300 rounded-lg p-4">
+              <div className="mb-8 text-center">
+                <h2 className="text-4xl font-semibold">XYZ School</h2>
+                <p>123 Street Name, City</p>
+                <p>Estd: 1990</p>
+                <p className="text-3xl">
+                  {examType}-{year}
+                </p>
+                <p className="text-left text-2xl">Class: {className}</p>
+              </div>
 
-          <table className="min-w-full border-collapse border border-gray-300">
-            <thead>
-              <tr>
-                <th className="border border-gray-300 p-2" rowSpan="2">
-                  Roll No
-                </th>
-                <th className="border border-gray-300 p-2" rowSpan="2">
-                  Name
-                </th>
-                <th className="border border-gray-300 p-2" colSpan="3">
-                  Math
-                </th>
-                <th className="border border-gray-300 p-2" colSpan="3">
-                  Nepali
-                </th>
-                <th className="border border-gray-300 p-2" rowSpan="2">
-                  Total Marks
-                </th>
-                <th className="border border-gray-300 p-2" rowSpan="2">
-                  GPA
-                </th>
-              </tr>
-              <tr>
-                <th className="border border-gray-300 p-2">Theory</th>
-                <th className="border border-gray-300 p-2">Practical</th>
-                <th className="border border-gray-300 p-2">Total</th>
-                <th className="border border-gray-300 p-2">Theory</th>
-                <th className="border border-gray-300 p-2">Practical</th>
-                <th className="border border-gray-300 p-2">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student) => (
-                <tr key={student.rollNo}>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.rollNo}
-                  </td>
-                  <td className="border border-gray-300 p-2">{student.name}</td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.mathTheory}
-                  </td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.mathPractical}
-                  </td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.mathTotal}
-                  </td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.nepaliTheory}
-                  </td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.nepaliPractical}
-                  </td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.nepaliTotal}
-                  </td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.total}
-                  </td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.gpa}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              <table className="min-w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr>
+                    <th className="border border-gray-300 p-2" rowSpan="2">
+                      Roll No
+                    </th>
+                    <th className="border border-gray-300 p-2" rowSpan="2">
+                      Name
+                    </th>
+                    <th className="border border-gray-300 p-2" colSpan="3">
+                      Math
+                    </th>
+                    <th className="border border-gray-300 p-2" colSpan="3">
+                      Nepali
+                    </th>
+                    <th className="border border-gray-300 p-2" rowSpan="2">
+                      Total Marks
+                    </th>
+                    <th className="border border-gray-300 p-2" rowSpan="2">
+                      GPA
+                    </th>
+                  </tr>
+                  <tr>
+                    <th className="border border-gray-300 p-2">Theory</th>
+                    <th className="border border-gray-300 p-2">Practical</th>
+                    <th className="border border-gray-300 p-2">Total</th>
+                    <th className="border border-gray-300 p-2">Theory</th>
+                    <th className="border border-gray-300 p-2">Practical</th>
+                    <th className="border border-gray-300 p-2">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {students.map((student) => (
+                    <tr key={student.rollNo}>
+                      <td className="border border-gray-300 p-2 text-center">
+                        {student.rollNo}
+                      </td>
+                      <td className="border border-gray-300 p-2">{student.name}</td>
+                      <td className="border border-gray-300 p-2 text-center">
+                        {student.mathTheory}
+                      </td>
+                      <td className="border border-gray-300 p-2 text-center">
+                        {student.mathPractical}
+                      </td>
+                      <td className="border border-gray-300 p-2 text-center">
+                        {student.mathTotal}
+                      </td>
+                      <td className="border border-gray-300 p-2 text-center">
+                        {student.nepaliTheory}
+                      </td>
+                      <td className="border border-gray-300 p-2 text-center">
+                        {student.nepaliPractical}
+                      </td>
+                      <td className="border border-gray-300 p-2 text-center">
+                        {student.nepaliTotal}
+                      </td>
+                      <td className="border border-gray-300 p-2 text-center">
+                        {student.total}
+                      </td>
+                      <td className="border border-gray-300 p-2 text-center">
+                        {student.gpa}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-          <div className="mt-4 flex justify-between">
-            <button
-              onClick={handlePrint}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md"
-            >
-              Print Ledger
-            </button>
-            <button
-              onClick={handleGenerateGradesheet}
-              className="bg-yellow-500 text-white px-4 py-2 rounded-md"
-            >
-              Generate Gradesheet
-            </button>
-          </div>
-        </div>
+              <div className="mt-4 flex justify-between">
+                <button
+                  onClick={handlePrint}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                >
+                  Print Ledger
+                </button>
+                <button
+                  onClick={handleGenerateGradesheet}
+                  className="bg-yellow-500 text-white px-4 py-2 rounded-md"
+                >
+                  Generate Gradesheet
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
+              <p className="text-yellow-700 font-semibold">Result not published yet</p>
+            </div>
+          )}
+        </>
       )}
       <style jsx global>{`
         @media print {
-          body * {
-            visibility: hidden;
+          body * {            visibility: hidden;
           }
           #ledger,
           #ledger * {
@@ -237,3 +268,4 @@ const TLedger = () => {
 };
 
 export default TLedger;
+

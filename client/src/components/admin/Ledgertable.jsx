@@ -83,7 +83,7 @@ const Ledgertable = () => {
 
   return (
     <div className="relative mt-7">
-      <div className="flex justify-center items-center mb-4">
+      <div className="flex justify-start ml-60 items-center mb-4">
         <select
           value={year}
           onChange={(e) => setYear(e.target.value)}
@@ -118,19 +118,19 @@ const Ledgertable = () => {
         <div className="flex space-x-2 absolute right-4">
           <button
             onClick={handlePrint}
-            className="bg-[#8AA4D6] hover:bg-[#253553] hover:text-white text-gray-700 py-2 px-4 rounded text-xs"
+            className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs"
           >
             Print Ledger
           </button>
           <button
             onClick={handlePublishResult}
-            className="bg-[#8AA4D6] hover:bg-[#253553] hover:text-white text-gray-700 py-2 px-4 rounded text-xs"
+            className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs"
           >
             Publish Result
           </button>
           <button
             onClick={handleGenerateGradesheet}
-            className="bg-[#8AA4D6] hover:bg-[#253553] hover:text-white text-gray-700 py-2 px-4 rounded text-xs"
+            className=" bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs"
           >
             Generate Gradesheet
           </button>
@@ -255,7 +255,7 @@ const Ledgertable = () => {
       )}
 
       {showGradesheet && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[101]">
+        <div className="fixed inset-0 bg-black  bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
           <Gradesheet onClose={() => setShowGradesheet(false)} />
         </div>
       )}

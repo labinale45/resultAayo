@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import supabase from "@/utils/client";
+
+import { IoPersonAddSharp } from "react-icons/io5";
+import { MdOutlineAddReaction } from "react-icons/md";
 
 function Addstudent({ onClose, student, onSave }) {
   const [first_name, setFirstName] = useState("");
@@ -88,10 +90,9 @@ function Addstudent({ onClose, student, onSave }) {
     }
 };
 
-
   return (
     <div>
-      <div className="bg-white flex rounded-3xl shadow-2xl max-w-4xl p-3 relative">
+      <div className="bg-white dark:bg-[#253553] dark:text-white flex rounded-3xl shadow-2xl max-w-4xl p-3 relative">
         <button
           onClick={onClose}
           className="absolute top-2 right-2 text-red-600 hover:text-red-800 text-3xl font-bold z-50 bg-white rounded-full w-8 h-8 flex items-center justify-center"
@@ -99,14 +100,12 @@ function Addstudent({ onClose, student, onSave }) {
           &times;
         </button>
 
-        <div className="w-2/3 px-6">
+        <div className="w-2/3 px-6  ">
           <div className="flex items-center mt-4">
-            <img
-              src="/assets/Addstudentorteacher.png"
-              className="h-12 w-12 mr-2"
-            />
-            <h1 className="text-[#253553] underline text-2xl font-bold">
-              ____A d d _ S t u d e n t
+            <IoPersonAddSharp className="h-7 w-12 mr-2  " />
+
+            <h1 className="text-[#253553]   dark:text-white underline text-2xl font-bold">
+            __A d d _S t u d e n t
             </h1>
           </div>
 
@@ -115,8 +114,7 @@ function Addstudent({ onClose, student, onSave }) {
               {successMessage}
             </div>
           )}
-
-          <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
+<form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
             
             <div className="row-span-2">
               <label className="block text-sm font-medium text-gray-700">
@@ -232,7 +230,7 @@ function Addstudent({ onClose, student, onSave }) {
             </div>
             
 
-            <div className="col-span-2 flex justify-center">
+            <div className="col-span-2 flex justify-start">
               <button
                 type="submit"
                 className="text-white shadow-xl font-bold bg-[#8AA4D6] w-80 p-3 mt-6 rounded-xl hover:bg-[#253553] duration-300"
@@ -244,17 +242,17 @@ function Addstudent({ onClose, student, onSave }) {
         </div>
 
         <div className="w-1/3 relative">
-          <label htmlFor="photo-upload" className="cursor-pointer">
-            <div className="rounded-full overflow-hidden">
-              <img
-                src="/assets/Importimage.png"
-                alt="Student Photo"
-                className="absolute inset-0 max-h-32 max-w-32 object-top mt-[8%] ml-[55%]"
-              />
-            </div>
-          </label>
-          <input type="file" id="photo-upload" className="hidden" />
-          <img className="ml-3 rounded-3xl h-full" src="/assets/popup.png" alt="" />
+          <div className="absolute top-0 left-0 z-10 p-4">
+            <label htmlFor="photo-upload" className="cursor-pointer">
+              <MdOutlineAddReaction className="w-20 h-20 text-gray-500 dark:text-white" />
+            </label>
+            <input type="file" id="photo-upload" className="hidden" />
+          </div>
+          <img
+            className="rounded-3xl h-full w-full object-cover"
+            src="/assets/popup.png"
+            alt=""
+          />
         </div>
       </div>
     </div>

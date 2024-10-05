@@ -1,56 +1,135 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { FaUsers, FaChalkboardTeacher } from "react-icons/fa";
-import supabase from "@/utils/client";
+
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  FaUsers,
+  FaChalkboardTeacher,
+  FaGraduationCap,
+  FaBook,
+} from "react-icons/fa";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import Viewprofile from "../Viewprofile";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function Studentdashboard() {
-  const [studentCount, setStudentCount] = useState(0);
-  const [teacherCount, setTeacherCount] = useState(0);
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: "Students",
+        data: [],
+        borderColor: "rgb(255, 99, 132)",
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
+      },
+      {
+        label: "Teachers",
+        data: [],
+        borderColor: "rgb(53, 162, 235)",
+        backgroundColor: "rgba(53, 162, 235, 0.5)",
+      },
+    ],
+  });
+
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        // Count students
-        const { count: studentCount, error: studentError } = await supabase
-          .from("students")
-          .select("*", { count: "exact", head: true });
+    const fetchData = () => {
+      const labels = [];
+      const studentData = [];
+      const teacherData = [];
 
-        if (studentError) throw studentError;
-
-        setStudentCount(studentCount);
-
-        // Count teachers
-        const { count: teacherCount, error: teacherError } = await supabase
-          .from("teachers")
-          .select("*", { count: "exact", head: true });
-
-        if (teacherError) throw teacherError;
-
-        setTeacherCount(teacherCount);
-      } catch (error) {
-        console.error("Error fetching counts:", error.message);
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString());
+        studentData.push(Math.floor(Math.random() * 50) + 100);
+        teacherData.push(Math.floor(Math.random() * 10) + 20);
       }
+
+      setChartData({
+        labels,
+        datasets: [
+          {
+            ...chartData.datasets[0],
+            data: studentData,
+          },
+          {
+            ...chartData.datasets[1],
+            data: teacherData,
+          },
+        ],
+      });
     };
 
-    fetchCounts();
+    fetchData();
   }, []);
 
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "Student and Teacher Count Over Last 7 Days",
+      },
+    },
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Student Dashboard
+    <div className="flex flex-col min-h-screen bg-white dark:bg-[#B3B4BE] dark:text-white">
+      <header className="bg-white shadow dark:bg-[#B3B4BE]">
+        <div className="max-w-7xl mx-auto py-7 px-4 bg-white dark:bg-[#B3B4BE] dark:text-white">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            School Student Dashboard
           </h1>
         </div>
       </header>
+      <main className="flex-grow container mx-auto px-4 py-6">
+        <div className="mt-3 flex flex-col lg:flex-row gap-8 py-3 ">
+          <div className="lg:w-2/3 bg-gray-100 p-6 rounded-lg shadow">
+            <div className="h-[400px]">
+              <Line options={options} data={chartData} />
+            </div>
+          </div>
+          <div className="lg:w-1/3">
+            <QuickActions onViewProfile={() => setShowProfile(true)} />
+          </div>
+        </div>
+      </main>
+      {showProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-65 backdrop-blur-sm flex items-center justify-center z-[101]">
+          <Viewprofile onClose={() => setShowProfile(false)} />
+        </div>
+      )}
     </div>
   );
 }
 
 function StatCard({ icon, title, value }) {
   return (
-    <div className="bg-white overflow-hidden shadow rounded-lg p-5">
+    <div className="bg-gray-100 overflow-hidden shadow rounded-lg p-5">
       <div className="flex items-center">
         <div className="flex-shrink-0">{icon}</div>
         <div className="ml-5 w-0 flex-1">
@@ -64,20 +143,24 @@ function StatCard({ icon, title, value }) {
   );
 }
 
-function RecentActivityFeed() {
+function QuickActions({ onViewProfile }) {
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-      <ul className="mt-4 space-y-4">
-        <li className="flex space-x-3">
-          <FaUsers className="flex-shrink-0 h-5 w-5 text-gray-400" />
-          <div className="flex-1 space-y-1">
-            <p className="text-sm text-gray-600">New student enrolled</p>
-            <p className="text-xs text-gray-500">2 hours ago</p>
-          </div>
-        </li>
-        {/* Add more activity items here */}
-      </ul>
+    <div className="bg-gray-100 shadow rounded-lg p-6">
+      <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+      <div className="mt-4 grid grid-cols-2 gap-4">
+        <Link
+          href="/student/Sgradesheet"
+          className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white text-gray-700 font-semibold py-2 px-4 rounded text-center"
+        >
+          Gradesheet
+        </Link>
+        <button
+          onClick={onViewProfile}
+          className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white text-gray-700 font-semibold py-2 px-4 rounded text-center"
+        >
+          Profile
+        </button>
+      </div>
     </div>
   );
 }

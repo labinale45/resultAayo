@@ -102,3 +102,26 @@ const login= async(req,res)=>{
 };
 
 module.exports = {login,register};
+
+const publishResult = async (req, res) => {
+  try {
+    const { year, className, examType } = req.body;
+    const supabaseClient = await connectdb();
+
+    const { data, error } = await supabaseClient
+      .from('exam_results')
+      .update({ published: true, publishedAt: new Date() })
+      .match({ year, class: className, exam_type: examType });
+
+    if (error) throw error;
+
+    res.status(200).json({ message: 'Result published successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+module.exports = {
+  login,
+  register,
+  publishResult,
+};

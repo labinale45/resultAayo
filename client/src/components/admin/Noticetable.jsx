@@ -23,28 +23,25 @@ export default function Noticetable() {
         </select>
         <button
           onClick={() => setShowCreateNotice(true)}
-          className="bg-[#8AA4D6] hover:bg-[#253553] hover:text-white text-gray-700 py-2 px-4 rounded text-xs absolute right-4"
+          className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs absolute right-4"
         >
           +Create Notice
         </button>
       </div>
 
       {showCreateNotice && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[101]">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm  flex items-center justify-center z-[101]">
           <Createnotice onClose={() => setShowCreateNotice(false)} />
         </div>
       )}
 
       {showTable && (
         <div className="overflow-x-auto relative">
-          <div className="max-h-[500px] overflow-y-auto">
+          <div className="max-h-[450px] overflow-y-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
                 <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 sticky left-0 z-30 bg-gray-50 dark:bg-gray-700"
-                  >
+                  <th scope="col" className="px-6 py-3">
                     ID
                   </th>
                   <th scope="col" className="px-6 py-3">

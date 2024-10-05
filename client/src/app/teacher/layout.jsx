@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import TMenu from "@/components/Tmenu";
-import Dnav from "../../components/Dnav";
+import Dnav from "../../components/DNav";
 import Copyright from "../../components/Mini Component/Copyright";
 
 export default function RootLayout({ children }) {
@@ -10,23 +10,29 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <body className="flex flex-col min-h-screen">
+      <body className="flex flex-col min-h-screen dark:bg-[#B3B4BD]">
         <Dnav />
-        <div className="flex flex-1 mt-20 mb-16">
-          <div className="fixed top-13 left-0 h-[calc(100vh-5rem)] z-50">
+        <div className="flex flex-1 mt-20 relative">
+          <div className="fixed top-20 left-0 h-[calc(100vh-5rem)] z-50">
             <TMenu setMenuOpen={setMenuOpen} />
           </div>
-          <main
-            className={`flex-1 ${
+          <div
+            className={`flex flex-col flex-1 ${
               menuOpen ? "ml-72" : "ml-20"
-            } transition-all duration-300 overflow-x-hidden`}
+            } transition-all duration-300 overflow-hidden`}
           >
-            <div className="p-1">{children}</div>
-          </main>
+            <main className="flex-1 overflow-x-auto overflow-y-auto pb-16">
+              <div className="min-w-0">{children}</div>
+            </main>
+          </div>
         </div>
-        <div className="fixed bottom-0 left-64 right-0 z-0 ">
+        <footer
+          className={`fixed bottom-0 z-10 bg-inherit transition-all duration-300 ${
+            menuOpen ? "left-72" : "left-20"
+          } right-0`}
+        >
           <Copyright />
-        </div>
+        </footer>
       </body>
     </html>
   );

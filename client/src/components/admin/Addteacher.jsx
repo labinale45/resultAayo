@@ -2,18 +2,22 @@
 
 import React, { useState, useEffect } from "react";
 import supabase from "@/utils/client";
+import { IoPersonAddSharp } from "react-icons/io5";
+import { MdOutlineAddReaction } from "react-icons/md";
 
 function Addteacher({ onClose, teacher, onSave }) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [first_name, setFirstName] = useState("");
+  const [last_name, setLastName] = useState("");
 
   const [email, setEmail] = useState("");
-  const [contact, setContact] = useState("");
+  const [phone_number, setContact] = useState("");
   const [address, setAddress] = useState("");
   const [dob, setDob] = useState("");
+  const [role, setRole] = useState("Teacher");
   const [gender, setGender] = useState("Male");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
@@ -31,67 +35,56 @@ function Addteacher({ onClose, teacher, onSave }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      let data, error;
-      if (teacher) {
-        // Update existing teacher
-        const { data: updateData, error: updateError } = await supabase
-          .from("teachers")
-          .update({
-            Fullname: fullName,
-            Email: email,
-            Contact: contact,
-            Address: address,
-            DOB: dob,
-            Gender: gender,
-            username: username,
-            password: password,
-          })
-          .eq("id", teacher.id);
-
-        data = updateData;
-        error = updateError;
-      } else {
-        // Add new teacher
-        const { data: insertData, error: insertError } = await supabase
-          .from("teachers")
-          .insert([
-            {
-              Fullname: fullName,
-
-              Email: email,
-              Contact: contact,
-              Address: address,
-              DOB: dob,
-              Gender: gender,
-              username: username,
-              password: password,
-              role: "teacher",
+        const responseRegister = await fetch("http://localhost:4000/api/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
             },
-          ]);
+            body: JSON.stringify({
+                first_name,
+                last_name,
+                email,
+                phone_number,
+                address,
+                dob,
+                gender,
+                role,
+              
+            })
+        });
 
-        data = insertData;
-        error = insertError;
-      }
+        if (!responseRegister.ok) {
+            // Handle non-200 responses
+            const errorData = await responseRegister.json();
+            throw new Error(errorData.message || 'Failed adding Teacher');
+        }
+        if(responseRegister.ok){
+          const data = await responseRegister.json();
+          alert(data.message);
+          setErrorMessage(null);
+          setFirstName("");
+          setLastName("");
+          setEmail("");
+          setContact("");
+          setAddress("");
+          setDob("");
+           // Clear the success message after 3 seconds
+        setTimeout(() => {
+          setSuccessMessage("");
+      }, 3000);
+        }
+        // Handle successful login, maybe set some state or redirect
 
-      if (error) {
-        console.error("Error saving data:", error.message);
-        alert("Error saving teacher: " + error.message);
-        return;
-      }
-
-      setSuccessMessage("Teacher saved successfully!");
-      onSave(data[0]);
-      onClose();
     } catch (error) {
-      console.error("Unexpected error occurred:", error.message);
-      alert("Unexpected error occurred: " + error.message);
+        console.log('Error:', error.message);
+        setErrorMessage(error.message);
     }
-  };
+};
+
   return (
     <div>
-      <div className="bg-white flex rounded-3xl shadow-2xl max-w-4xl p-3 relative">
+      <div className="bg-white dark:bg-[#253553] dark:text-white flex rounded-3xl shadow-2xl max-w-4xl p-3 relative">
         <button
           onClick={onClose}
           className="absolute top-2 right-2 text-red-600 hover:text-red-800 text-3xl font-bold z-50 bg-white rounded-full w-8 h-8 flex items-center justify-center"
@@ -99,14 +92,11 @@ function Addteacher({ onClose, teacher, onSave }) {
           &times;
         </button>
 
-        <div className="w-2/3 px-6">
+        <div className="w-2/3 px-6 ">
           <div className="flex items-center mt-4">
-            <img
-              src="/assets/Addstudentorteacher.png"
-              className="h-12 w-12 mr-2"
-            />
-            <h1 className="text-[#253553] underline text-2xl font-bold">
-              ____A d d _ T e a c h e r
+            <IoPersonAddSharp className="h-7 w-12 mr-2  " />
+            <h1 className=" underline text-2xl font-bold">
+              __A d d _T e a c h e r
             </h1>
           </div>
 
@@ -116,76 +106,29 @@ function Addteacher({ onClose, teacher, onSave }) {
             </div>
           )}
 
-          <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
+          <form className="grid grid-cols-2 gap-4 mt-3" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
+              <label className=" text-sm font-medium ">First Name</label>
               <input
-                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
+                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl text-black"
                 type="text"
-                value={lastName}
+                value={first_name}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+               <label className=" text-sm font-medium ">Last Name</label>
+              <input
+                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl text-black"
+                type="text"
+                value={last_name}
                 onChange={(e) => setLastName(e.target.value)}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Contact
-              </label>
-              <input
-                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
-                type="tel"
-                pattern="[0-9]{10}"
-                maxLength="10"
-                value={contact}
-                onChange={(e) => setContact(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Address
-              </label>
-              <input
-                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Date of Birth
-              </label>
-              <input
-                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
-                type="date"
-                value={dob}
-                onChange={(e) => setDob(e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Gender
-              </label>
+              <label className=" text-sm font-medium ">Gender</label>
               <select
-                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
+                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl text-black"
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
                 required
@@ -194,11 +137,58 @@ function Addteacher({ onClose, teacher, onSave }) {
                 <option value="Female">Female</option>
                 <option value="Others">Others</option>
               </select>
+
+              <div>
+              <label className="text-sm font-medium ">Date of Birth</label>
+              <input
+                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl text-black"
+                type="date"
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
+                required
+              />
             </div>
+
+            </div>
+            <div>
+              <label className=" text-sm font-medium ">Email</label>
+              <input
+                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl text-black"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className=" text-sm font-medium ">Contact</label>
+              <input
+                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl text-black"
+                type="tel"
+                pattern="[0-9]{10}"
+                maxLength="10"
+                value={phone_number}
+                onChange={(e) => setContact(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium ">Address</label>
+              <input
+                className="txt p-2 mt-1 w-full rounded-xl border shadow-xl text-black"
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                required
+              />
+            </div>
+            
+
+            
             <div className="col-span-2 flex justify-center">
               <button
                 type="submit"
-                className="text-white shadow-xl font-bold bg-[#8AA4D6] w-80 p-3 mt-6 rounded-xl hover:bg-[#253553] duration-300"
+                className="w-72 p-3 mt-6 rounded-xl bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center  shadow-xl font-bold "
               >
                 A D D
               </button>
@@ -207,17 +197,17 @@ function Addteacher({ onClose, teacher, onSave }) {
         </div>
 
         <div className="w-1/3 relative">
-          <label htmlFor="photo-upload" className="cursor-pointer">
-            <div className="rounded-full overflow-hidden">
-              <img
-                src="/assets/Importimage.png"
-                alt="Teacher Photo"
-                className="absolute inset-0 max-h-32 max-w-32 object-top mt-[8%] ml-[55%]"
-              />
-            </div>
-          </label>
-          <input type="file" id="photo-upload" className="hidden" />
-          <img className="rounded-3xl h-full" src="/assets/popup.png" alt="" />
+          <div className="absolute top-0 left-0 z-10 p-4">
+            <label htmlFor="photo-upload" className="cursor-pointer">
+              <MdOutlineAddReaction className="w-20 h-20 text-gray-500 dark:text-white" />
+            </label>
+            <input type="file" id="photo-upload" className="hidden" />
+          </div>
+          <img
+            className="rounded-3xl h-full w-full object-cover"
+            src="/assets/popup.png"
+            alt=""
+          />
         </div>
       </div>
     </div>
