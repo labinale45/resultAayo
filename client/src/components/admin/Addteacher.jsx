@@ -165,7 +165,7 @@ function Addteacher({ onClose, teacher, onSave }) {
               <input
                 className="txt p-2 mt-1 w-full rounded-xl border shadow-xl text-black"
                 type="tel"
-                pattern="[0-9]{10}"
+                pattern="(\+977?)?[9][6-9]\d{8}"
                 maxLength="10"
                 value={phone_number}
                 onChange={(e) => setContact(e.target.value)}
