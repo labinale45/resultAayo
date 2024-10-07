@@ -3,25 +3,37 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const createClass = async (userData)=>{
+
+const createClass = async (userData) => {
     try {
-        if(!userData.className ||!userData.sec ||!userData.subject){
+        if (!userData.className || !userData.sec || !userData.subject) {
             throw new Error("Incomplete class data");
         }
         const createClient = await connectdb();
-        const {data,error} = await createClient
-       .from('class')
-       .insert({
-            class: userData.className,
-            sec: userData.sec,
+        
+        // Insert class data
+        const { data: classData, error: classError } = await createClient
+            .from('class')
+            .insert({
+                class: userData.className,
+                sec: userData.sec,
             });
-        if(error) throw error;
-        return data;
+        if (classError) throw classError;
 
+        // Insert subjects as individual rows
+        const subjectPromises = userData.subject.map(subject => 
+            createClient
+                .from('subjects')
+                .insert({ subject_name: subject })
+        );
+
+        await Promise.all(subjectPromises);
+
+        return classData;
     } catch (error) {
         console.error("Error creating class:", error);
+        throw error;
     }
-
 }
 
 const getClass = async ()=>{
