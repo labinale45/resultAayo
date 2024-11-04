@@ -23,9 +23,15 @@ function Createnotice({ onClose }) {
             <div className="flex flex-col">
               <label className="mb-2 text-sm font-medium ">Title</label>
               <input
-                className="txt p-2 w-80 rounded-xl border shadow-xl text-black"
+                className="txt p-2 w-80rem rounded-xl border shadow-xl text-black"
                 type="text"
                 placeholder="Enter title"
+              />
+               <label className="mb-2 text-sm font-medium ">Description</label>
+              <input
+                className="txt p-2 w-80rem rounded-xl border shadow-xl text-black"
+                type="text"
+                placeholder="Enter description.."
               />
             </div>
             <div className="flex flex-col">
