@@ -26,6 +26,39 @@
     }
   };
 
+  const getTeachersByYear = async (req, res) => {
+    try {
+      const supabaseClient = await connectdb();
+      const year = req.params.year;
+  
+      const { data: teachers, error } = await supabaseClient
+        .from('teachers')
+        .select('*')
+        .gte('created_at', `${year}-01-01`)
+        .lte('created_at', `${year}-12-31`);
+  
+      if (error) throw error;
+  
+      const formattedTeachers = teachers.map(teacher => ({
+        id: teacher.id,
+        fullName: `${teacher.first_name} ${teacher.last_name}`,
+        email: teacher.email,
+        contact: teacher.phone_number,
+        address: teacher.address,
+        dateOfBirth: new Date(teacher.dob).toLocaleDateString(),
+        username: teacher.username
+      }));
+  
+      res.status(200).json(formattedTeachers);
+  
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+      res.status(500).json({ error: "Failed to retrieve teachers" });
+    }
+  };
+  
+  
   module.exports = {
-    getYears
+    getYears,
+    getTeachersByYear
   };

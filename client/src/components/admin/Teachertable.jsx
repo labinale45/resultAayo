@@ -7,11 +7,16 @@ export default function Teachertable() {
   const [showAddTeacher, setShowAddTeacher] = useState(false);
   const [selectedYear, setSelectedYear] = useState("");
   const [years, setYears] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     YearSelect();
-  }, []);
-
+   if(selectedYear){fetchTeachers();}
+  }, [selectedYear]);
+  
+  //Select the Year
   const YearSelect = async () => {
     try {
       const response = await fetch("http://localhost:4000/api/auth/year", {
@@ -32,7 +37,43 @@ export default function Teachertable() {
       console.error('Failed to fetch years:', error.message);
     }
   };
+
+  //Fetch Teachers
+  const fetchTeachers = async () => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    const response = await fetch(`http://localhost:4000/api/auth/teacher/${selectedYear}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    setTeachers(data);
+  } catch (error) {
+    setError(error.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  {isLoading && (
+    <div className="text-center py-4">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+    </div>
+  )}
   
+  {error && (
+    <div className="text-red-500 text-center py-4">
+      Error: {error}
+    </div>
+  )}
   return (
     
     <div className="relative mt-7">
@@ -59,7 +100,7 @@ export default function Teachertable() {
 
       {showAddTeacher && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
-          <Addteacher onClose={() => setShowAddTeacher(false)} />
+          <Addteacher onClose={() => setShowAddTeacher(false)} onSuccess={handleAddTeacherSuccess} />
         </div>
       )}
 
@@ -105,48 +146,40 @@ export default function Teachertable() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <td className="px-6 py-4 sticky left-0 z-10 bg-white dark:bg-gray-800">
-                    1
-                  </td>
-                  <th
-                    scope="row"
-                    className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white sticky left-[68px] z-10 bg-white dark:bg-gray-800"
-                  >
-                    <img
-                      className="w-10 h-10 rounded-full"
-                      src="vssvsd"
-                      alt=" image"
-                    />
-                    <div className="ps-3">
-                      <div className="text-base font-semibold">
-                        Supriya Shrestha
-                      </div>
-                    </div>
-                  </th>
-                  <td className="px-6 py-4">supriyabicte@gmail.com</td>
-                  <td className="px-6 py-4">supriyabicte@gmail.com</td>
-                  <td className="px-6 py-4">Female</td>
-                  <td className="px-6 py-4">2002-12-23</td>
-                  <td className="px-6 py-4">supriyabicte@gmail.com</td>
-                  <td className="px-6 py-4">2002-12-23</td>
-                  <td className="px-6 py-4">
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    >
-                      Edit{" "}
-                    </a>
-                    <a
-                      href="#"
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    >
-                      Delete{" "}
-                    </a>
-                  </td>
-                </tr>
-               
-              </tbody>
+  {teachers.map((teacher) => (
+    <tr key={teacher.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+      <td className="px-6 py-4 sticky left-0 z-10 bg-white dark:bg-gray-800">
+        {teacher.id}
+      </td>
+      <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white sticky left-[68px] z-10 bg-white dark:bg-gray-800">
+      {/* <img 
+  className="w-10 h-10 rounded-full object-cover" 
+  src={teacher.image || '/default-avatar.png'} 
+  alt={`${teacher.fullName}'s photo`}
+  onError={(e) => {
+    e.target.src = '/default-avatar.png';
+  }}/> */}
+        <div className="ps-3">
+          <div className="text-base font-semibold">{teacher.fullName}</div>
+        </div>
+      </th>
+      <td className="px-6 py-4">{teacher.email}</td>
+      <td className="px-6 py-4">{teacher.contact}</td>
+      <td className="px-6 py-4">{teacher.address}</td>
+      <td className="px-6 py-4">{teacher.dateOfBirth}</td>
+      <td className="px-6 py-4">{teacher.username}</td>
+      <td className="px-6 py-4">{teacher.password}</td>
+      <td className="px-6 py-4">
+        <a href="#" className="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-2">
+          Edit
+        </a>
+        <a href="#" className="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+          Delete
+        </a>
+      </td>
+    </tr>
+  ))}
+</tbody>
             </table>
           </div>
         </div>
