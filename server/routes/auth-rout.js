@@ -12,7 +12,7 @@ router.route('/publish-result').post(authController.publishResult);
 router.route('/create-exam').post(examController.createExam); 
 router.route('/create-class').post(classController.addClass);
 router.route('/year').get(retrive.getYears);
-router.route('/teacher/:year').get(retrive.getTeachersByYear);
+router.route('/records/:year').get(retrive.getRecordsByYear);
 // Remove or comment out the line below if it's not being used
 // router.route('/admin')
 

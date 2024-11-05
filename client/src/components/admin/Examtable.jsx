@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Createexam from "@/components/admin/Createexam";
 
 export default function Examtable() {
@@ -8,6 +8,10 @@ export default function Examtable() {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedExamType, setSelectedExamType] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
+  const [years, setYears] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [state, setState] = useState("exams");
   const [subjects, setSubjects] = useState([
     { name: "Computer Science", fullMarks: "", passMarks: "" },
     { name: "Mathematics", fullMarks: "", passMarks: "" },
@@ -18,7 +22,66 @@ export default function Examtable() {
     { name: "O.Math", fullMarks: "", passMarks: "" },
   ]);
 
-  const showTable = selectedYear && selectedExamType && selectedClass;
+  useEffect(() => {
+    YearSelect();
+    if (selectedYear) { fetchExamData(); }
+  }, [selectedYear]);
+
+  const YearSelect = async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid data format received');
+      }
+      
+      setYears(data);
+      setError(null);
+      
+    } catch (error) {
+      console.error('Failed to fetch years:', error.message);
+      setError('Failed to fetch years. Please try again later.');
+      setYears([]);
+    }
+  };
+
+  const fetchExamData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&examType=${selectedExamType}&class=${selectedClass}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSubjects(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (index, field, value) => {
     const updatedSubjects = [...subjects];
@@ -26,17 +89,22 @@ export default function Examtable() {
     setSubjects(updatedSubjects);
   };
 
+  const showTable = selectedYear && selectedExamType && selectedClass;
+
   return (
     <div className="relative mt-7">
       <div className="flex justify-center items-center mb-4">
-        <select
+      <select
           value={selectedYear}
           onChange={(e) => setSelectedYear(e.target.value)}
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Year</option>
-          <option value="2080">2080</option>
-          <option value="2081">2081</option>
+          {years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
         </select>
         <select
           value={selectedExamType}

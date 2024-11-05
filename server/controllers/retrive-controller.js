@@ -1,64 +1,116 @@
-  const connectdb = require('../utils/connectdb');
+const connectdb = require('../utils/connectdb');
 
-  const getYears = async (req, res) => {
-    try {
-      const supabaseClient = await connectdb();
-    
-      // Get all teachers with their created_at dates
-      const { data: teachers, error } = await supabaseClient
-        .from('teachers')
-        .select('created_at');
-
-      if (error) throw error;
-
-      // Extract years and remove duplicates
-      const uniqueYears = [...new Set(
-        teachers.map(teacher => new Date(teacher.created_at).getFullYear())
-      )];
-
-      // Sort years in descending order
-      const sortedYears = uniqueYears.sort((a, b) => b - a);
-
-      res.status(200).json(sortedYears);
-
-    } catch (error) {
-      res.status(500).json({ error: "Failed to retrieve years" });
+// Get years based on selected status (teachers, students, or staff)
+const getYears = async (req, res) => {
+  try {
+    const supabaseClient = await connectdb();
+    if (!supabaseClient) {
+      console.error('Failed to connect to database');
+      return res.status(500).json({ error: "Database connection failed" });
     }
-  };
 
-  const getTeachersByYear = async (req, res) => {
-    try {
-      const supabaseClient = await connectdb();
-      const year = req.params.year;
-  
-      const { data: teachers, error } = await supabaseClient
-        .from('teachers')
-        .select('*')
-        .gte('created_at', `${year}-01-01`)
-        .lte('created_at', `${year}-12-31`);
-  
-      if (error) throw error;
-  
-      const formattedTeachers = teachers.map(teacher => ({
-        id: teacher.id,
-        fullName: `${teacher.first_name} ${teacher.last_name}`,
-        email: teacher.email,
-        contact: teacher.phone_number,
-        address: teacher.address,
-        dateOfBirth: new Date(teacher.dob).toLocaleDateString(),
-        username: teacher.username
-      }));
-  
-      res.status(200).json(formattedTeachers);
-  
-    } catch (error) {
-      console.error('Error fetching teachers:', error);
-      res.status(500).json({ error: "Failed to retrieve teachers" });
+    // Get status from query parameter
+    const status = req.query.status || 'teachers'; // default to teachers if no status provided
+    console.log('Fetching years for status:', status);
+
+    const { data, error } = await supabaseClient
+      .from(status)
+      .select('created_at');
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({ error: error.message });
     }
-  };
-  
-  
-  module.exports = {
-    getYears,
-    getTeachersByYear
-  };
+
+    if (!data || !Array.isArray(data)) {
+      console.error(`No ${status} data or invalid format:`, data);
+      return res.status(500).json({ error: `Invalid data format from ${status} table` });
+    }
+
+    const uniqueYears = [...new Set(
+      data.map(record => {
+        const date = new Date(record.created_at);
+        if (isNaN(date.getTime())) {
+          console.error('Invalid date:', record.created_at);
+          return null;
+        }
+        return date.getFullYear();
+      }).filter(year => year !== null)
+    )];
+
+    const sortedYears = uniqueYears.sort((a, b) => b - a);
+    return res.status(200).json(sortedYears);
+
+  } catch (error) {
+    console.error('Server error in getYears:', error);
+    return res.status(500).json({ error: error.message || "Failed to retrieve years" });
+  }
+};
+
+// Get records by year and status
+const getRecordsByYear = async (req, res) => {
+  try {
+    const supabaseClient = await connectdb();
+    const { year } = req.params;
+    const status = req.query.status || 'teachers'; // default to teachers if no status provided
+
+    console.log(`Fetching ${status} for year:`, year);
+
+    const { data, error } = await supabaseClient
+      .from(status)
+      .select('*')
+      .gte('created_at', `${year}-01-01`)
+      .lte('created_at', `${year}-12-31`);
+
+    if (error) throw error;
+
+    // Format data based on status
+    const formattedData = data.map(record => {
+      const baseFormat = {
+        id: record.id,
+        email: record.email,
+        contact: record.phone_number,
+        address: record.address,
+        dateOfBirth: new Date(record.dob).toLocaleDateString(),
+        username: record.username
+      };
+
+      // Add status-specific formatting
+      switch(status) {
+        case 'teachers':
+          return {
+            ...baseFormat,
+            fullName: `${record.first_name} ${record.last_name}`,
+            subject: record.subject
+          };
+        case 'students':
+          return {
+            ...baseFormat,
+            fullName: `${record.first_name} ${record.last_name}`,
+            grade: record.grade,
+            parentName: record.parent_name
+          };
+        case 'staff':
+          return {
+            ...baseFormat,
+            fullName: `${record.first_name} ${record.last_name}`,
+            department: record.department,
+            position: record.position
+          };
+        default:
+          return baseFormat;
+      }
+    });
+
+    res.status(200).json(formattedData);
+
+  } catch (error) {
+    console.error(`Error fetching ${req.query.status || 'records'}:`, error);
+    res.status(500).json({ error: `Failed to retrieve ${req.query.status || 'records'}` });
+  }
+};
+
+module.exports = {
+  getYears,
+  getRecordsByYear
+};

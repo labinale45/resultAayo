@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Createclass from "@/components/admin/Createclass";
 
 export default function Classtable() {
@@ -8,7 +8,10 @@ export default function Classtable() {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
-
+  const [years, setYears] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [state, setState] = useState("class");
   const [subjects, setSubjects] = useState([
     { name: "Computer Science", teacher: "" },
     { name: "Mathematics", teacher: "" },
@@ -18,6 +21,66 @@ export default function Classtable() {
     { name: "O.Maths", teacher: "" },
     { name: "Nepali", teacher: "" },
   ]);
+
+  useEffect(() => {
+    YearSelect();
+    if(selectedYear) { fetchClassData(); }
+  }, [selectedYear]);
+
+  const YearSelect = async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid data format received');
+      }
+      
+      setYears(data);
+      setError(null);
+      
+    } catch (error) {
+      console.error('Failed to fetch years:', error.message);
+      setError('Failed to fetch years. Please try again later.');
+      setYears([]);
+    }
+  };
+
+  const fetchClassData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      // Update subjects with fetched data
+      setSubjects(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const teachers = ["Supriya", "Aasha", "Rabin", "Yubraj"];
 
@@ -32,14 +95,17 @@ export default function Classtable() {
   return (
     <div className="relative mt-7">
       <div className="flex justify-center items-center mb-4">
-        <select
+      <select
           value={selectedYear}
           onChange={(e) => setSelectedYear(e.target.value)}
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-2"
         >
           <option value="">Select Year</option>
-          <option value="2080">2080</option>
-          <option value="2081">2081</option>
+          {years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
         </select>
         <select
           value={selectedClass}

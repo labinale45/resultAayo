@@ -1,44 +1,87 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Gradesheet from "./Gradesheet";
 
-const Ledgertable = () => {
-  const [year, setYear] = useState("");
-  const [className, setClassName] = useState("");
-  const [examType, setExamType] = useState("");
+export default function Ledgertable() {
   const [showGradesheet, setShowGradesheet] = useState(false);
-  const [students, setStudents] = useState([
-    {
-      rollNo: 1,
-      name: "Aasha Shrestha",
-      mathTheory: "",
-      mathPractical: "",
-      mathTotal: "",
-      nepaliTheory: "",
-      nepaliPractical: "",
-      nepaliTotal: "",
-      total: "",
-      gpa: "",
-    },
-    {
-      rollNo: 2,
-      name: "Supriya Shrestha",
-      mathTheory: "",
-      mathPractical: "",
-      mathTotal: "",
-      nepaliTheory: "",
-      nepaliPractical: "",
-      nepaliTotal: "",
-      total: "",
-      gpa: "",
-    },
-  ]);
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedExamType, setSelectedExamType] = useState("");
+  const [years, setYears] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [state, setState] = useState("ledgers");
+
+  useEffect(() => {
+    YearSelect();
+    if (selectedYear && selectedClass && selectedExamType) {
+      fetchLedgerData();
+    }
+  }, [selectedYear, selectedClass, selectedExamType]);
+
+  const YearSelect = async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid data format received');
+      }
+      
+      setYears(data);
+      setError(null);
+      
+    } catch (error) {
+      console.error('Failed to fetch years:', error.message);
+      setError('Failed to fetch years. Please try again later.');
+      setYears([]);
+    }
+  };
+
+  const fetchLedgerData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&class=${selectedClass}&examType=${selectedExamType}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setStudents(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (index, field, value) => {
     const updatedStudents = students.map((student, i) => {
       if (i === index) {
         const updatedStudent = { ...student, [field]: value };
+        // Calculate totals and GPA
         const mathTotal =
           parseFloat(updatedStudent.mathTheory || 0) +
           parseFloat(updatedStudent.mathPractical || 0);
@@ -71,32 +114,53 @@ const Ledgertable = () => {
     printWindow.print();
   };
 
-  const handlePublishResult = () => {
-    alert("Result Published!");
+  const handlePublishResult = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/publish-result', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          year: selectedYear,
+          class: selectedClass,
+          examType: selectedExamType,
+          students: students
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to publish result');
+      }
+
+      alert('Result Published Successfully!');
+    } catch (error) {
+      setError('Failed to publish result: ' + error.message);
+    }
   };
 
   const handleGenerateGradesheet = () => {
     setShowGradesheet(true);
   };
 
-  const isFormComplete = year && className && examType;
+  const isFormComplete = selectedYear && selectedClass && selectedExamType;
 
   return (
     <div className="relative mt-7">
       <div className="flex justify-start ml-60 items-center mb-4">
         <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(e.target.value)}
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Year</option>
-          <option value="2023">2023</option>
-          <option value="2024">2024</option>
-          <option value="2025">2025</option>
+          {years.map((year) => (
+            <option key={year} value={year}>{year}</option>
+          ))}
         </select>
         <select
-          value={className}
-          onChange={(e) => setClassName(e.target.value)}
+          value={selectedClass}
+          onChange={(e) => setSelectedClass(e.target.value)}
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Class</option>
@@ -105,8 +169,8 @@ const Ledgertable = () => {
           <option value="8">8</option>
         </select>
         <select
-          value={examType}
-          onChange={(e) => setExamType(e.target.value)}
+          value={selectedExamType}
+          onChange={(e) => setSelectedExamType(e.target.value)}
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Exam Type</option>
@@ -144,9 +208,9 @@ const Ledgertable = () => {
             <p>123 Street Name, City</p>
             <p>Estd: 1990</p>
             <p className="text-3xl">
-              {examType}-{year}
+              {selectedExamType}-{selectedYear}
             </p>
-            <p className="text-left text-2xl">Class: {className}</p>
+            <p className="text-left text-2xl">Class: {selectedClass}</p>
           </div>
 
           <table className="min-w-full border-collapse border border-gray-300">
@@ -261,6 +325,4 @@ const Ledgertable = () => {
       )}
     </div>
   );
-};
-
-export default Ledgertable;
+}
