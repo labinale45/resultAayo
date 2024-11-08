@@ -52,7 +52,7 @@ const getRecordsByYear = async (req, res) => {
   try {
     const supabaseClient = await connectdb();
     const { year } = req.params;
-    const status = req.query.status || 'teachers'; // default to teachers if no status provided
+    const status = req.query.status; 
 
     console.log(`Fetching ${status} for year:`, year);
 
@@ -66,6 +66,13 @@ const getRecordsByYear = async (req, res) => {
 
     // Format data based on status
     const formattedData = data.map(record => {
+      let imageUrl = null;
+      if (record.img_url) {
+        const { data: { publicUrl } } = supabaseClient.storage
+          .from('notices')
+          .getPublicUrl(record.img_url.split('/').pop()); // Get filename from URL
+        imageUrl = publicUrl;
+      }
       const baseFormat = {
         id: record.id,
         email: record.email,
@@ -90,12 +97,13 @@ const getRecordsByYear = async (req, res) => {
             grade: record.grade,
             parentName: record.parent_name
           };
-        case 'staff':
+        case 'notices':
           return {
             ...baseFormat,
-            fullName: `${record.first_name} ${record.last_name}`,
-            department: record.department,
-            position: record.position
+            title: record.title,
+            description: record.description,
+            img_url: imageUrl,
+            created_at: new Date(record.created_at).toLocaleDateString()
           };
         default:
           return baseFormat;
@@ -113,4 +121,5 @@ const getRecordsByYear = async (req, res) => {
 module.exports = {
   getYears,
   getRecordsByYear
+  
 };

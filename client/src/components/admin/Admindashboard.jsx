@@ -52,41 +52,43 @@ export default function Admindashboard() {
       },
     ],
   });
+  const [totalCounts, setTotalCounts] = useState({ students: 0, teachers: 0 });
   const [showAddTeacher, setShowAddTeacher] = useState(false);
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [showCreateExam, setShowCreateExam] = useState(false);
   const [showCreateClass, setShowCreateClass] = useState(false);
 
   useEffect(() => {
-    const fetchData = () => {
-      const labels = [];
-      const studentData = [];
-      const teacherData = [];
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch total counts
+        const countsResponse = await fetch('http://localhost:4000/api/auth/dashboard/counts');
+        const { totalStudents, totalTeachers } = await countsResponse.json();
+        setTotalCounts({ students: totalStudents, teachers: totalTeachers });
 
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        labels.push(date.toLocaleDateString());
-        studentData.push(Math.floor(Math.random() * 50) + 100);
-        teacherData.push(Math.floor(Math.random() * 10) + 20);
+        // Fetch historical data
+        const historyResponse = await fetch('http://localhost:4000/api/auth/dashboard/history');
+        const historicalData = await historyResponse.json();
+        
+        setChartData({
+          labels: historicalData.map(([date]) => date),
+          datasets: [
+            {
+              ...chartData.datasets[0],
+              data: historicalData.map(([, counts]) => counts.students),
+            },
+            {
+              ...chartData.datasets[1],
+              data: historicalData.map(([, counts]) => counts.teachers),
+            },
+          ],
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
       }
-
-      setChartData({
-        labels,
-        datasets: [
-          {
-            ...chartData.datasets[0],
-            data: studentData,
-          },
-          {
-            ...chartData.datasets[1],
-            data: teacherData,
-          },
-        ],
-      });
     };
 
-    fetchData();
+    fetchDashboardData();
   }, []);
 
   const options = {
@@ -116,20 +118,12 @@ export default function Admindashboard() {
           <StatCard
             icon={<FaUsers className="text-blue-500" />}
             title="Total Students"
-            value={
-              chartData.datasets[0].data[
-                chartData.datasets[0].data.length - 1
-              ] || 0
-            }
+            value={totalCounts.students}
           />
           <StatCard
             icon={<FaChalkboardTeacher className="text-green-500" />}
             title="Total Teachers"
-            value={
-              chartData.datasets[1].data[
-                chartData.datasets[1].data.length - 1
-              ] || 0
-            }
+            value={totalCounts.teachers}
           />
         </div>
 

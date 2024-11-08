@@ -82,7 +82,7 @@ export default function Classtable() {
     }
   };
 
-  const teachers = ["Supriya", "Aasha", "Rabin", "Yubraj"];
+
 
   const showTable = selectedYear && selectedClass && selectedSection;
 
@@ -113,8 +113,6 @@ export default function Classtable() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Class</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
         </select>
         <select
           value={selectedSection}
@@ -122,8 +120,6 @@ export default function Classtable() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Section</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
         </select>
         <div className="flex space-x-2 absolute right-4">
           <button

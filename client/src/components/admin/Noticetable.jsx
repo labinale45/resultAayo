@@ -11,6 +11,7 @@ export default function Noticetable() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [state, setState] = useState("notices");
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     YearSelect();
@@ -80,8 +81,11 @@ export default function Noticetable() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-2"
         >
           <option value="">Select Year</option>
-          <option value="2023">2080</option>
-          <option value="2024">2081</option>
+           {years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+             ))}
         </select>
         <button
           onClick={() => setShowAddNotice(true)}
@@ -116,7 +120,7 @@ export default function Noticetable() {
               <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
                 <tr>
                   <th scope="col" className="px-6 py-3">
-                    ID
+                    Description
                   </th>
                   <th scope="col" className="px-6 py-3">
                     Date Created
@@ -136,11 +140,28 @@ export default function Noticetable() {
                 {notices.map((notice) => (
                   <tr key={notice.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                     <td className="px-6 py-4 sticky left-0 z-20 bg-white dark:bg-gray-800">
-                      {notice.id}
+                      {notice.description}
                     </td>
-                    <td className="px-6 py-4">{notice.dateCreated}</td>
+                    <td className="px-6 py-4">{notice.created_at}</td>
                     <td className="px-6 py-4">{notice.title}</td>
-                    <td className="px-6 py-4">{notice.image}</td>
+                    <td className="px-6 py-4">
+                      {notice.img_url ? (
+                        <div className="relative w-20 h-20 cursor-pointer"
+                             onClick={() => setSelectedImage(notice.img_url)}>
+                          <img
+                            src={notice.img_url}
+                            alt={notice.title}
+                            className="w-full h-full object-cover rounded"
+                            onError={(e) => {
+                              console.log('Image failed to load:', notice.img_url);
+                              e.target.src = '/placeholder-image.jpg';
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">No image</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <a
                         href="#"
@@ -159,6 +180,30 @@ export default function Noticetable() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[102]"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-[90%] max-h-[90vh]">
+            <img 
+              src={selectedImage} 
+              alt="Preview"
+              className="max-w-full max-h-[90vh] object-contain"
+            />
+            <button 
+              className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2"
+              onClick={() => setSelectedImage(null)}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
       )}

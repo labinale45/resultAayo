@@ -30,16 +30,58 @@ const getTotalCount = async () => {
   }
 };
 
-// const getHistoricalData = async () => {
-//   // Implement your logic to fetch historical data for the past 7 days
-//   // Example:
-//   const labels = ['2023-10-26', '2023-10-27', '2023-10-28', '2023-10-29', '2023-10-30', '2023-10-31', '2023-11-01'];
-//   const data = [100, 120, 110, 130, 140, 150, 160]; // Replace with actual data
+const getHistoricalData = async () => {
+  try {
+    const createClient = await connectdb();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    
+    const { data: teacherData, error: teacherError } = await createClient
+      .from("teachers")
+      .select("created_at")
+      .gte('created_at', sevenDaysAgo.toISOString());
 
-//   return { labels, data };
-// };
+    const { data: studentData, error: studentError } = await createClient
+      .from("students")
+      .select("created_at")
+      .gte('created_at', sevenDaysAgo.toISOString());
+
+    if (teacherError || studentError) {
+      console.error("Error fetching historical data:", teacherError || studentError);
+      throw new Error("Failed to fetch historical data");
+    }
+
+    // Group data by date
+    const dailyCounts = {};
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toLocaleDateString();
+      dailyCounts[dateStr] = { teachers: 0, students: 0 };
+    }
+
+    teacherData.forEach(record => {
+      const date = new Date(record.created_at).toLocaleDateString();
+      if (dailyCounts[date]) {
+        dailyCounts[date].teachers++;
+      }
+    });
+
+    studentData.forEach(record => {
+      const date = new Date(record.created_at).toLocaleDateString();
+      if (dailyCounts[date]) {
+        dailyCounts[date].students++;
+      }
+    });
+
+    return Object.entries(dailyCounts).reverse();
+  } catch (error) {
+    console.error("Error fetching historical data:", error);
+    throw error;
+  }
+};
 
 module.exports = {
   getTotalCount,
-  // getHistoricalData
+  getHistoricalData
 }; 
