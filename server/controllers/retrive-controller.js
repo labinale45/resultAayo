@@ -10,7 +10,7 @@ const getYears = async (req, res) => {
     }
 
     // Get status from query parameter
-    const status = req.query.status || 'teachers'; // default to teachers if no status provided
+    const status = req.query.status ; // default to teachers if no status provided
     console.log('Fetching years for status:', status);
 
     const { data, error } = await supabaseClient
@@ -68,9 +68,10 @@ const getRecordsByYear = async (req, res) => {
     const formattedData = data.map(record => {
       let imageUrl = null;
       if (record.img_url) {
+        const bucketName = status; // Uses the status (teachers, students, notices etc)
         const { data: { publicUrl } } = supabaseClient.storage
-          .from('notices')
-          .getPublicUrl(record.img_url.split('/').pop()); // Get filename from URL
+          .from(bucketName)
+          .getPublicUrl(`${bucketName}/${record.img_url.split('/').pop()}`);
         imageUrl = publicUrl;
       }
       const baseFormat = {

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Addnotice from "@/components/admin/Createnotice";
+import Image from "next/image";
 
 export default function Noticetable() {
   const [showAddNotice, setShowAddNotice] = useState(false);
@@ -12,11 +13,8 @@ export default function Noticetable() {
   const [error, setError] = useState(null);
   const [state, setState] = useState("notices");
   const [selectedImage, setSelectedImage] = useState(null);
-
-  useEffect(() => {
-    YearSelect();
-    if(selectedYear) { fetchNotices(); }
-  }, [selectedYear]);
+console.log("notices", notices)
+ 
 
   const YearSelect = async () => {
     try {
@@ -46,6 +44,15 @@ export default function Noticetable() {
       setYears([]);
     }
   };
+
+  useEffect(() => {
+    YearSelect();
+    if(selectedYear) { fetchNotices(); }
+  }, [selectedYear]);
+
+  
+
+ 
 
   const fetchNotices = async () => {
     setIsLoading(true);
@@ -144,24 +151,30 @@ export default function Noticetable() {
                     </td>
                     <td className="px-6 py-4">{notice.created_at}</td>
                     <td className="px-6 py-4">{notice.title}</td>
-                    <td className="px-6 py-4">
-                      {notice.img_url ? (
-                        <div className="relative w-20 h-20 cursor-pointer"
-                             onClick={() => setSelectedImage(notice.img_url)}>
-                          <img
-                            src={notice.img_url}
-                            alt={notice.title}
-                            className="w-full h-full object-cover rounded"
-                            onError={(e) => {
-                              console.log('Image failed to load:', notice.img_url);
-                              e.target.src = '/placeholder-image.jpg';
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">No image</span>
-                      )}
-                    </td>
+                   <td className="px-6 py-4">
+  {notice.img_url ? (
+    <div
+      className="relative w-24 h-24 cursor-pointer"
+      onClick={() => setSelectedImage(notice.img_url)}
+    >
+    <Image
+  src={ notice?.img_url}
+  alt={notice.title}
+  layout="fill"
+  objectFit="cover"
+  className="rounded"
+  onError={(e) => {
+    console.error('Failed to load image:', notice.img_url);
+    e.target.src = '/assets/addsstudentotteaacher.png';
+  }}
+  placeholder="blur"
+  blurDataURL="/placeholder-image.jpg"
+/>
+    </div>
+  ) : (
+    <span className="text-gray-400">No image</span>
+  )}
+</td> 
                     <td className="px-6 py-4">
                       <a
                         href="#"
