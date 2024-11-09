@@ -4,7 +4,6 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDb = require('./utils/connectdb');
 const authRouter = require('./routes/auth-rout');
-const authMiddleware = require('./middlewares/authmiddleware');
 const { dashboard } = require('./controllers/dashboard');
 
 // Middleware setup
@@ -18,9 +17,9 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(bodyParser.json());
 
-// Routes
+// Routes (without auth middleware)
 app.use('/api/auth', authRouter);
-app.use('/api/dashboard', authMiddleware, dashboard);
+app.use('/api/dashboard', dashboard);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -28,7 +27,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Something broke!' });
 });
 
-// Database connection and server start
+// Start server
 const startServer = async () => {
   try {
     await connectDb();

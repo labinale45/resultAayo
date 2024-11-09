@@ -37,7 +37,6 @@ export default function Login({ onClose }) {
         throw new Error(data.message || 'Login failed');
       }
 
-      localStorage.setItem('authToken', data.token);
       localStorage.setItem('userData', JSON.stringify(data.userData));
       
       switch (data.message) {
