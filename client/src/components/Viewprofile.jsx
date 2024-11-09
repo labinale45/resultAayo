@@ -8,30 +8,56 @@ import {
   FaPhone,
   FaCalendar,
   FaTimes,
+  FaGraduationCap,
 } from "react-icons/fa";
 
 export default function Viewprofile({ onClose }) {
-  const [profile, setProfile] = useState({
-    name: "User",
-    email: "user@gmail.com",
-    phone: "9824104129",
-    joinDate: "2023-01-01",
-    avatar: "/assets/Rabin.jpg",
-  });
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch admin profile data from API
-    // setProfile(fetchedData);
+    const fetchUserProfile = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (!userData?.username) {
+          throw new Error('No user data found');
+        }
+
+        const response = await fetch(`http://localhost:4000/api/auth/profile/${userData.username}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+
+        const data = await response.json();
+        setProfile(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
   }, []);
 
-  const handleClose = () => {
-    onClose();
-  };
+  if (loading) {
+    return <div className="text-center">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500">{error}</div>;
+  }
 
   return (
     <div className="dark:bg-[#253553] bg-white shadow-md rounded-lg p-6 max-w-2xl mx-auto mt-10 relative">
       <button
-        onClick={handleClose}
+        onClick={onClose}
         className="absolute top-2 right-2 text-red-500 hover:text-red-700"
       >
         <FaTimes size={24} />
@@ -40,26 +66,24 @@ export default function Viewprofile({ onClose }) {
       <div className="flex flex-col md:flex-row items-center md:items-start">
         <div className="mb-6 md:mr-8">
           <Image
-            src={profile.avatar}
+            src={profile.avatar || "/assets/profile.png"}
             width={150}
             height={150}
-            alt="Admin Avatar"
+            alt="Profile Avatar"
             className="rounded-full"
           />
         </div>
         <div className="flex-grow">
-          <ProfileItem icon={<FaUser />} label="Name" value={profile.name} />
-          <ProfileItem
-            icon={<FaEnvelope />}
-            label="Email"
-            value={profile.email}
-          />
-          <ProfileItem icon={<FaPhone />} label="Phone" value={profile.phone} />
-          <ProfileItem
-            icon={<FaCalendar />}
-            label="Join Date"
-            value={profile.joinDate}
-          />
+          <ProfileItem icon={<FaUser />} label="Name" value={`${profile.first_name} ${profile.last_name}`} />
+          <ProfileItem icon={<FaEnvelope />} label="Email" value={profile.email} />
+          <ProfileItem icon={<FaPhone />} label="Phone" value={profile.phone_number} />
+          <ProfileItem icon={<FaCalendar />} label="Join Date" value={new Date(profile.created_at).toLocaleDateString()} />
+          {profile.role === 'Student' && (
+            <>
+              <ProfileItem icon={<FaUser />} label="Parent's Name" value={profile.parent_name} />
+              <ProfileItem icon={<FaGraduationCap />} label="Class" value={profile.studentClass} />
+            </>
+          )}
         </div>
       </div>
     </div>

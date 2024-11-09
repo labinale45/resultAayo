@@ -165,7 +165,7 @@ console.log("notices", notices)
   className="rounded"
   onError={(e) => {
     console.error('Failed to load image:', notice.img_url);
-    e.target.src = '/assets/addsstudentotteaacher.png';
+    e.target.src = "/assets/profile.png";
   }}
   placeholder="blur"
   blurDataURL="/placeholder-image.jpg"

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const Spinner = () => (
   <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -14,54 +15,54 @@ export default function Login({ onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const route = useRouter();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (formData) => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setErrorMessage("");
+    
     try {
-        const responseLogin = await fetch("http://localhost:4000/api/auth/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ username, password }),
-        });
+      const response = await fetch("http://localhost:4000/api/auth/login", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username,
+          password
+        })
+      });
 
-        if (!responseLogin.ok) {
-            // Handle non-200 responses
-            const errorData = await responseLogin.json();
-            throw new Error(errorData.message || 'Login failed');
-        }
-        if(responseLogin.ok){
-          const data = await responseLogin.json();
-          
-          if(data.message === "Admin")
-            {
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('userData', JSON.stringify(data.userData));
+      
+      switch (data.message) {
+        case "Admin":
           route.push("/admin");
-        }
-          if(data.message === "Teacher")
-            {
-            route.push("/teacher");
-          }
-          if (data.message === "Student")
-            {
-            route.push("/student");
-          }
-          setErrorMessage(null);
-        }
-        // Handle successful login, maybe set some state or redirect
-
+          break;
+        case "Teacher":
+          route.push("/teacher");
+          break;
+        case "Student":
+          route.push("/student");
+          break;
+        default:
+          throw new Error('Invalid role');
+      }
     } catch (error) {
-        console.log('Error:', error.message);
-        setErrorMessage(error.message);
-    }
-    finally {
-        setIsLoading(false);
+      console.error('Login error:', error);
+      setErrorMessage(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className=" bg-white dark:bg-[#253553] dark:text-white  flex rounded-xl shadow-lg max-w-4xl p-6 relative">
+    <div className="bg-white dark:bg-[#253553] dark:text-white flex rounded-xl shadow-lg max-w-4xl p-6 relative">
       <button
         onClick={onClose}
         className="absolute top-2 right-2 text-red-600 hover:text-gray-300 text-3xl font-bold"
@@ -80,7 +81,10 @@ export default function Login({ onClose }) {
         {errorMessage && (
           <p className="text-red-500 text-center mt-4">{errorMessage}</p>
         )}
-        <form onSubmit={handleLogin} className="flex-col gap-2">
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          handleLogin({ username, password });
+        }} className="flex-col gap-2">
           <input
             className="txt p-3 mt-8 w-72 rounded-xl border"
             type="text"

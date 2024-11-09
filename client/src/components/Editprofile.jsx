@@ -18,12 +18,30 @@ export default function EditProfile({ onClose }) {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfile({ ...profile, avatar: reader.result });
+      reader.onloadend = async () => {
+        try {
+          const response = await fetch('http://localhost:4000/api/auth/profile/avatar', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({ avatar: reader.result })
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to upload avatar');
+          }
+
+          const data = await response.json();
+          setProfile(prev => ({ ...prev, avatar: data.avatar_url }));
+        } catch (error) {
+          console.error('Error uploading avatar:', error);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -46,10 +64,10 @@ export default function EditProfile({ onClose }) {
       <div className="flex flex-col items-center mb-4">
         <div className="relative mb-2">
           <Image
-            src={profile.avatar}
-            width={80}
-            height={80}
-            alt="Admin Avatar"
+            src={profile.avatar || "/assets/profile.png"}
+            width={150}
+            height={150}
+            alt="Profile Avatar"
             className="rounded-full"
           />
           <button

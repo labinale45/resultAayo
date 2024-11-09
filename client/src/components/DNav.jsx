@@ -21,6 +21,7 @@ export default function Dnav({ currentPath }) {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const router = useRouter();
   const menuRef = useRef(null);
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -33,6 +34,13 @@ export default function Dnav({ currentPath }) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
+    }
   }, []);
 
   const toggleProfileMenu = () => {
@@ -75,13 +83,13 @@ export default function Dnav({ currentPath }) {
               className="flex items-center space-x-2"
             >
               <Image
-                src="/assets/Rabin.jpg"
+                src={userData?.profileImage || "/assets/profile.png"}
                 width={40}
                 height={50}
-                alt="Admin"
-                className="rounded-full"
+                alt="User Profile"
+                className="rounded-full bg-white"
               />
-              <span className="">User</span>
+              <span className="">{userData?.name || "User"}</span>
             </button>
             {showProfileMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">

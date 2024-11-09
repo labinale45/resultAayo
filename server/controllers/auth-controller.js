@@ -62,46 +62,53 @@ const register = async (req, res) => {
 };
 
 
-const login= async(req,res)=>{
+const login = async(req,res) => {
     const supabaseClient = await connectdb();
-    try{
-    const {username,password}=req.body;
-    const findUser = await supabaseClient
-    .from('users')
-    .select('*')
-    .eq('username',username)
-    .single();
-    
-    if(!findUser.data){
-        throw new Error("User not found");
-      }
-    const isPasswordValid = await auth.comparePassword(password,findUser.data.password);
-    if(isPasswordValid){
-      
-      // Generate token
-      const token = await auth.generateToken(findUser.data.id, findUser.data.role, findUser.data.username);
-
-      res.status(200).json({message:findUser.data.role,token});
-
-      // if(findUser.data.role ==="Student"){
-      //   res.status(200).json({message:"Student"});
+    try {
+        const {username, password} = req.body;
         
-      // }else if(findUser.data.role==="Teacher"){
-      //   res.status(200).json({message:"Teacher"});
+        if (!username || !password) {
+            return res.status(400).json({ message: "Username and password are required" });
+        }
+
+        const { data: findUser, error: userError } = await supabaseClient
+            .from('users')
+            .select(`
+                *
+            `)
+            .eq('username', username)
+            .single();
         
-      // }else if(findUser.data.role==="Admin"){
-      //   res.status(200).json({message:"Admin"});
-      // }
-    }
-    else{
-        throw new Error("Invalid password");
-      }
-    }catch(error){
-        res.status(500).json({message:error.message});
+        if (userError || !findUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const isPasswordValid = await auth.comparePassword(password, findUser.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: "Invalid password" });
+        }
+
+        const token = await auth.generateToken(findUser.id, findUser.role, findUser.username);
+        
+        const userData = {
+            id: findUser.id,
+            username: findUser.username,
+            email: findUser.email,
+            role: findUser.role,
+            created_at: findUser.created_at,
+            ...(findUser.students?.[0] || findUser.teachers?.[0] || {})
+        };
+
+        return res.status(200).json({
+            message: findUser.role,
+            token,
+            userData
+        });
+    } catch(error) {
+        console.error('Login error:', error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 };
-
-module.exports = {login,register};
 
 const publishResult = async (req, res) => {
   try {
@@ -120,8 +127,90 @@ const publishResult = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+const getUserProfile = async (req, res) => {
+  const supabaseClient = await connectdb();
+  try {
+    const { username } = req.params;
+    
+    // Get user basic info
+    const { data: userData, error: userError } = await supabaseClient
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .single();
+
+    if (userError) throw userError;
+
+    // Get role-specific data
+    let additionalData = null;
+    if (userData.role === 'Student') {
+      const { data: studentData } = await supabaseClient
+        .from('students')
+        .select('*')
+        .eq('user_id', userData.id)
+        .single();
+      additionalData = studentData;
+    } else if (userData.role === 'Teacher') {
+      const { data: teacherData } = await supabaseClient
+        .from('teachers')
+        .select('*')
+        .eq('user_id', userData.id)
+        .single();
+      additionalData = teacherData;
+    }
+
+    res.status(200).json({
+      ...userData,
+      ...additionalData
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateUserProfile = async (req, res) => {
+  const supabaseClient = await connectdb();
+  try {
+    const { username } = req.user;
+    const { first_name, last_name, phone_number, address } = req.body;
+
+    // Get user basic info
+    const { data: userData, error: userError } = await supabaseClient
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .single();
+
+    if (userError) throw userError;
+
+    // Update role-specific table
+    if (userData.role === 'Student') {
+      const { error: updateError } = await supabaseClient
+        .from('students')
+        .update({ first_name, last_name, phone_number, address })
+        .eq('user_id', userData.id);
+
+      if (updateError) throw updateError;
+    } else if (userData.role === 'Teacher') {
+      const { error: updateError } = await supabaseClient
+        .from('teachers')
+        .update({ first_name, last_name, phone_number, address })
+        .eq('user_id', userData.id);
+
+      if (updateError) throw updateError;
+    }
+
+    res.status(200).json({ message: 'Profile updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   login,
   register,
   publishResult,
+  getUserProfile,
+  updateUserProfile
 };
