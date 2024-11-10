@@ -6,7 +6,7 @@ const examController = require('../controllers/exam-controller');
 const classController = require('../controllers/class-controller');
 const retrive =  require('../controllers/retrive-controller');
 const dashboardController = require('../controllers/dashboard');
-
+const authMiddleware = require('../middlewares/authmiddleware');
 // Auth routes
 router.route('/login').post(authController.login);
 router.route('/register').post(authController.register);
