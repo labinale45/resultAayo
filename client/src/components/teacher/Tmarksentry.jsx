@@ -1,26 +1,48 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 export default function Tmarksentry() {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedExamType, setSelectedExamType] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
-  const [students, setStudents] = useState([
-    { rollNo: "1", name: "Supriya Shrestha", th: "", pr: "", total: "" },
-    { rollNo: "2", name: "Aasha Shrestha", th: "", pr: "", total: "" },
-    { rollNo: "3", name: "Rabin Ale", th: "", pr: "", total: "" },
-    { rollNo: "4", name: "YUbraj Dauliya", th: "", pr: "", total: "" },
-    { rollNo: "5", name: "Byanjana Wagle", th: "", pr: "", total: "" },
-    { rollNo: "6", name: "Rabin Ale", th: "", pr: "", total: "" },
-    { rollNo: "7", name: "YUbraj Dauliya", th: "", pr: "", total: "" },
-    { rollNo: "8", name: "Byanjana Wagle", th: "", pr: "", total: "" },
-  ]);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch students when class is selected
+  useEffect(() => {
+    if (selectedClass) {
+      fetchStudents();
+    }
+  }, [selectedClass]);
+
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`/api/students/${selectedClass}`);
+      const formattedStudents = response.data.map(student => ({
+        rollNo: student.roll_no,
+        name: `${student.first_name} ${student.last_name}`,
+        th: "",
+        pr: "",
+        total: ""
+      }));
+      setStudents(formattedStudents);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (index, field, value) => {
     const updatedStudents = [...students];
     updatedStudents[index][field] = value;
+
+    // Validate input to ensure only numbers
+    if (!/^\d*\.?\d*$/.test(value)) return;
 
     const th = parseFloat(updatedStudents[index].th) || 0;
     const pr = parseFloat(updatedStudents[index].pr) || 0;
@@ -29,8 +51,31 @@ export default function Tmarksentry() {
     setStudents(updatedStudents);
   };
 
-  const showTable =
-    selectedYear && selectedExamType && selectedClass && selectedSubject;
+  const handleSaveMarks = async () => {
+    try {
+      setLoading(true);
+      const marksData = students.map(student => ({
+        student_roll_no: student.rollNo,
+        exam_type: selectedExamType,
+        year: selectedYear,
+        class: selectedClass,
+        subject: selectedSubject,
+        theory_marks: parseFloat(student.th) || 0,
+        practical_marks: parseFloat(student.pr) || 0,
+        total_marks: parseFloat(student.total) || 0
+      }));
+
+      await axios.post('/api/marks/entry', marksData);
+      alert('Marks saved successfully!');
+    } catch (error) {
+      console.error("Error saving marks:", error);
+      alert('Failed to save marks. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showTable = selectedYear && selectedExamType && selectedClass && selectedSubject;
 
   return (
     <div className="relative mt-7">
@@ -79,7 +124,14 @@ export default function Tmarksentry() {
           <option value="Computer Science">Computer Science</option>
         </select>
       </div>
-      {showTable && (
+      
+      {loading && (
+        <div className="text-center py-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+        </div>
+      )}
+
+      {showTable && !loading && (
         <div className="overflow-x-auto relative">
           <div className="max-h-[400px] overflow-y-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -154,8 +206,12 @@ export default function Tmarksentry() {
                 <tr>
                   <td colSpan="5" className="px-6 py-4">
                     <div className="flex justify-end">
-                      <button className=" w-20 bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec]  text-black dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs ">
-                        Save
+                      <button 
+                        onClick={handleSaveMarks}
+                        disabled={loading}
+                        className="w-20 bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] text-black dark:hover:bg-[#253553] hover:text-white text-center py-2 px-4 rounded text-xs disabled:opacity-50"
+                      >
+                        {loading ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </td>

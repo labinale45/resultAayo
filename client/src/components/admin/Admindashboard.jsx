@@ -9,11 +9,7 @@ import {
   FaBook,
 } from "react-icons/fa";
 import dynamic from 'next/dynamic';
-
-const Line = dynamic(
-  () => import('react-chartjs-2').then(mod => mod.Line),
-  { ssr: false }
-);import {
+import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
@@ -28,15 +24,10 @@ import Addstudent from "@/components/admin/Addstudent";
 import Createexam from "@/components/admin/Createexam";
 import Createclass from "@/components/admin/Createclass";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+const Line = dynamic(() => import('react-chartjs-2').then(mod => mod.Line), {
+  ssr: false,
+  loading: () => <div>Loading Chart...</div>
+});
 
 export default function Admindashboard() {
   const [chartData, setChartData] = useState({
@@ -63,6 +54,17 @@ export default function Admindashboard() {
   const [showCreateClass, setShowCreateClass] = useState(false);
 
   useEffect(() => {
+    // Register ChartJS components only on client-side
+    ChartJS.register(
+      CategoryScale,
+      LinearScale,
+      PointElement,
+      LineElement,
+      Title,
+      Tooltip,
+      Legend
+    );
+
     const fetchDashboardData = async () => {
       try {
         // Fetch total counts
@@ -97,80 +99,15 @@ export default function Admindashboard() {
 
   const options = {
     responsive: true,
-    interaction: {
-      mode: 'index',
-      intersect: false,
-    },
     plugins: {
       legend: {
         position: "top",
-        labels: {
-          usePointStyle: true,
-          padding: 20,
-          font: {
-            size: 14
-          }
-        }
       },
       title: {
         display: true,
         text: "Student and Teacher Count Over Last 7 Days",
-        font: {
-          size: 20
-        },
-        padding: {
-          top: 10,
-          bottom: 30
-        }
       },
-      tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        padding: 12,
-        bodySpacing: 4,
-        boxPadding: 4,
-        callbacks: {
-          label: function(context) {
-            return `${context.dataset.label}: ${context.parsed.y} members`;
-          }
-        }
-      }
     },
-    scales: {
-      x: {
-        grid: {
-          display: false
-        },
-        ticks: {
-          maxRotation: 45,
-          minRotation: 45
-        }
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-          drawBorder: false
-        },
-        ticks: {
-          stepSize: 1,
-          callback: function(value) {
-            return value + ' members';
-          }
-        }
-      }
-    },
-    elements: {
-      line: {
-        tension: 0.4,
-        borderWidth: 3
-      },
-      point: {
-        radius: 6,
-        hitRadius: 6,
-        hoverRadius: 8,
-        hoverBorderWidth: 2
-      }
-    }
   };
 
   return (
