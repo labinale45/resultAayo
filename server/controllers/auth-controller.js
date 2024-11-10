@@ -112,19 +112,78 @@ const login = async(req,res) => {
 
 const publishResult = async (req, res) => {
   try {
-    const { year, className, examType } = req.body;
     const supabaseClient = await connectdb();
+    const { year, class: className, examType, students, isPublished } = req.body;
 
-    const { data, error } = await supabaseClient
-      .from('exam_results')
-      .update({ published: true, publishedAt: new Date() })
-      .match({ year, class: className, exam_type: examType });
+    // Validate required fields
+    if (!year || !className || !examType || !students) {
+      return res.status(400).json({ 
+        error: 'Missing required fields: year, class, examType, and students are required' 
+      });
+    }
 
-    if (error) throw error;
+    // Check if a record already exists
+    const { data: existingRecord, error: fetchError } = await supabaseClient
+      .from('ledgers')
+      .select('*')
+      .eq('year', year)
+      .eq('class', className)
+      .eq('exam_type', examType)
+      .single();
 
-    res.status(200).json({ message: 'Result published successfully' });
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found" error
+      throw fetchError;
+    }
+
+    let result;
+    
+    if (existingRecord) {
+      // Update existing record
+      const { data, error } = await supabaseClient
+        .from('ledgers')
+        .update({
+          students: students,
+          isPublished: isPublished,
+          updated_at: new Date().toISOString()
+        })
+        .eq('year', year)
+        .eq('class', className)
+        .eq('exam_type', examType)
+        .select();
+
+      if (error) throw error;
+      result = data;
+    } else {
+      // Insert new record
+      const { data, error } = await supabaseClient
+        .from('ledgers')
+        .insert([
+          {
+            year,
+            class: className,
+            exam_type: examType,
+            students,
+            isPublished,
+            created_at: new Date().toISOString()
+          }
+        ])
+        .select();
+
+      if (error) throw error;
+      result = data;
+    }
+
+    res.status(200).json({
+      message: 'Result published successfully',
+      data: result
+    });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error publishing result:', error);
+    res.status(500).json({ 
+      error: 'Failed to publish result',
+      details: error.message 
+    });
   }
 };
 

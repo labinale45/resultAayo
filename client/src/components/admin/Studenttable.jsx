@@ -12,11 +12,18 @@ export default function Studenttable() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [state, setState] = useState("students");
+  const [classes, setClasses] = useState([]);
 
   useEffect(() => {
     YearSelect();
-    if (selectedYear) { fetchStudents(); }
-  }, [selectedYear]);
+    fetchClasses();
+  }, []);
+
+  useEffect(() => {
+    if (selectedYear && selectedClass) {
+      fetchStudents();
+    }
+  }, [selectedYear, selectedClass]);
 
   // Select the Year
   const YearSelect = async () => {
@@ -47,6 +54,16 @@ export default function Studenttable() {
       setYears([]);
     }
   };
+  const fetchClasses = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/classes');
+      if (!response.ok) throw new Error('Failed to fetch classes');
+      const data = await response.json();
+      setClasses(data);
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+    }
+  };
 
   // Fetch Students
   const fetchStudents = async () => {
@@ -54,12 +71,14 @@ export default function Studenttable() {
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
+        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&class=${selectedClass}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -107,6 +126,11 @@ export default function Studenttable() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-2"
         >
           <option value="">Select Class</option>
+          {classes.map((cls) => (
+            <option key={cls.id} value={cls.grade}>
+              {cls.grade}
+            </option>
+          ))}
         </select>
 
         <button

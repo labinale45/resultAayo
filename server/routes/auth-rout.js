@@ -25,6 +25,8 @@ router.route('/create-class').post(classController.addClass);
 // Data retrieval routes (no longer protected)
 router.route('/year').get(retrive.getYears);
 router.route('/records/:year').get(retrive.getRecordsByYear);
+router.route('/exam-types').get(retrive.getExamTypes);
+router.route('/classes').get(retrive.getClasses);
 
 // Dashboard routes (no longer protected)
 router.route('/dashboard/counts').get(dashboardController.dashboard);

@@ -21,9 +21,12 @@ export default function Classtable() {
     { name: "O.Maths", teacher: "" },
     { name: "Nepali", teacher: "" },
   ]);
+  const [classes, setClasses] = useState([]);
+  const [teachers, setTeachers] = useState([]);
 
   useEffect(() => {
     YearSelect();
+    fetchClasses();
     if(selectedYear) { fetchClassData(); }
   }, [selectedYear]);
 
@@ -81,6 +84,16 @@ export default function Classtable() {
       setIsLoading(false);
     }
   };
+  const fetchClasses = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/classes');
+      if (!response.ok) throw new Error('Failed to fetch classes');
+      const data = await response.json();
+      setClasses(data);
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+    }
+  };
 
 
 
@@ -113,6 +126,11 @@ export default function Classtable() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Class</option>
+          {classes.map((cls) => (
+            <option key={cls.grade} value={cls.grade}>
+              {cls.grade}
+            </option>
+          ))}
         </select>
         <select
           value={selectedSection}
@@ -120,6 +138,11 @@ export default function Classtable() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Section</option>
+          {classes.map((cls) => (
+            <option key={cls.sections} value={cls.sections}>
+              {cls.sections}
+            </option>
+          ))}
         </select>
         <div className="flex space-x-2 absolute right-4">
           <button

@@ -13,9 +13,13 @@ export default function Ledgertable() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [state, setState] = useState("ledgers");
+  const [examTypes, setExamTypes] = useState([]);
+  const [classes, setClasses] = useState([]);
 
   useEffect(() => {
     YearSelect();
+    fetchExamTypes();
+    fetchClasses();
     if (selectedYear && selectedClass && selectedExamType) {
       fetchLedgerData();
     }
@@ -77,6 +81,28 @@ export default function Ledgertable() {
     }
   };
 
+  const fetchExamTypes = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/exam-types');
+      if (!response.ok) throw new Error('Failed to fetch exam types');
+      const data = await response.json();
+      setExamTypes(data);
+    } catch (error) {
+      console.error('Error fetching exam types:', error);
+    }
+  };
+
+  const fetchClasses = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/classes');
+      if (!response.ok) throw new Error('Failed to fetch classes');
+      const data = await response.json();
+      setClasses(data);
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+    }
+  };
+
   const handleInputChange = (index, field, value) => {
     const updatedStudents = students.map((student, i) => {
       if (i === index) {
@@ -116,6 +142,12 @@ export default function Ledgertable() {
 
   const handlePublishResult = async () => {
     try {
+      // Validate if we have all required data
+      if (!selectedYear || !selectedClass || !selectedExamType || !students.length) {
+        alert('Please ensure all fields are filled and students data is available');
+        return;
+      }
+
       const response = await fetch('http://localhost:4000/api/auth/publish-result', {
         method: 'POST',
         headers: {
@@ -125,17 +157,21 @@ export default function Ledgertable() {
           year: selectedYear,
           class: selectedClass,
           examType: selectedExamType,
-          students: students
+          students: students,
+          isPublished: true
         })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to publish result');
+        throw new Error(data.error || 'Failed to publish result');
       }
 
       alert('Result Published Successfully!');
     } catch (error) {
-      setError('Failed to publish result: ' + error.message);
+      console.error('Error:', error);
+      alert('Failed to publish result: ' + error.message);
     }
   };
 
@@ -164,9 +200,11 @@ export default function Ledgertable() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Class</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
+          {classes.map((cls) => (
+            <option key={cls.grade} value={cls.grade}>
+              {cls.grade}
+            </option>
+          ))}
         </select>
         <select
           value={selectedExamType}
@@ -174,9 +212,11 @@ export default function Ledgertable() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Exam Type</option>
-          <option value="Midterm">Midterm</option>
-          <option value="Final">Final</option>
-          <option value="Unit Test">Unit Test</option>
+          {examTypes.map((type) => (
+            <option key={type.name} value={type.name}>
+              {type.name}
+            </option>
+          ))}
         </select>
 
         <div className="flex space-x-2 absolute right-4">

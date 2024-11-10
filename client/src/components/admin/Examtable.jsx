@@ -21,9 +21,13 @@ export default function Examtable() {
     { name: "HPE", fullMarks: "", passMarks: "" },
     { name: "O.Math", fullMarks: "", passMarks: "" },
   ]);
+  const [examTypes, setExamTypes] = useState([]);
+  const [classes, setClasses] = useState([]);
 
   useEffect(() => {
     YearSelect();
+    fetchExamTypes();
+    fetchClasses();
     if (selectedYear) { fetchExamData(); }
   }, [selectedYear]);
 
@@ -83,6 +87,28 @@ export default function Examtable() {
     }
   };
 
+  const fetchExamTypes = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/exam-types');
+      if (!response.ok) throw new Error('Failed to fetch exam types');
+      const data = await response.json();
+      setExamTypes(data);
+    } catch (error) {
+      console.error('Error fetching exam types:', error);
+    }
+  };
+
+  const fetchClasses = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/classes');
+      if (!response.ok) throw new Error('Failed to fetch classes');
+      const data = await response.json();
+      setClasses(data);
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+    }
+  };
+
   const handleInputChange = (index, field, value) => {
     const updatedSubjects = [...subjects];
     updatedSubjects[index][field] = value;
@@ -112,8 +138,11 @@ export default function Examtable() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Exam Type</option>
-          <option value="1st Term">1st Term</option>
-          <option value="2nd Term">2nd Term</option>
+          {examTypes.map((type) => (
+            <option key={type.name} value={type.name}>
+              {type.name}
+            </option>
+          ))}
         </select>
         <select
           value={selectedClass}
@@ -121,8 +150,11 @@ export default function Examtable() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Class</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
+          {classes.map((cls) => (
+            <option key={cls.grade} value={cls.grade}>
+              {cls.grade}
+            </option>
+          ))}
         </select>
 
         <div className="flex space-x-2 absolute right-4">

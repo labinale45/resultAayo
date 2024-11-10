@@ -123,4 +123,27 @@ const createNotice = async (req, res) => {
         });
     }
 }
-module.exports = {createExam, createNotice};
+
+const getLedgerStatus = async (req, res) => {
+  try {
+    const supabaseClient = await connectdb();
+    const { year, class: className, examType } = req.body;
+
+    const { data, error } = await supabaseClient
+      .from('ledgers')
+      .select('isPublished')
+      .eq('year', year)
+      .eq('class', className)
+      .eq('exam_type', examType)
+      .single();
+
+    if (error) throw error;
+
+    res.status(200).json({ isPublished: data?.isPublished || false });
+  } catch (error) {
+    console.error('Error checking ledger status:', error);
+    res.status(500).json({ error: 'Failed to check ledger status' });
+  }
+};
+
+module.exports = {createExam, createNotice, getLedgerStatus};

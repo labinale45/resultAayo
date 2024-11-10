@@ -6,6 +6,7 @@ const TLedger = () => {
   const [className, setClassName] = useState("");
   const [examType, setExamType] = useState("");
   const [isPublished, setIsPublished] = useState(false);
+  const [state, setState] = useState("ledgers");
 
   const [students, setStudents] = useState([
     {
@@ -33,28 +34,80 @@ const TLedger = () => {
       gpa: 0,
     },
   ]);
+
   useEffect(() => {
-    if (isFormComplete) {
+    YearSelect();
+    if (year && className && examType) {
       checkPublicationStatus();
     }
   }, [year, className, examType]);
-  
+  const YearSelect = async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid data format received');
+      }
+      
+      setYears(data);
+      setError(null);
+      
+    } catch (error) {
+      console.error('Failed to fetch years:', error.message);
+      setError('Failed to fetch years. Please try again later.');
+      setYears([]);
+    }
+  };
+
   const checkPublicationStatus = async () => {
     try {
-      const response = await fetch('/api/ledger-status', {
+      const response = await fetch(`http://localhost:4000/api/auth/ledger-status`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ year, className, examType }),
+        body: JSON.stringify({
+          year,
+          class: className,
+          examType
+        })
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to check publication status');
+      }
+
       const data = await response.json();
       setIsPublished(data.isPublished);
+      
+      // If published, fetch the ledger data
+      if (data.isPublished) {
+        const ledgerResponse = await fetch(
+          `http://localhost:4000/api/auth/records/${year}?status=ledgers&class=${className}&examType=${examType}`
+        );
+        
+        if (ledgerResponse.ok) {
+          const ledgerData = await ledgerResponse.json();
+          setStudents(ledgerData);
+        }
+      }
     } catch (error) {
       console.error('Error checking publication status:', error);
     }
   };
-  
+
+ 
 
   const handlePrint = () => {
     const printContent = document.getElementById("ledger").innerHTML;
@@ -106,9 +159,9 @@ const TLedger = () => {
             <option value="" disabled>
               Select Year
             </option>
-            <option value="2023">2023</option>
-            <option value="2024">2024</option>
-            <option value="2025">2025</option>
+            {years.map((year) => (
+            <option key={year} value={year}>{year}</option>
+          ))}
           </select>
         </div>
 
