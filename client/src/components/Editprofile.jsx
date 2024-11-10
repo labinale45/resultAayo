@@ -1,18 +1,31 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { FaTimes, FaCamera } from "react-icons/fa";
 
 export default function EditProfile({ onClose }) {
   const fileInputRef = useRef(null);
   const [profile, setProfile] = useState({
-    name: "User",
-    email: "user@gmail.com",
-    phone: "9824104129",
-    joinDate: "2023-01-01",
-    avatar: "/assets/Rabin.jpg",
+    name: "",
+    email: "",
+    phone: "",
+    joinDate: "",
+    avatar: "/assets/profile.png",
   });
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (userData) {
+      setProfile({
+        name: userData.name || "",
+        email: userData.email || "",
+        phone: userData.phone || "",
+        joinDate: userData.joinDate || "",
+        avatar: userData.avatar || "/assets/profile.png",
+      });
+    }
+  }, []);
 
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
@@ -24,11 +37,12 @@ export default function EditProfile({ onClose }) {
       const reader = new FileReader();
       reader.onloadend = async () => {
         try {
+          const userData = JSON.parse(localStorage.getItem('userData'));
           const response = await fetch('http://localhost:4000/api/auth/profile/avatar', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              'Authorization': `Bearer ${userData.token}`
             },
             body: JSON.stringify({ avatar: reader.result })
           });
@@ -39,6 +53,10 @@ export default function EditProfile({ onClose }) {
 
           const data = await response.json();
           setProfile(prev => ({ ...prev, avatar: data.avatar_url }));
+          
+          // Update localStorage with new avatar
+          const updatedUserData = { ...userData, avatar: data.avatar_url };
+          localStorage.setItem('userData', JSON.stringify(updatedUserData));
         } catch (error) {
           console.error('Error uploading avatar:', error);
         }
@@ -47,9 +65,32 @@ export default function EditProfile({ onClose }) {
     }
   };
 
-  const handleSave = () => {
-    console.log("Profile updated:", profile);
-    onClose();
+  const handleSave = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData'));
+      const response = await fetch('http://localhost:4000/api/auth/profile/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userData.token}`
+        },
+        body: JSON.stringify(profile)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const updatedData = await response.json();
+      localStorage.setItem('userData', JSON.stringify({
+        ...userData,
+        ...updatedData
+      }));
+
+      onClose();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
   };
 
   return (
