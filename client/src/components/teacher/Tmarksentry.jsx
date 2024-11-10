@@ -10,123 +10,192 @@ export default function Tmarksentry() {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const [years, setYears] = useState([]);
+  const [examTypes, setExamTypes] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [state,setState] = useState("exams");
+  const [isLoading, setIsLoading] = useState(false);
   // Fetch students when class is selected
+  
+  
   useEffect(() => {
-    if (selectedClass) {
-      fetchStudents();
-    }
-  }, [selectedClass]);
+    YearSelect();
+    fetchClasses();
+    if(selectedYear) {fetchExamTypes(); }
+  }, [selectedYear]);
 
-  const fetchStudents = async () => {
+  const YearSelect = async () => {
     try {
-      setLoading(true);
-      const response = await axios.get(`/api/students/${selectedClass}`);
-      const formattedStudents = response.data.map(student => ({
-        rollNo: student.roll_no,
-        name: `${student.first_name} ${student.last_name}`,
-        th: "",
-        pr: "",
-        total: ""
-      }));
-      setStudents(formattedStudents);
+      const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid data format received');
+      }
+      
+      setYears(data);
+      setError(null);
+      
     } catch (error) {
-      console.error("Error fetching students:", error);
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch years:', error.message);
+      setError('Failed to fetch years. Please try again later.');
+      setYears([]);
     }
   };
 
-  const handleInputChange = (index, field, value) => {
-    const updatedStudents = [...students];
-    updatedStudents[index][field] = value;
-
-    // Validate input to ensure only numbers
-    if (!/^\d*\.?\d*$/.test(value)) return;
-
-    const th = parseFloat(updatedStudents[index].th) || 0;
-    const pr = parseFloat(updatedStudents[index].pr) || 0;
-    updatedStudents[index].total = (th + pr).toFixed(2);
-
-    setStudents(updatedStudents);
+  const fetchExamTypes = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/exam-types');
+      if (!response.ok) throw new Error('Failed to fetch exam types');
+      const data = await response.json();
+      setExamTypes(data);
+    } catch (error) {
+      console.error('Error fetching exam types:', error);
+    }
   };
 
-  const handleSaveMarks = async () => {
+  const fetchClasses = async () => {
     try {
-      setLoading(true);
-      const marksData = students.map(student => ({
-        student_roll_no: student.rollNo,
-        exam_type: selectedExamType,
-        year: selectedYear,
-        class: selectedClass,
-        subject: selectedSubject,
-        theory_marks: parseFloat(student.th) || 0,
-        practical_marks: parseFloat(student.pr) || 0,
-        total_marks: parseFloat(student.total) || 0
-      }));
-
-      await axios.post('/api/marks/entry', marksData);
-      alert('Marks saved successfully!');
+      const response = await fetch('http://localhost:4000/api/auth/classes');
+      if (!response.ok) throw new Error('Failed to fetch classes');
+      const data = await response.json();
+      setClasses(data);
     } catch (error) {
-      console.error("Error saving marks:", error);
-      alert('Failed to save marks. Please try again.');
-    } finally {
-      setLoading(false);
+      console.error('Error fetching classes:', error);
     }
   };
 
   const showTable = selectedYear && selectedExamType && selectedClass && selectedSubject;
 
+  // Add these new functions in your component
+
+const handleInputChange = (index, field, value) => {
+  const updatedStudents = [...students];
+  updatedStudents[index][field] = value;
+  // Calculate total
+  updatedStudents[index].total = 
+      (parseInt(updatedStudents[index].th) || 0) + 
+      (parseInt(updatedStudents[index].pr) || 0);
+  setStudents(updatedStudents);
+};
+
+const handleSaveMarks = async () => {
+  setIsLoading(true);
+  try {
+      const response = await axios.post('http://localhost:4000/api/auth/enter-marks', {
+          year: selectedYear,
+          examType: selectedExamType,
+          className: selectedClass,
+          subject: selectedSubject,
+          marks: students
+      });
+
+      if (response.status === 200) {
+          alert('Marks saved successfully!');
+          // Optionally reset form or refresh data
+      }
+  } catch (error) {
+      console.error('Error saving marks:', error);
+      alert('Failed to save marks. Please try again.');
+  } finally {
+      setIsLoading(false);
+  }
+};
+
+// Add this function to fetch students when class is selected
+const fetchStudents = async () => {
+  if (selectedClass) {
+      setLoading(true);
+      try {
+          const response = await axios.get(`http://localhost:4000/api/auth/records/${selectedYear}?status=students`);
+          const classStudents = response.data
+              .filter(student => student.grade === selectedClass)
+              .map(student => ({
+                  rollNo: student.id,
+                  name: student.fullName,
+                  th: '',
+                  pr: '',
+                  total: 0
+              }));
+          setStudents(classStudents);
+      } catch (error) {
+          console.error('Error fetching students:', error);
+      } finally {
+          setLoading(false);
+      }
+  }
+};
+
+// Add this useEffect to trigger student fetch
+useEffect(() => {
+  if (selectedClass && selectedYear) {
+      fetchStudents();
+  }
+}, [selectedClass, selectedYear]);
+
+
   return (
     <div className="relative mt-7">
-      <div className="flex justify-center items-center mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Year Select */}
         <select
           value={selectedYear}
           onChange={(e) => setSelectedYear(e.target.value)}
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
+          className="bg-white dark:bg-[#2A2B32] border-2 border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
         >
           <option value="">Select Year</option>
-          <option value="2080">2080</option>
-          <option value="2081">2081</option>
+          {years.map(year => (
+            <option key={year} value={year}>{year}</option>
+          ))}
         </select>
+
+        {/* Exam Type Select */}
         <select
           value={selectedExamType}
           onChange={(e) => setSelectedExamType(e.target.value)}
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
+          className="bg-white dark:bg-[#2A2B32] border-2 border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
         >
           <option value="">Select Exam Type</option>
-          <option value="1st Term">1st Term-2081</option>
-          <option value="2nd Term">2nd Term-2081</option>
+          {examTypes.map((type) => (
+            <option key={type.name} value={type.name}>
+              {type.name}
+            </option>
+          ))}
         </select>
+
+        {/* Class Select */}
         <select
           value={selectedClass}
           onChange={(e) => setSelectedClass(e.target.value)}
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
+          className="bg-white dark:bg-[#2A2B32] border-2 border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
         >
           <option value="">Select Class</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
+          {classes.map((cls) => (
+            <option key={cls.grade} value={cls.grade}>
+              {cls.grade}
+            </option>
+          ))}
         </select>
         <select
-          value={selectedSubject}
-          onChange={(e) => setSelectedSubject(e.target.value)}
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
+          value={selectedSubject}          onChange={(e) => setSelectedSubject(e.target.value)}
+          className="bg-white dark:bg-[#2A2B32] border-2 border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
         >
           <option value="">Select Subject</option>
           <option value="Computer Science">Computer Science</option>
         </select>
       </div>
       
-      {loading && (
-        <div className="text-center py-4">
+      {loading && (        <div className="text-center py-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
         </div>
       )}

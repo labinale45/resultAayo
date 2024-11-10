@@ -99,19 +99,87 @@ export default function Admindashboard() {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: "top",
+        labels: {
+          padding: 20,
+          font: {
+            size: 14,
+            weight: 'bold'
+          },
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
       },
       title: {
         display: true,
         text: "Student and Teacher Count Over Last 7 Days",
+        font: {
+          size: 20,
+          weight: 'bold'
+        },
+        padding: {
+          top: 10,
+          bottom: 30
+        }
       },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        titleColor: '#000',
+        bodyColor: '#000',
+        borderColor: '#e0e0e0',
+        borderWidth: 1,
+        padding: 10,
+        displayColors: true,
+        callbacks: {
+          label: function(context) {
+            return `${context.dataset.label}: ${context.parsed.y}`;
+          }
+        }
+      }
     },
+    scales: {
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          font: {
+            size: 12
+          }
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)',
+          drawBorder: false
+        },
+        ticks: {
+          font: {
+            size: 12
+          },
+          stepSize: 1
+        }
+      }
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false
+    },
+    animation: {
+      duration: 1000,
+      easing: 'easeInOutQuart'
+    }
   };
 
-  return (
-    <div className="flex flex-col min-h-screen bg-white  dark:bg-[#B3B4BE] dark:text-white">
+
+  return (    <div className="flex flex-col min-h-screen bg-white  dark:bg-[#B3B4BE] dark:text-white">
       <header className="bg-white shadow dark:bg-[#B3B4BE]">
         <div className="max-w-7xl mx-auto py-7 px-4 bg-white dark:bg-[#B3B4BE] dark:text-white">
           <h1 className="text-3xl font-bold text-gray-900">

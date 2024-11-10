@@ -139,30 +139,28 @@ const TLedger = () => {
               <p className="text-3xl mt-4">{examType} Examination {year}</p>
               <p className="text-left text-2xl">Class: {className}</p>
             </div>
-
-            <table className="min-w-full border-collapse border border-gray-300">
-              <thead>
-                <tr>
-                  <th className="border p-2">Roll No</th>
-                  <th className="border p-2">Name</th>
-                  <th className="border p-2">Total</th>
-                  <th className="border p-2">Percentage</th>
-                  <th className="border p-2">Grade</th>
-                </tr>
-              </thead>
-              <tbody>
-                {students.map((student) => (
-                  <tr key={student.rollNo}>
-                    <td className="border p-2">{student.rollNo}</td>
-                    <td className="border p-2">{student.name}</td>
-                    <td className="border p-2">{student.total}</td>
-                    <td className="border p-2">{student.percentage}%</td>
-                    <td className="border p-2">{student.grade}</td>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-gray-800">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Roll No</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Name</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Total</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Percentage</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Grade</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {students.map((student) => (
+                    <tr key={student.rollNo}>
+                      <td className="border p-2">{student.rollNo}</td>
+                      <td className="border p-2">{student.name}</td>
+                      <td className="border p-2">{student.total}</td>
+                      <td className="border p-2">{student.percentage}%</td>
+                      <td className="border p-2">{student.grade}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             <div className="mt-6 flex justify-end gap-4">
               <button
                 onClick={handlePrint}

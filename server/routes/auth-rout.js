@@ -28,8 +28,12 @@ router.route('/records/:year').get(retrive.getRecordsByYear);
 router.route('/exam-types').get(retrive.getExamTypes);
 router.route('/classes').get(retrive.getClasses);
 
+// Add this new route
+router.route('/enter-marks').post(examController.enterMarks);
+
 // Dashboard routes (no longer protected)
 router.route('/dashboard/counts').get(dashboardController.dashboard);
 router.route('/dashboard/history').get(dashboardController.getHistory);
 
 module.exports = router;
+

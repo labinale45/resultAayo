@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Darklightmode from "./Mini Component/Darklightmode";
-import Search from "./Mini Component/Search";
+//import Search from "./Mini Component/Search";
 import Viewprofile from "./Viewprofile";
 import Editprofile from "./Editprofile";
 import {
@@ -74,7 +74,7 @@ export default function Dnav({ currentPath }) {
     <div className="fixed bg-[#437FC7] dark:bg-[#253553] dark:text-white text-black w-full h-20 shadow-xl z-[100]">
       <div className="flex justify-between items-center w-full h-full px-2 2xl:px-16">
         <Image src="/assets/Logo.png" width={135} height={55} alt="Logo" />
-        <Search />
+        {/* <Search /> */}
         <div className="flex items-center space-x-4">
           <Darklightmode />
           <div className="relative" ref={menuRef}>

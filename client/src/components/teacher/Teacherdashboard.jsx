@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import {
   FaUsers,
@@ -21,6 +22,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import Tmarksentry from "./Tmarksentry";
 
 ChartJS.register(
   CategoryScale,
@@ -33,6 +35,7 @@ ChartJS.register(
 );
 
 export default function Teacherdashboard() {
+  const route = useRouter();
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
@@ -171,14 +174,14 @@ export default function Teacherdashboard() {
 
 function StatCard({ icon, title, value }) {
   return (
-    <div className="bg-white dark:bg-gray-700 overflow-hidden shadow rounded-lg p-5 transition-transform duration-300 hover:scale-105">
-      <div className="flex items-center">
-        <div className="flex-shrink-0">{icon}</div>
-        <div className="ml-5 w-0 flex-1">
-          <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 truncate">
-            {title}
-          </dt>
-          <dd className="text-lg font-semibold text-gray-900 dark:text-white">{value}</dd>
+    <div className="bg-white dark:bg-[#2A2B32] overflow-hidden shadow-lg rounded-xl p-6 transition-all duration-300 hover:shadow-xl hover:transform hover:scale-105">
+      <div className="flex items-center space-x-4">
+        <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl">
+          {icon}
+        </div>
+        <div>
+          <dt className="text-sm font-medium text-gray-500 dark:text-gray-300">{title}</dt>
+          <dd className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</dd>
         </div>
       </div>
     </div>
@@ -191,19 +194,19 @@ function QuickActions() {
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
       <div className="grid grid-cols-2 gap-4">
         <Link
-          href="/teacher/marks-entry"
+          href="/teacher/tmarksentry"
           className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition-colors duration-300"
         >
           <FaClipboardList className="mr-2" /> Marks Entry
         </Link>
         <Link
-          href="/teacher/ledger"
+          href="/teacher/tledger"
           className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition-colors duration-300"
         >
           <FaCalendarAlt className="mr-2" /> Ledger
         </Link>
         <Link
-          href="/teacher/students"
+          href="/teacher/student"
           className="flex items-center justify-center bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded transition-colors duration-300"
         >
           <FaUsers className="mr-2" /> Students

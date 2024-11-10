@@ -23,6 +23,7 @@ export default function Examtable() {
   ]);
   const [examTypes, setExamTypes] = useState([]);
   const [classes, setClasses] = useState([]);
+const [selectedSubject, setSelectedSubject] = useState("");
 
   useEffect(() => {
     YearSelect();

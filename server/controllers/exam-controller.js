@@ -146,4 +146,41 @@ const getLedgerStatus = async (req, res) => {
   }
 };
 
-module.exports = {createExam, createNotice, getLedgerStatus};
+
+const enterMarks = async (req, res) => {
+    try {
+        const { year, examType, className, subject, marks } = req.body;
+        const createClient = await connectdb();
+        
+        // Insert marks for each student
+        const { data, error } = await createClient
+            .from('marks')
+            .upsert(marks.map(student => ({
+                year,
+                exam_type: examType,
+                class: className,
+                subject,
+                student_id: student.rollNo,
+                theory_marks: student.th,
+                practical_marks: student.pr,
+                total_marks: parseInt(student.th) + parseInt(student.pr),
+                created_at: new Date().toISOString()
+            })));
+
+        if (error) throw error;
+
+        return res.status(200).json({
+            message: "Marks entered successfully",
+            data
+        });
+    } catch (error) {
+        console.error('Error entering marks:', error.message);
+        return res.status(500).json({
+            message: "Failed to enter marks",
+            error: error.message
+        });
+    }
+};
+
+
+module.exports = {createExam, createNotice, getLedgerStatus, enterMarks};
