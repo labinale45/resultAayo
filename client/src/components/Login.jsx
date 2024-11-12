@@ -42,12 +42,15 @@ export default function Login({ onClose }) {
       switch (data.message) {
         case "Admin":
           route.push("/admin");
+          settIsLoading(false);
           break;
         case "Teacher":
           route.push("/teacher");
+          settIsLoading(false);
           break;
         case "Student":
           route.push("/student");
+          settIsLoading(false);
           break;
         default:
           throw new Error('Invalid role');

@@ -2,13 +2,14 @@ const connectdb = require('../utils/connectdb');
 const auth = require('../models/auth-model');
 const mail = require('../models/email-model');
 const { verify } = require('jsonwebtoken');
+const { createImage } = require('../models/image-model');
 
 
 const register = async (req, res) => {
   try {
-    const { last_name,first_name, email, gender, role,address,phone_number,parent_name,dob ,studentClass } = req.body;
+    const { last_name,first_name, email, gender, role,address,phone_number,parent_name,dob ,studentClass,image } = req.body;
     const supabaseClient = await connectdb();
-
+    
     
     //Generate random username
     const generateUsername = (first_name, last_name) => {
@@ -24,6 +25,8 @@ const register = async (req, res) => {
     
     const username = generateUsername(first_name,last_name);
 
+    
+
     //Generate random password
     const generatePassword = () => {
       return Math.random().toString(36).slice(-8);
@@ -38,6 +41,7 @@ const register = async (req, res) => {
       .eq('username', username)
       .single();
 
+
     if (existingUser) {
       throw new Error("User already exists");
     }
@@ -46,7 +50,7 @@ const register = async (req, res) => {
 
 
     // Create new user
-   auth.createUser({ username, email, password, gender, role, first_name, last_name, address, phone_number, parent_name,dob,studentClass });
+   auth.createUser({ username, email, password, gender, role, first_name, last_name, address, phone_number, parent_name,dob,studentClass,image });
    res.status(201).json({
       message : role + " added successfully",	
     });  

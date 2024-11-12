@@ -167,9 +167,8 @@ export default function Studenttable() {
                 <tr>
                   <th className="sticky left-0 z-30 bg-gray-200 dark:bg-gray-700" style={{ width: "400px" }}>
                     <div className="flex">
-                      <div className="w-[120px] px-6 py-3">Joined Year</div>
-                      <div className="w-[80px] px-6 py-3">Class</div>
-                      <div className="w-[200px] px-6 py-3">Full Name</div>
+                      <div className="w-[120px] px-6 py-3">Class</div>
+                      <div className="w-[80px] px-6 py-3">Full Name </div>
                     </div>
                   </th>
                   <th scope="col" className="px-6 py-3">Roll No</th>
@@ -188,10 +187,22 @@ export default function Studenttable() {
                   <tr key={student.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                     <td className="sticky left-0 z-20 bg-white dark:bg-gray-800" style={{ width: "400px" }}>
                       <div className="flex">
-                        <div className="w-[120px] px-6 py-4">{selectedYear}</div>
-                        <div className="w-[80px] px-6 py-4">{selectedClass}</div>
-                        <div className="w-[200px] px-6 py-4">{student.fullName}</div>
-                      </div>
+                        <div className="w-[80px] px-6 py-4">{student.classes}</div>
+                        <img
+      className="w-10 h-10 rounded-full object-cover mb-2"
+      src={student.image || '/assets/profile.png'}
+      alt={`${student.fullName}'s photo`}
+      onError={(e) => {
+        e.target.src = '/default-avatar.png';
+      }}
+    />
+        <div className="text-base font-semibold break-words">{student.class name {
+          constructor(parameters) {
+            
+          }
+        }}</div>
+
+                   </div>
                     </td>
                     <td className="px-6 py-4">{student.rollNo}</td>
                     <td className="px-6 py-4">{student.email}</td>

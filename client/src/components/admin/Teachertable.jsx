@@ -127,12 +127,6 @@ export default function Teachertable() {
                     scope="col"
                     className="px-6 py-3 sticky left-0 z-20 bg-gray-200 dark:bg-gray-700"
                   >
-                    Id
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 sticky left-[68px] z-20 bg-gray-200 dark:bg-gray-700"
-                  >
                     Full Name
                   </th>
                   <th scope="col" className="px-6 py-3">
@@ -161,21 +155,20 @@ export default function Teachertable() {
               <tbody>
   {teachers.map((teacher) => (
     <tr key={teacher.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-      <td className="px-6 py-4 sticky left-0 z-10 bg-white dark:bg-gray-800">
-        {teacher.id}
-      </td>
-      <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white sticky left-[68px] z-10 bg-white dark:bg-gray-800">
-      {/* <img 
-  className="w-10 h-10 rounded-full object-cover" 
-  src={teacher.image || '/default-avatar.png'} 
-  alt={`${teacher.fullName}'s photo`}
-  onError={(e) => {
-    e.target.src = '/default-avatar.png';
-  }}/> */}
-        <div className="ps-3">
-          <div className="text-base font-semibold">{teacher.fullName}</div>
-        </div>
-      </th>
+ <th scope="row" className="flex items-center px-6 py-4 text-gray-900 break-words dark:text-white sticky left-0 z-10 bg-white dark:bg-gray-800 max-w-[200px]">
+  <div className="flex flex-col">
+    <img
+      className="w-10 h-10 rounded-full object-cover mb-2"
+      src={teacher.image || '/assets/profile.png'}
+      alt={`${teacher.fullName}'s photo`}
+      onError={(e) => {
+        e.target.src = '/default-avatar.png';
+      }}
+    />
+    <div className="text-base font-semibold break-words">{teacher.fullName}</div>
+  </div>
+</th>
+
       <td className="px-6 py-4">{teacher.email}</td>
       <td className="px-6 py-4">{teacher.contact}</td>
       <td className="px-6 py-4">{teacher.address}</td>

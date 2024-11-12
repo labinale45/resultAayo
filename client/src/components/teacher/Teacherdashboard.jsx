@@ -22,6 +22,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+
 import Tmarksentry from "./Tmarksentry";
 
 ChartJS.register(

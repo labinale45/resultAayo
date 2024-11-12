@@ -11,7 +11,7 @@ function Addstudent({ onClose, student, onSave }) {
   const [phone_number, setContact] = useState("");
   const [address, setAddress] = useState("");
   const [dob, setDob] = useState("");
-  const [role, setRole] = useState("Student");
+  const [role, setRole] = useState("students");
   const [gender, setGender] = useState("Male");
   const [joinedYear, setJoinedYear] = useState("2080");
   const [studentClass, setStudentClass] = useState("8");
@@ -21,6 +21,7 @@ function Addstudent({ onClose, student, onSave }) {
   const [parent_name, setParentName] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [image, setImage] = useState("");
 
   // useEffect(() => {
   //   if (student) {
@@ -42,6 +43,16 @@ function Addstudent({ onClose, student, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      let imageBase64 = '';
+      if (image) {
+          // Convert file to base64
+          const reader = new FileReader();
+          imageBase64 = await new Promise((resolve, reject) => {
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(image);
+          });
+      }
         const responseRegister = await fetch("http://localhost:4000/api/auth/register", {
             method: "POST",
             headers: {
@@ -58,6 +69,7 @@ function Addstudent({ onClose, student, onSave }) {
                 parent_name,
                 role,
                studentClass,
+               image: imageBase64,
             })
         });
 
@@ -77,6 +89,7 @@ function Addstudent({ onClose, student, onSave }) {
           setAddress("");
           setDob("");
           setParentName("");
+          setImage("");
            // Clear the success message after 3 seconds
         setTimeout(() => {
           setSuccessMessage("");
@@ -228,7 +241,29 @@ function Addstudent({ onClose, student, onSave }) {
                 required
               />
             </div>
-            
+            <div className="ps-20 absolute top-40 right-14 z-10 p-4">
+  <label htmlFor="photo-upload" className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-gray-300 rounded-full cursor-pointer hover:border-blue-500 transition-all duration-200">
+    {image ? (
+      <img 
+        src={URL.createObjectURL(image)} 
+        alt="Preview" 
+        className="w-full h-full object-cover rounded-full"
+      />
+    ) : (
+      <>
+        <MdOutlineAddReaction className="w-12 h-12 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+        <span className="mt-2 text-sm text-gray-500 group-hover:text-blue-500">Upload Photo</span>
+      </>
+    )}
+  </label>
+  <input
+    id="photo-upload"
+    type="file"
+    accept="image/*"
+    onChange={(e) => setImage(e.target.files[0])}
+    className="hidden"
+  />
+</div>
 
             <div className="col-span-2 flex justify-start">
               <button
@@ -239,20 +274,6 @@ function Addstudent({ onClose, student, onSave }) {
               </button>
             </div>
           </form>
-        </div>
-
-        <div className="w-1/3 relative">
-          <div className="absolute top-0 left-0 z-10 p-4">
-            <label htmlFor="photo-upload" className="cursor-pointer">
-              <MdOutlineAddReaction className="w-20 h-20 text-gray-500 dark:text-white" />
-            </label>
-            <input type="file" id="photo-upload" className="hidden" />
-          </div>
-          <img
-            className="rounded-3xl h-full w-full object-cover"
-            src="/assets/popup.png"
-            alt=""
-          />
         </div>
       </div>
     </div>
