@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Addstudent from "@/components/admin/Addstudent";
+import { CgLaptop } from "react-icons/cg";
 
 export default function Studenttable() {
   const [showAddStudent, setShowAddStudent] = useState(false);
@@ -19,7 +20,7 @@ export default function Studenttable() {
     fetchClasses();
   }, []);
 
-  useEffect(() => {
+    useEffect(() => {
     if (selectedYear && selectedClass) {
       fetchStudents();
     }
@@ -92,7 +93,7 @@ export default function Studenttable() {
       setIsLoading(false);
     }
   };
-
+console.log(students);
   // Handle Edit
   const handleEdit = (student) => {
     // Implement edit functionality
@@ -190,17 +191,14 @@ export default function Studenttable() {
                         <div className="w-[80px] px-6 py-4">{student.classes}</div>
                         <img
       className="w-10 h-10 rounded-full object-cover mb-2"
-      src={student.image || '/assets/profile.png'}
+      src={student.img_url || '/assets/profile.png'}
       alt={`${student.fullName}'s photo`}
       onError={(e) => {
-        e.target.src = '/default-avatar.png';
+        e.target.src = '/assets/profile.png';
       }}
     />
-        <div className="text-base font-semibold break-words">{student.class name {
-          constructor(parameters) {
-            
-          }
-        }}</div>
+       <div className="text-base font-semibold break-words">{student.fullName}</div>
+
 
                    </div>
                     </td>

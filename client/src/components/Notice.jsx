@@ -157,22 +157,6 @@ function Notice() {
             >
               <div className="relative">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 {notice.img_url && (
                   <div className="aspect-video relative cursor-pointer" onClick={() => setSelectedImage(notice.img_url)}>
                     <Image

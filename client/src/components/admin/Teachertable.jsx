@@ -159,7 +159,7 @@ export default function Teachertable() {
   <div className="flex flex-col">
     <img
       className="w-10 h-10 rounded-full object-cover mb-2"
-      src={teacher.image || '/assets/profile.png'}
+      src={teacher.img_url || '/assets/profile.png'}
       alt={`${teacher.fullName}'s photo`}
       onError={(e) => {
         e.target.src = '/default-avatar.png';

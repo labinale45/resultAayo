@@ -67,12 +67,24 @@ const getRecordsByYear = async (req, res) => {
     // Format data based on status
     const formattedData = data.map(record => {
       let imageUrl = null;
+      let bucketName = '';
       if (record.img_url) {
-        const bucketName = status; // Uses the status (teachers, students, notices etc)
+        if(status === 'notices'){
+          bucketName = 'notices'
+        }
+        else{
+          bucketName = 'users'
+        }
+        const imgaePath = bucketName + '/'+ status ;
+         // Uses the status (teachers, students, notices etc)
         const { data: { publicUrl } } = supabaseClient.storage
-          .from(bucketName)
-          .getPublicUrl(`${bucketName}/${record.img_url.split('/').pop()}`);
+          .from(imgaePath)
+          .getPublicUrl(`${record.img_url.split('/').pop()}`);
         imageUrl = publicUrl;
+
+        // const bucketName = 'users';
+        // const folderPath = userRole.toLowerCase() + 's'; // 'students' or 'teachers'
+        // const filePath = `${folderPath}/${fileName}`;
       }
       const baseFormat = {
         id: record.id,
@@ -89,14 +101,16 @@ const getRecordsByYear = async (req, res) => {
           return {
             ...baseFormat,
             fullName: `${record.first_name} ${record.last_name}`,
-            subject: record.subject
+            subject: record.subject,
+            img_url: imageUrl
           };
         case 'students':
           return {
             ...baseFormat,
             fullName: `${record.first_name} ${record.last_name}`,
             grade: record.grade,
-            parentName: record.parent_name
+            parentName: record.parent_name,
+            img_url: imageUrl
 
           };
         case 'notices':
