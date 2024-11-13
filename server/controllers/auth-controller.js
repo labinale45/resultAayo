@@ -212,18 +212,18 @@ const getUserProfile = async (req, res) => {
 
     // Get role-specific data
     let additionalData = null;
-    if (userData.role === 'Student') {
+    if (userData.role === 'students') {
       const { data: studentData } = await supabaseClient
         .from('students')
         .select('*')
-        .eq('user_id', userData.id)
+        .eq('student_id', userData.id)
         .single();
       additionalData = studentData;
-    } else if (userData.role === 'Teacher') {
+    } else if (userData.role === 'teachers') {
       const { data: teacherData } = await supabaseClient
         .from('teachers')
         .select('*')
-        .eq('user_id', userData.id)
+        .eq('teacher_id', userData.id)
         .single();
       additionalData = teacherData;
     }
@@ -253,18 +253,18 @@ const updateUserProfile = async (req, res) => {
     if (userError) throw userError;
 
     // Update role-specific table
-    if (userData.role === 'Student') {
+    if (userData.role === 'students') {
       const { error: updateError } = await supabaseClient
         .from('students')
         .update({ first_name, last_name, phone_number, address })
-        .eq('user_id', userData.id);
+        .eq('student_id', userData.id);
 
       if (updateError) throw updateError;
-    } else if (userData.role === 'Teacher') {
+    } else if (userData.role === 'teachers') {
       const { error: updateError } = await supabaseClient
         .from('teachers')
         .update({ first_name, last_name, phone_number, address })
-        .eq('user_id', userData.id);
+        .eq('teacher_id', userData.id);
 
       if (updateError) throw updateError;
     }

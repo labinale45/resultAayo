@@ -66,10 +66,10 @@ export default function Viewprofile({ onClose }) {
       <div className="flex flex-col md:flex-row items-center md:items-start">
         <div className="mb-6 md:mr-8">
           <Image
-            src={profile.avatar || "/assets/profile.png"}
+            src={profile.img_url || "/assets/profile.png"}
             width={150}
             height={150}
-            alt="Profile Avatar"
+            alt={profile.first_name + " " + profile.last_name}
             className="rounded-full"
           />
         </div>

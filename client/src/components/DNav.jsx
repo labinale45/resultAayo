@@ -37,10 +37,33 @@ export default function Dnav({ currentPath }) {
   }, []);
 
   useEffect(() => {
-    const storedUserData = localStorage.getItem('userData');
-    if (storedUserData) {
-      setUserData(JSON.parse(storedUserData));
-    }
+  
+    const fetchUserProfile = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (!userData?.username) {
+          throw new Error('No user data found');
+        }
+
+        const response = await fetch(`http://localhost:4000/api/auth/profile/${userData.username}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+
+        const data = await response.json();
+        setUserData(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserProfile();
   }, []);
 
   const toggleProfileMenu = () => {
@@ -83,13 +106,13 @@ export default function Dnav({ currentPath }) {
               className="flex items-center space-x-2"
             >
               <Image
-                src={userData?.profileImage || "/assets/profile.png"}
+                src={userData?.img_url || "/assets/profile.png"}
                 width={40}
                 height={50}
-                alt="User Profile"
+                alt={userData?.first_name + " " + userData?.last_name}
                 className="rounded-full bg-white"
               />
-              <span className="">{userData?.name || "User"}</span>
+              <span className="">{userData?.username || "User"}</span>
             </button>
             {showProfileMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
