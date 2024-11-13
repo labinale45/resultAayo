@@ -13,17 +13,31 @@ export default function Studentdetail() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [state] = useState("students");
+  const [classes, setClasses] = useState([]);
 
   const fetchYears = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`);
+      const response = await fetch(
+        `http://localhost:4000/api/auth/year?status=${state}`
+      );
       const data = await response.json();
       setYears(data);
       if (data && data.length > 0) {
         setSelectedYear(data[0]);
       }
     } catch (error) {
-      setError('Failed to fetch years');
+      setError("Failed to fetch years");
+    }
+  };
+
+  const fetchClasses = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/api/auth/classes");
+      if (!response.ok) throw new Error("Failed to fetch classes");
+      const data = await response.json();
+      setClasses(data);
+    } catch (error) {
+      console.error("Error fetching classes:", error);
     }
   };
 
@@ -36,7 +50,7 @@ export default function Studentdetail() {
       const data = await response.json();
       setStudents(data);
     } catch (error) {
-      setError('Failed to fetch students');
+      setError("Failed to fetch students");
     } finally {
       setIsLoading(false);
     }
@@ -44,6 +58,7 @@ export default function Studentdetail() {
 
   useEffect(() => {
     fetchYears();
+    fetchClasses();
   }, []);
 
   useEffect(() => {
@@ -52,9 +67,10 @@ export default function Studentdetail() {
     }
   }, [selectedYear, selectedClass]);
 
-  const filteredStudents = students.filter(student => 
-    student.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStudents = students.filter(
+    (student) =>
+      student.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -68,22 +84,26 @@ export default function Studentdetail() {
           >
             <option value="">Select Year</option>
             {years.map((year) => (
-              <option key={year} value={year}>{year}</option>
+              <option key={year} value={year}>
+                {year}
+              </option>
             ))}
           </select>
 
           <select
             value={selectedClass}
             onChange={(e) => setSelectedClass(e.target.value)}
-            className="bg-white dark:bg-[#2A2B32] border-2 border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
           >
             <option value="">Select Class</option>
-            {[...Array(10)].map((_, i) => (
-              <option key={i + 1} value={i + 1}>{i + 1}</option>
+            {classes.map((cls) => (
+              <option key={cls.grade} value={cls.grade}>
+                {cls.grade}
+              </option>
             ))}
           </select>
         </div>
-  
+
         <div className="relative w-full md:w-96">
           <input
             type="text"
@@ -96,7 +116,8 @@ export default function Studentdetail() {
         </div>
       </div>
 
-      {isLoading ? (        <div className="flex justify-center items-center h-64">
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
         </div>
       ) : error ? (
@@ -107,13 +128,27 @@ export default function Studentdetail() {
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
                 <tr>
-                  <th scope="col" className="px-6 py-3">Full Name</th>
-                  <th scope="col" className="px-6 py-3">Email</th>
-                  <th scope="col" className="px-6 py-3">Contact</th>
-                  <th scope="col" className="px-6 py-3">Parent's Name</th>
-                  <th scope="col" className="px-6 py-3">Address</th>
-                  <th scope="col" className="px-6 py-3">Date of Birth</th>
-                  <th scope="col" className="px-6 py-3">Actions</th>
+                  <th scope="col" className="px-6 py-3">
+                    Full Name
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Email
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Contact
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Parent's Name
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Address
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Date of Birth
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
