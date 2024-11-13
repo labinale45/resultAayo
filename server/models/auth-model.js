@@ -3,6 +3,7 @@ const connectdb = require('../utils/connectdb');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const { v4: uuidv4 } = require('uuid');
 
 dotenv.config();
 
@@ -31,13 +32,14 @@ const createUser = async (userData) => {
       throw new Error(`Invalid gender: ${gender}. Allowed genders are: ${validGenders.join(', ')}`);
     }
 
+    const userId = uuidv4();
     // Hash password
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Insert user into users table
     const { data: userRecord, error: userError } = await createClient
       .from('users')
-      .insert([{ email, username, password: hashedPassword, role, gender, created_at: new Date().toISOString() }]);
+      .insert([{ id: userId, email, username, password: hashedPassword, role, gender, created_at: new Date().toISOString() }]);
     
     if (userError) throw userError;
 
@@ -93,7 +95,7 @@ const createUser = async (userData) => {
       }
       const { data: teacherRecord, error: teacherError } = await createClient
         .from('teachers')
-        .insert([{first_name, last_name, address, phone_number, dob,img_url: imageUrl,created_at: new Date().toISOString() }]);
+        .insert([{teacher_id: userId,first_name, last_name, address, phone_number, dob,img_url: imageUrl,created_at: new Date().toISOString() }]);
 
       if (teacherError) throw teacherError;
     } 
@@ -149,7 +151,7 @@ const createUser = async (userData) => {
       }
       const { data: studentRecord, error: studentError } = await createClient
         .from('students')
-        .insert([{first_name, last_name, address, phone_number, parent_name,img_url: imageUrl, created_at: new Date().toISOString() }]);
+        .insert([{student_id: userId,first_name, last_name, address, phone_number, parent_name,img_url: imageUrl, created_at: new Date().toISOString() }]);
       
         if (studentError) throw studentError;
     }

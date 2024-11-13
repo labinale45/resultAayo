@@ -4,13 +4,28 @@ const mail = require('../models/email-model');
 const { verify } = require('jsonwebtoken');
 const { createImage } = require('../models/image-model');
 
+const { v4: uuidv4 } = require('uuid');
 
 const register = async (req, res) => {
   try {
     const { last_name,first_name, email, gender, role,address,phone_number,parent_name,dob ,studentClass,image } = req.body;
     const supabaseClient = await connectdb();
     
-    
+    // Check if user already exists
+    if(role === 'teachers'){
+      const { data: existingUser, error: findError } = await supabaseClient
+        .from('users')
+        .select('email')
+        .eq('email', email)
+        .single();
+  
+  
+      if (existingUser) {
+        return res.status(400).json({
+          message: "User already exists",
+        });
+      }
+    }
     //Generate random username
     const generateUsername = (first_name, last_name) => {
       const safeFirstName = (first_name || '').toLowerCase().replace(/\s/g, '');
@@ -34,17 +49,7 @@ const register = async (req, res) => {
     const password = generatePassword();
 
 
-    // Check if user already exists
-    const { data: existingUser, error: findError } = await supabaseClient
-      .from('users')
-      .select('username')
-      .eq('username', username)
-      .single();
-
-
-    if (existingUser) {
-      throw new Error("User already exists");
-    }
+    
     // Send otp to email
    // mail.sentOTP({email});
 

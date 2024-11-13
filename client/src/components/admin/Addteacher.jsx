@@ -68,9 +68,11 @@ function Addteacher({ onClose, teacher, onSave }) {
         });
 
         if (!responseRegister.ok) {
-            // Handle non-200 responses
+            // Handle non-200 responses;
             const errorData = await responseRegister.json();
+            alert(errorData.message);
             throw new Error(errorData.message || 'Failed adding Teacher');
+           
         }
         if(responseRegister.ok){
           const data = await responseRegister.json();
