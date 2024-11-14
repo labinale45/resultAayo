@@ -23,14 +23,15 @@ function Addteacher({ onClose, teacher, onSave }) {
 
   useEffect(() => {
     if (teacher) {
-      setFullName(teacher.Fullname);
-      setEmail(teacher.Email);
-      setContact(teacher.Contact);
-      setAddress(teacher.Address);
-      setDob(teacher.DOB);
-      setGender(teacher.Gender);
-      setUsername(teacher.username);
-      setPassword(teacher.password);
+      setFirstName(teacher.first_name || '');
+      setLastName(teacher.last_name || '');
+      setEmail(teacher.email || '');
+      setContact(teacher.phone_number || '');
+      setAddress(teacher.address || '');
+      setDob(teacher.dob || '');
+      setGender(teacher.gender || 'Male');
+      setUsername(teacher.username || '');
+      setPassword(teacher.password || '');
     }
   }, [teacher]);
 
@@ -39,64 +40,72 @@ function Addteacher({ onClose, teacher, onSave }) {
     try {
       let imageBase64 = '';
       if (image) {
-          // Convert file to base64
-          const reader = new FileReader();
-          imageBase64 = await new Promise((resolve, reject) => {
-              reader.onload = () => resolve(reader.result);
-              reader.onerror = reject;
-              reader.readAsDataURL(image);
-          });
+        const reader = new FileReader();
+        imageBase64 = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(image);
+        });
       }
 
-        const responseRegister = await fetch("http://localhost:4000/api/auth/register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                first_name,
-                last_name,
-                email,
-                phone_number,
-                address,
-                dob,
-                gender,
-                role,
-                image: imageBase64,
-              
-            })
-        });
+      const endpoint = teacher 
+        ? `http://localhost:4000/api/auth/teacher/${teacher.id}`
+        : "http://localhost:4000/api/auth/register";
 
-        if (!responseRegister.ok) {
-            // Handle non-200 responses;
-            const errorData = await responseRegister.json();
-            alert(errorData.message);
-            throw new Error(errorData.message || 'Failed adding Teacher');
-           
-        }
-        if(responseRegister.ok){
-          const data = await responseRegister.json();
-          alert(data.message);
-          setErrorMessage(null);
-          setFirstName("");
-          setLastName("");
-          setEmail("");
-          setContact("");
-          setAddress("");
-          setDob("");
-          setImage("");
-           // Clear the success message after 3 seconds
-        setTimeout(() => {
-          setSuccessMessage("");
+      const method = teacher ? "PUT" : "POST";
+
+      const response = await fetch(endpoint, {
+        method: method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          first_name,
+          last_name,
+          email,
+          phone_number,
+          address,
+          dob,
+          gender,
+          role: 'teachers',
+          username,
+          password,
+          image: imageBase64 || teacher?.img_url,
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed ${teacher ? 'updating' : 'adding'} teacher`);
+      }
+
+      const data = await response.json();
+      setSuccessMessage(data.message);
+      
+      if (onSave) {
+        onSave();
+      }
+
+      if (!teacher) {
+        // Clear form only for new teacher
+        setFirstName("");
+        setLastName("");
+        setEmail("");
+        setContact("");
+        setAddress("");
+        setDob("");
+        setImage("");
+      }
+
+      setTimeout(() => {
+        setSuccessMessage("");
       }, 3000);
-        }
-        // Handle successful login, maybe set some state or redirect
 
     } catch (error) {
-        console.log('Error:', error.message);
-        setErrorMessage(error.message);
+      console.error('Error:', error.message);
+      setErrorMessage(error.message);
     }
-};
+  };
 
   return (
     <div>

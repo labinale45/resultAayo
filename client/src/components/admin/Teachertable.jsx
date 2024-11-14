@@ -13,6 +13,7 @@ export default function Teachertable() {
   const [error, setError] = useState(null);
   const [state, setState] = useState("teachers");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
 
   useEffect(() => {
     YearSelect();
@@ -21,7 +22,6 @@ export default function Teachertable() {
     }
   }, [selectedYear]);
 
-  //Select the Year
   const YearSelect = async () => {
     try {
       const response = await fetch(
@@ -47,21 +47,20 @@ export default function Teachertable() {
       }
 
       setYears(data);
-      setError(null); // Clear any previous errors
+      setError(null);
     } catch (error) {
       console.error("Failed to fetch years:", error.message);
       setError("Failed to fetch years. Please try again later.");
-      setYears([]); // Reset years on error
+      setYears([]);
     }
   };
 
-  //Fetch Teachers
   const fetchTeachers = async () => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}`,
+        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&includeUser=true`,
         {
           method: "GET",
           headers: {
@@ -83,25 +82,96 @@ export default function Teachertable() {
     }
   };
 
-  {
-    isLoading && (
+  const handleEdit = async (teacher) => {
+    try {
+      setError(null);
+      const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacher.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Teacher not found');
+        }
+        throw new Error('Failed to fetch teacher details');
+      }
+
+      const teacherData = await response.json();
+      
+      // Safely handle name splitting with fallback values
+      let firstName = '', lastName = '';
+      if (teacherData.fullName && typeof teacherData.fullName === 'string') {
+        const nameParts = teacherData.fullName.split(' ').filter(part => part);
+        firstName = nameParts[0] || '';
+        lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+      }
+
+      setSelectedTeacher({
+        id: teacherData.id,
+        first_name: firstName,
+        last_name: lastName,
+        email: teacherData.email || '',
+        phone_number: teacherData.contact || '',
+        address: teacherData.address || '',
+        dob: teacherData.dateOfBirth || '',
+        gender: teacherData.gender || 'Male',
+        username: teacherData.username || '',
+        password: teacherData.password || '',
+        img_url: teacherData.img_url || ''
+      });
+      
+      setShowAddTeacher(true);
+    } catch (error) {
+      console.error('Error fetching teacher details:', error);
+      setError(error.message);
+    }
+  };
+
+  const handleDelete = async (teacherId) => {
+    if (window.confirm('Are you sure you want to delete this teacher?')) {
+      try {
+        const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete teacher');
+        }
+
+        fetchTeachers();
+      } catch (error) {
+        console.error('Error deleting teacher:', error);
+        setError('Failed to delete teacher. Please try again.');
+      }
+    }
+  };
+
+  const filteredteachers = teachers.filter(
+    (teacher) =>
+      teacher.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (teacher.user?.email || teacher.email)?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (isLoading) {
+    return (
       <div className="text-center py-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
       </div>
     );
   }
 
-  {
-    error && (
+  if (error) {
+    return (
       <div className="text-red-500 text-center py-4">Error: {error}</div>
     );
   }
 
-  const filteredteachers = teachers.filter(
-    (teacher) =>
-      teacher.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      teacher.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
   return (
     <div className="relative mt-7">
       <div className="flex justify-center items-center mb-4">
@@ -131,7 +201,7 @@ export default function Teachertable() {
 
         <button
           onClick={() => setShowAddTeacher(true)}
-          className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs absolute right-4"
+          className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white text-center py-2 px-4 rounded text-xs absolute right-4"
         >
           +Add Teacher
         </button>
@@ -139,7 +209,18 @@ export default function Teachertable() {
 
       {showAddTeacher && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
-          <Addteacher onClose={() => setShowAddTeacher(false)} />
+          <Addteacher 
+            onClose={() => {
+              setShowAddTeacher(false);
+              setSelectedTeacher(null);
+            }} 
+            teacher={selectedTeacher}
+            onSave={() => {
+              fetchTeachers();
+              setShowAddTeacher(false);
+              setSelectedTeacher(null);
+            }}
+          />
         </div>
       )}
 
@@ -149,33 +230,16 @@ export default function Teachertable() {
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
                 <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 sticky left-0 z-20 bg-gray-200 dark:bg-gray-700"
-                  >
+                  <th scope="col" className="px-6 py-3 sticky left-0 z-20 bg-gray-200 dark:bg-gray-700">
                     Full Name
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Contact
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Address
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Date of Birth
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Username
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Password
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Action
-                  </th>
+                  <th scope="col" className="px-6 py-3">Email</th>
+                  <th scope="col" className="px-6 py-3">Contact</th>
+                  <th scope="col" className="px-6 py-3">Address</th>
+                  <th scope="col" className="px-6 py-3">Date of Birth</th>
+                  <th scope="col" className="px-6 py-3">Username</th>
+                  <th scope="col" className="px-6 py-3">Password</th>
+                  <th scope="col" className="px-6 py-3">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -184,10 +248,7 @@ export default function Teachertable() {
                     key={teacher.id}
                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                   >
-                    <th
-                      scope="row"
-                      className="flex items-center px-6 py-4 text-gray-900 break-words dark:text-white sticky left-0 z-10 bg-white dark:bg-gray-800 max-w-[200px]"
-                    >
+                    <th scope="row" className="flex items-center px-6 py-4 text-gray-900 break-words dark:text-white sticky left-0 z-10 bg-white dark:bg-gray-800 max-w-[200px]">
                       <div className="flex flex-col">
                         <img
                           className="w-10 h-10 rounded-full object-cover mb-2"
@@ -202,8 +263,7 @@ export default function Teachertable() {
                         </div>
                       </div>
                     </th>
-
-                    <td className="px-6 py-4">{teacher.email}</td>
+                    <td className="px-6 py-4">{teacher.user?.email || teacher.email}</td>
                     <td className="px-6 py-4">{teacher.contact}</td>
                     <td className="px-6 py-4">{teacher.address}</td>
                     <td className="px-6 py-4">{teacher.dateOfBirth}</td>
@@ -214,12 +274,14 @@ export default function Teachertable() {
                         onClick={() => handleEdit(teacher)}
                         className="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-2"
                       >
+                        <FaEdit className="inline mr-1" />
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(teacher.id)}
                         className="font-medium text-red-600 dark:text-red-500 hover:underline"
                       >
+                        <FaTrash className="inline mr-1" />
                         Delete
                       </button>
                     </td>

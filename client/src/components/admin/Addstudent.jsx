@@ -22,6 +22,8 @@ function Addstudent({ onClose, student, onSave }) {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [image, setImage] = useState("");
+  const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState("");
 
   // useEffect(() => {
   //   if (student) {
@@ -102,6 +104,19 @@ function Addstudent({ onClose, student, onSave }) {
         setErrorMessage(error.message);
     }
 };
+const fetchClasses = async () => {
+  try {
+    const response = await fetch("http://localhost:4000/api/auth/classes");
+    if (!response.ok) throw new Error("Failed to fetch classes");
+    const data = await response.json();
+    setClasses(data);
+  } catch (error) {
+    console.error("Error fetching classes:", error);
+  }
+};
+useEffect(() => {
+  fetchClasses();
+}, []);
 
   return (
     <div>
@@ -155,15 +170,19 @@ function Addstudent({ onClose, student, onSave }) {
               <label className="block text-sm font-medium text-gray-700">
                 Class
               </label>
+             
               <select
-                className="txt p-2 mt-6  w-full rounded-xl border shadow-xl"
-                value={studentClass}
-                onChange={(e) => setStudentClass(e.target.value)}
-              >
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10</option>
-              </select>
+          value={selectedClass}
+          onChange={(e) => setSelectedClass(e.target.value)}
+          className="txt p-2 mt-6  w-full rounded-xl border shadow-xl"
+        >
+          <option value="">Class</option>
+          {classes.map((cls) => (
+            <option key={cls.id} value={cls.grade}>
+              {cls.grade}
+            </option>
+          ))}
+        </select>
 
               <label className="block text-sm font-medium text-gray-700">
                 Gender
