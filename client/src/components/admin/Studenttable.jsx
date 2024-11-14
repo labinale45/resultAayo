@@ -6,6 +6,7 @@ import { CgLaptop } from "react-icons/cg";
 import { FaSearch, FaEdit, FaTrash } from "react-icons/fa";
 
 export default function Studenttable() {
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
@@ -101,15 +102,75 @@ export default function Studenttable() {
   };
   console.log(students);
   // Handle Edit
-  const handleEdit = (student) => {
-    // Implement edit functionality
-    console.log("Edit student:", student);
+  const handleEdit = async (student) => {
+    try {
+      setError(null);
+      const response = await fetch(`http://localhost:4000/api/auth/student/${student.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Student not found');
+        }
+        throw new Error('Failed to fetch student details');
+      }
+
+      const studentData = await response.json();
+      
+      // Safely handle name splitting with fallback values
+      // let firstName = '', lastName = '';
+      // if (studentData.fullName && typeof studentData.fullName === 'string') {
+      //   const nameParts = studentData.fullName.split(' ').filter(part => part);
+      //   firstName = nameParts[0] || '';
+      //   lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+      // }
+
+      setSelectedStudent({
+        id: studentData.id,
+        first_name: studentData.first_name || '',
+        last_name: studentData.last_name || '',
+        email: studentData.email || '',
+        phone_number: studentData.phone_number || '',
+        address: studentData.address || '',
+        dob: studentData.dob || '',
+        gender: studentData.gender || 'Male',
+        username: studentData.username || '',
+        password: studentData.password || '',
+        img_url: studentData.img_url || ''
+      });
+      
+      setShowAddStudent(true);
+    } catch (error) {
+      console.error('Error fetching student details:', error);
+      setError(error.message);
+    }
   };
 
   // Handle Delete
-  const handleDelete = (studentId) => {
-    // Implement delete functionality
-    console.log("Delete student:", studentId);
+  const handleDelete = async(studentId) => {
+    if (window.confirm('Are you sure you want to delete this Student?')) {
+      try {
+        const response = await fetch(`http://localhost:4000/api/auth/student/${studentId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete student');
+        }
+
+        fetchStudents();
+      } catch (error) {
+        console.error('Error deleting student:', error);
+        setError('Failed to delete student. Please try again.');
+      }
+    }
   };
   const filteredStudents = students.filter(
     (student) =>
@@ -166,7 +227,18 @@ export default function Studenttable() {
 
       {showAddStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
-          <Addstudent onClose={() => setShowAddStudent(false)} />
+          <Addstudent 
+            onClose={() => {
+              setShowAddStudent(false);
+              setSelectedStudent(null);
+            }} 
+            student={selectedStudent}
+            onSave={() => {
+              fetchStudents();
+              setShowAddStudent(false);
+              setSelectedStudent(null);
+            }}
+          />
         </div>
       )}
 

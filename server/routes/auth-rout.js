@@ -7,11 +7,16 @@ const retrive =  require('../controllers/retrive-controller');
 const dashboardController = require('../controllers/dashboard');
 const authMiddleware = require('../middlewares/authmiddleware');
 const { deleteTeacher, updateTeacher,getTeacher } = require('../controllers/teacher-controller');
+const { updateStudent,deleteStudent,getStudent } = require('../controllers/student-controller');
 
 // Teacher routes
 router.delete('/teacher/:id', deleteTeacher);
 router.put('/teacher/:id', updateTeacher);
 router.get('/teacher/:id', getTeacher);
+// Student routes
+router.delete('/student/:id', deleteStudent);
+router.put('/student/:id', updateStudent);
+router.get('/student/:id', getStudent);
 // Auth routes
 router.route('/login').post(authController.login);
 router.route('/register').post(authController.register);

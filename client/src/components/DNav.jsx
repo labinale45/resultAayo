@@ -59,9 +59,7 @@ export default function Dnav({ currentPath }) {
         setUserData(data);
       } catch (err) {
         setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+      } 
     };
     fetchUserProfile();
   }, []);
