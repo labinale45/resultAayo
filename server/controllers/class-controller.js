@@ -2,11 +2,12 @@ const classmodel =require('../models/class-model');
 
 const addClass =  async (req, res) => {
     try {
-        const {className,sec,subject}=req.body;
+        const {className,sec,subject,year}=req.body;
         const userData = {
             className,
             sec,
-            subject
+            subject,
+            year
         };
        
         const classData = await classmodel.createClass(userData);
@@ -27,6 +28,7 @@ const getSubjectsByClass = async (req, res) => {
     try {
         const { classId } = req.params;
         const { section, year } = req.query;
+        console.log(classId,section,year);
         
         if (!classId || !section || !year) {
             return res.status(400).json({ 

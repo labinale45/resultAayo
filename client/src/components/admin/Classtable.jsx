@@ -174,55 +174,63 @@ export default function Classtable() {
       {showTable && (
         <div className="overflow-x-auto relative">
           <div className="max-h-[450px] overflow-y-auto">
-            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
-                <tr>
-                  <th scope="col" className="px-6 py-3 ">
-                    Subject
-                  </th>
-                  <th scope="col" className="px-6 py-3 ">
-                    Teacher
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {subjects.map((subject, index) => (
-                  <tr
-                    key={index}
-                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                  >
-                    <td className="px-6 py-4 sticky left-0 z-20 bg-white dark:bg-gray-800">
-                      {subject.name}
-                    </td>
-                    <td className="px-6 py-4 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
-                      <select
-                        value={subject.teacher}
-                        onChange={(e) =>
-                          handleTeacherChange(index, e.target.value)
-                        }
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
-                      >
-                        <option value="">Select Teacher</option>
-                        {teachers.map((teacher, i) => (
-                          <option key={i} value={teacher}>
-                            {teacher}
-                          </option>
+            {subjects.length === 0 ? (
+                <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                    No subjects found for the selected class, section and year.
+                </div>
+            ) : (
+                <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
+                        <tr>
+                            <th scope="col" className="px-6 py-3">
+                                Subject
+                            </th>
+                            <th scope="col" className="px-6 py-3">
+                                Teacher
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {subjects.map((subject, index) => (
+                            <tr
+                                key={index}
+                                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                            >
+                                <td className="px-6 py-4 sticky left-0 z-20 bg-white dark:bg-gray-800">
+                                    {subject.name}
+                                </td>
+                                <td className="px-6 py-4 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
+                                    <select
+                                        value={subject.teacher}
+                                        onChange={(e) =>
+                                            handleTeacherChange(index, e.target.value)
+                                        }
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                                    >
+                                        <option value="">Select Teacher</option>
+                                        {teachers.map((teacher, i) => (
+                                            <option key={i} value={teacher}>
+                                                {teacher}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </td>
+                            </tr>
                         ))}
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-                <tr>
-                  <td colSpan="2" className="px-6 py-4">
-                    <div className="flex justify-end">
-                      <button className=" w-20 bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec]  text-black dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs ">
-                        Save
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                        {subjects.length > 0 && (
+                            <tr>
+                                <td colSpan="2" className="px-6 py-4">
+                                    <div className="flex justify-end">
+                                        <button className="w-20 bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] text-black dark:hover:bg-[#253553] hover:text-white text-center py-2 px-4 rounded text-xs">
+                                            Save
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            )}
           </div>
         </div>
       )}

@@ -16,6 +16,7 @@ const createClass = async (userData) => {
             .insert({
                 class: userData.className,
                 sec: userData.sec,
+                // updated_at will be automatically set by Supabase
             })
             .select();
 
@@ -52,13 +53,12 @@ const createSubject = async (userData, classId) => {
                 .from('subjects')
                 .insert({ 
                     subject_name: subject,
-                    class_id: classId 
+                    class_id: classId
                 })
         );
 
         const results = await Promise.all(subjectPromises);
         
-        // Check for any errors in the results
         const errors = results.filter(result => result.error);
         if (errors.length > 0) {
             throw new Error(`Error creating subjects: ${errors[0].error.message}`);
@@ -70,7 +70,7 @@ const createSubject = async (userData, classId) => {
         console.error("Error creating subject:", error);
         throw error;
     }
-}
+};
 
 const getSubjects = async ()=>{
     try {
@@ -89,18 +89,21 @@ const getSubjectsByClass = async (classId, section, year) => {
     try {
         const createClient = await connectdb();
         
-        // First get the class ID from the class table
+        // Get the class ID using class, section, and year from updated_at
         const { data: classData, error: classError } = await createClient
             .from('class')
             .select('id')
             .eq('class', classId)
             .eq('sec', section)
-            .single();
+            .gte('updated_at', `${year}-01-01`)
+            .lte('updated_at', `${year}-12-31`);
 
         if (classError) throw classError;
-        if (!classData) throw new Error('Class not found');
+        if (!classData || classData.length === 0) {
+            return []; // Return empty array if no class found
+        }
 
-        // Then get the subjects with teacher information
+        // Get subjects with teacher information for this class
         const { data: subjectsData, error: subjectsError } = await createClient
             .from('subjects')
             .select(`
@@ -112,18 +115,18 @@ const getSubjectsByClass = async (classId, section, year) => {
                     last_name
                 )
             `)
-            .eq('class_id', classData.id);
+            .eq('class_id', classData[0].id);
 
         if (subjectsError) throw subjectsError;
         
-        return subjectsData.map(item => ({
+        return (subjectsData || []).map(item => ({
             id: item.id,
             name: item.subject_name,
             teacher: item.teacher ? `${item.teacher.first_name} ${item.teacher.last_name}` : ""
         }));
     } catch (error) {
         console.error("Error fetching subjects:", error);
-        throw error;
+        return []; // Return empty array on error
     }
 };
 
