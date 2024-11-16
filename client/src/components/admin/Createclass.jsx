@@ -1,3 +1,4 @@
+"use client"
 import React from "react";
 import { TagsInput } from "react-tag-input-component";
 import { useState } from "react";

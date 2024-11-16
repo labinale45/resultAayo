@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Addteacher from "@/components/admin/Addteacher";
 import { FaSearch, FaEdit, FaTrash } from "react-icons/fa";
+import Image from "next/image";
 
 export default function Teachertable() {
   const [showAddTeacher, setShowAddTeacher] = useState(false);
@@ -250,7 +251,9 @@ export default function Teachertable() {
                   >
                     <th scope="row" className="flex items-center px-6 py-4 text-gray-900 break-words dark:text-white sticky left-0 z-10 bg-white dark:bg-gray-800 max-w-[200px]">
                       <div className="flex flex-col">
-                        <img
+                        <Image
+                          width={200}
+                          height={200}
                           className="w-10 h-10 rounded-full object-cover mb-2"
                           src={teacher.img_url || "/assets/profile.png"}
                           alt={`${teacher.fullName}'s photo`}

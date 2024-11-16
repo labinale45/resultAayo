@@ -9,6 +9,7 @@ const authMiddleware = require('../middlewares/authmiddleware');
 const { deleteTeacher, updateTeacher,getTeacher } = require('../controllers/teacher-controller');
 const { updateStudent,deleteStudent,getStudent } = require('../controllers/student-controller');
 
+
 // Teacher routes
 router.delete('/teacher/:id', deleteTeacher);
 router.put('/teacher/:id', updateTeacher);
@@ -27,6 +28,7 @@ router.route('/profile/update').put(authController.updateUserProfile);
 
 // Academic routes (no longer protected)
 router.route('/publish-result').post(authController.publishResult);
+router.route('/ledger-status').post(authController.getLedgerStatus);
 router.route('/create-exam').post(examController.createExam); 
 router.route('/create-notice').post(examController.createNotice);
 router.route('/create-class').post(classController.addClass);

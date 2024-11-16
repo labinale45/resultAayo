@@ -5,6 +5,7 @@ import { AiOutlineMail } from "react-icons/ai";
 import { FaGithub, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { useEffect } from "react";
 import AOS from "aos";
+import Image from "next/image";
 import "aos/dist/aos.css";
 
 export default function About() {
@@ -66,10 +67,12 @@ export default function About() {
             className="w-full h-auto m-auto flex items-center justify-center p-4 hover:scale-105 ease-in duration-300"
             data-aos="fade-left"
           >
-            <img
+            <Image
               src="/assets/Rays.jpeg"
               className="rounded-xl shadow-xl"
               alt="Team RAYS"
+              width={500}
+              height={700}
             />
           </div>
         </div>
@@ -79,10 +82,12 @@ export default function About() {
             className="col-span-1 m-10 hover:scale-105 ease-in duration-300"
             data-aos="fade-up"
           >
-            <img
-              src="assets/Rabin.jpg"
+            <Image
+              src="/assets/Rabin.jpg"
               className="size-52 rounded-full"
               alt="Rabin Ale"
+              width={250}
+              height={150}
             />
             <p className="font-bold text-xl flex justify-center">Rabin Ale</p>
             <p className="flex justify-center">Full Stack Developer</p>
@@ -119,10 +124,12 @@ export default function About() {
             data-aos="fade-up"
             data-aos-delay="200"
           >
-            <img
-              src="assets/Aasha.jpg"
+            <Image
+              src="/assets/Aasha.jpg"
               className="size-52 rounded-full"
               alt="Aasha Shrestha"
+              width={250}
+              height={150}
             />
             <p className="font-bold text-xl flex justify-center">
               Aasha Shrestha
@@ -161,10 +168,12 @@ export default function About() {
             data-aos="fade-up"
             data-aos-delay="400"
           >
-            <img
-              src="assets/Yubraj.jpg"
+            <Image
+              src="/assets/Yubraj.jpg"
               className="size-52 rounded-full"
               alt="Yubraj Dauliya"
+              width={250}
+              height={150}
             />
             <p className="font-bold text-xl flex justify-center">
               Yubraj Dauliya
@@ -203,10 +212,12 @@ export default function About() {
             data-aos="fade-up"
             data-aos-delay="600"
           >
-            <img
-              src="assets/Supriya.jpg"
+            <Image
+              src="/assets/Supriya.jpg"
               className="size-52 rounded-full"
               alt="Supriya Shrestha"
+              width={250}
+              height={150}
             />
             <p className="font-bold text-xl flex justify-center">
               Supriya Shrestha

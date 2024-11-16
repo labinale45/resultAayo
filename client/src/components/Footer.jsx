@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   FaHome,
   FaBell,
@@ -16,10 +17,12 @@ function Footer() {
   return (
     <div className="m-0 grid sm:grid-cols-12 grid-cols-1 p-4 h-auto bg-[#437FC7] dark:bg-[#253553] text-white">
       <div className="sm:col-span-4 ms-20">
-        <img
+        <Image
           src="/assets/Logo.png"
           alt="Logo"
-          className="mb-4 mt-0 flex items-start"
+          className=" mb-4 mt-0 flex items-start"
+          width={100}
+          height={100}
         />
         <div>
           The Result Management System (RMS) is an academic software tailored

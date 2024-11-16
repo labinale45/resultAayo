@@ -1,6 +1,6 @@
 import React from "react";
 
-import Viewprofile from "../../../components/Viewprofile";
+import Viewprofile from "@/components/Viewprofile";
 const page = () => {
   return (
     <div className="">

@@ -196,6 +196,24 @@ const publishResult = async (req, res) => {
   }
 };
 
+const getLedgerStatus = async (req, res) => {
+  const supabaseClient = await connectdb();
+  const { year, class: className, examType } = req.body;
+  const { data: ledgerData, error: ledgerError } = await supabaseClient
+    .from('ledgers')
+    .select('*')
+    .eq('year', year)
+    .eq('class', className)
+    .eq('exam_type', examType)
+    .single();
+    
+    res.status(200).json({
+      message: 'Ledger status fetched successfully',
+      data: ledgerData
+    });
+ 
+};
+
 const getUserProfile = async (req, res) => {
   const supabaseClient = await connectdb();
   try {
@@ -279,6 +297,7 @@ module.exports = {
   login,
   register,
   publishResult,
+  getLedgerStatus,
   getUserProfile,
   updateUserProfile
 };

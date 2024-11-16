@@ -1,3 +1,4 @@
+"use client"
 import React,{useState} from "react";
 import { IoPersonAddSharp } from "react-icons/io5";
 function Createnotice({ onClose }) {

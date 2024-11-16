@@ -82,6 +82,7 @@ const TLedger = () => {
       }
 
       const data = await response.json();
+      console.log(data);
       setIsPublished(data.isPublished);
 
       if (data.isPublished) {
