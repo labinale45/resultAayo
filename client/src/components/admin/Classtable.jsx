@@ -13,13 +13,13 @@ export default function Classtable() {
   const [error, setError] = useState(null);
   const [state, setState] = useState("class");
   const [subjects, setSubjects] = useState([
-    { name: "Computer Science", teacher: "" },
-    { name: "Mathematics", teacher: "" },
-    { name: "Science", teacher: "" },
-    { name: "English", teacher: "" },
-    { name: "Social Studies", teacher: "" },
-    { name: "O.Maths", teacher: "" },
-    { name: "Nepali", teacher: "" },
+    // { name: "Computer Science", teacher: "" },
+    // { name: "Mathematics", teacher: "" },
+    // { name: "Science", teacher: "" },
+    // { name: "English", teacher: "" },
+    // { name: "Social Studies", teacher: "" },
+    // { name: "O.Maths", teacher: "" },
+    // { name: "Nepali", teacher: "" },
   ]);
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -27,8 +27,10 @@ export default function Classtable() {
   useEffect(() => {
     YearSelect();
     fetchClasses();
-    if(selectedYear) { fetchClassData(); }
-  }, [selectedYear]);
+    if(selectedYear && selectedClass && selectedSection) { 
+      fetchClassData(); 
+    }
+  }, [selectedYear, selectedClass, selectedSection]);
 
   const YearSelect = async () => {
     try {
@@ -64,21 +66,24 @@ export default function Classtable() {
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
+        `http://localhost:4000/api/auth/subjects/${selectedClass}?section=${selectedSection}&year=${selectedYear}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }
-      });
+      );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch subjects');
       }
 
       const data = await response.json();
-      // Update subjects with fetched data
       setSubjects(data);
     } catch (error) {
+      console.error('Error:', error);
       setError(error.message);
     } finally {
       setIsLoading(false);

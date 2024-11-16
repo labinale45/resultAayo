@@ -6,82 +6,86 @@ dotenv.config();
 const getTotalCount = async () => {
   try {
     const createClient = await connectdb();
-    const { count: teacherCount, error: teacherError } = await createClient
-      .from("teachers")
-      .select("*", { count: "exact" });
+    
+    const [{ count: totalTeachers }, { count: totalStudents }] = await Promise.all([
+      createClient.from('teachers').select('*', { count: 'exact', head: true }),
+      createClient.from('students').select('*', { count: 'exact', head: true })
+    ]);
 
-    if (teacherError) {
-      console.error("Error fetching teacher count:", teacherError);
-    }
-
-    // Fetch student count
-    const { count: studentCount, error: studentError } = await createClient
-      .from("students")
-      .select("*", { count: "exact" });
-
-    if (studentError) {
-      console.error("Error fetching student count:", studentError);
-    }
-
-    return { totalTeachers: teacherCount, totalStudents: studentCount };
+    return { totalTeachers, totalStudents };
   } catch (error) {
-    console.error("Error fetching dashboard data:", error);
-    throw error; // Re-throw the error to be handled by the API route
+    console.error("Error getting total counts:", error);
+    throw error;
   }
 };
 
-const getHistoricalData = async () => {
+const getHistoricalData = async (startDate, endDate, selectedClass) => {
   try {
     const createClient = await connectdb();
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
     
-    const { data: teacherData, error: teacherError } = await createClient
+    // Get all teachers and students within date range
+    const teacherQuery = createClient
       .from("teachers")
-      .select("created_at")
-      .gte('created_at', sevenDaysAgo.toISOString());
+      .select("*")
+      .gte('created_at', startDate)
+      .lte('created_at', endDate);
 
-    const { data: studentData, error: studentError } = await createClient
+    const studentQuery = createClient
       .from("students")
-      .select("created_at")
-      .gte('created_at', sevenDaysAgo.toISOString());
+      .select("*")
+      .gte('created_at', startDate)
+      .lte('created_at', endDate);
 
-    if (teacherError || studentError) {
-      console.error("Error fetching historical data:", teacherError || studentError);
-      throw new Error("Failed to fetch historical data");
+    if (selectedClass) {
+      studentQuery.eq('grade', selectedClass);
     }
 
-    // Group data by date
-    const dailyCounts = {};
-    for (let i = 0; i < 7; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toLocaleDateString();
-      dailyCounts[dateStr] = { teachers: 0, students: 0 };
+    const [teacherResult, studentResult] = await Promise.all([teacherQuery, studentQuery]);
+
+    if (teacherResult.error || studentResult.error) {
+      throw new Error(teacherResult.error || studentResult.error);
     }
 
-    teacherData.forEach(record => {
-      const date = new Date(record.created_at).toLocaleDateString();
-      if (dailyCounts[date]) {
-        dailyCounts[date].teachers++;
+    // Create a map of dates
+    const dateMap = new Map();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    for (let date = start; date <= end; date.setDate(date.getDate() + 1)) {
+      const dateStr = date.toISOString().split('T')[0];
+      dateMap.set(dateStr, {
+        date: dateStr,
+        counts: { teachers: 0, students: 0 }
+      });
+    }
+
+    // Count teachers per day
+    teacherResult.data.forEach(teacher => {
+      const date = new Date(teacher.created_at).toISOString().split('T')[0];
+      if (dateMap.has(date)) {
+        dateMap.get(date).counts.teachers++;
       }
     });
 
-    studentData.forEach(record => {
-      const date = new Date(record.created_at).toLocaleDateString();
-      if (dailyCounts[date]) {
-        dailyCounts[date].students++;
+    // Count students per day
+    studentResult.data.forEach(student => {
+      const date = new Date(student.created_at).toISOString().split('T')[0];
+      if (dateMap.has(date)) {
+        dateMap.get(date).counts.students++;
       }
     });
 
-    return Object.entries(dailyCounts).reverse();
+    // Convert map to array and sort by date
+    return Array.from(dateMap.values()).sort((a, b) => 
+      new Date(a.date) - new Date(b.date)
+    );
   } catch (error) {
-    console.error("Error fetching historical data:", error);
+    console.error("Error in getHistoricalData:", error);
     throw error;
   }
 };
 
 module.exports = {
-  getTotalCount,
-  getHistoricalData
+  getHistoricalData,
+  getTotalCount
 }; 

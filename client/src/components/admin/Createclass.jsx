@@ -8,6 +8,7 @@ function Createclass({ onClose }) {
   const [className, setClassName] = useState("");
   const [sec, setSec] = useState("");
   const [subject, setSubjects] = useState([]);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
