@@ -74,4 +74,14 @@ const assignTeacher = async (req, res) => {
     }
 };
 
-module.exports={addClass, getSubjectsByClass, assignTeacher}
+const getTeachers = async (req, res) => {
+    try {
+        const teachers = await classmodel.getTeachers();
+        res.json(teachers);
+    } catch (error) {
+        console.error("Error in getTeachers:", error);
+        res.status(500).json({ error: "Failed to fetch teachers" });
+    }
+};
+
+module.exports={addClass, getSubjectsByClass, assignTeacher, getTeachers}

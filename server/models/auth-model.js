@@ -1,4 +1,3 @@
-
 const connectdb = require('../utils/connectdb');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -200,9 +199,36 @@ const getUserById = async (userId) => {
   }
 };
 
+const updateTeacherStatus = async (teacherId, status) => {
+  try {
+    const createClient = await connectdb();
+    
+    // Update status in both users and teachers tables
+    const { error: teacherError } = await createClient
+      .from('teachers')
+      .update({ status })
+      .eq('teacher_id', teacherId);
+
+    if (teacherError) throw teacherError;
+
+    const { error: userError } = await createClient
+      .from('users')
+      .update({ status })
+      .eq('id', teacherId);
+
+    if (userError) throw userError;
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating teacher status:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   createUser,
   comparePassword,
   generateToken,
   getUserById,
+  updateTeacherStatus
 };

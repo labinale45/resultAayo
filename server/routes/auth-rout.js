@@ -8,11 +8,14 @@ const dashboardController = require('../controllers/dashboard');
 const authMiddleware = require('../middlewares/authmiddleware');
 const { deleteTeacher, updateTeacher, getTeacher } = require('../controllers/teacher-controller');
 const { updateStudent, deleteStudent, getStudent } = require('../controllers/student-controller');
+const aiController = require('../controllers/ai-controller');
+const aiAuthMiddleware = require('../middlewares/ai-middleware');
 
 // Teacher routes
 router.delete('/teacher/:id', deleteTeacher);
 router.put('/teacher/:id', updateTeacher);
 router.get('/teacher/:id', getTeacher);
+router.put('/teacher/status/:id', authController.updateTeacherStatus);
 
 // Student routes
 router.delete('/student/:id', deleteStudent);
@@ -37,6 +40,7 @@ router.route('/create-notice').post(examController.createNotice);
 router.route('/create-class').post(classController.addClass);
 router.route('/subjects/:classId').get(classController.getSubjectsByClass);
 router.route('/assign-teacher').post(classController.assignTeacher);
+router.route('/teachers').get(classController.getTeachers);
 
 // Data retrieval routes
 router.route('/year').get(retrive.getYears);
@@ -50,6 +54,9 @@ router.route('/enter-marks').post(examController.enterMarks);
 // Dashboard routes
 router.route('/dashboard/counts').get(dashboardController.dashboard);
 router.route('/dashboard/history').get(dashboardController.getHistory);
+
+// AI routes
+router.route('/ai-response').post(aiAuthMiddleware, aiController.getAIResponse);
 
 module.exports = router;
 

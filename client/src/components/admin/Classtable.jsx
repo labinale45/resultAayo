@@ -27,6 +27,7 @@ export default function Classtable() {
   useEffect(() => {
     YearSelect();
     fetchClasses();
+    fetchTeachers();
     if(selectedYear && selectedClass && selectedSection) { 
       fetchClassData(); 
     }
@@ -100,15 +101,49 @@ export default function Classtable() {
     }
   };
 
+  const fetchTeachers = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/teachers');
+      if (!response.ok) throw new Error('Failed to fetch teachers');
+      const data = await response.json();
+      setTeachers(data);
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+    }
+  };
 
+  const handleSave = async () => {
+    try {
+      const promises = subjects.map(subject => 
+        fetch('http://localhost:4000/api/auth/assign-teacher', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            subjectId: subject.id,
+            teacherId: subject.teacherId,
+            classId: selectedClass,
+            section: selectedSection
+          })
+        })
+      );
 
-  const showTable = selectedYear && selectedClass && selectedSection;
+      await Promise.all(promises);
+      fetchClassData();
+    } catch (error) {
+      console.error('Error saving teacher assignments:', error);
+      setError('Failed to save teacher assignments');
+    }
+  };
 
-  const handleTeacherChange = (index, value) => {
+  const handleTeacherChange = (index, teacherId) => {
     const updatedSubjects = [...subjects];
-    updatedSubjects[index].teacher = value;
+    updatedSubjects[index].teacherId = teacherId;
     setSubjects(updatedSubjects);
   };
+
+  const showTable = selectedYear && selectedClass && selectedSection;
 
   return (
     <div className="relative mt-7">
@@ -201,16 +236,14 @@ export default function Classtable() {
                                 </td>
                                 <td className="px-6 py-4 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
                                     <select
-                                        value={subject.teacher}
-                                        onChange={(e) =>
-                                            handleTeacherChange(index, e.target.value)
-                                        }
+                                        value={subject.teacherId || ""}
+                                        onChange={(e) => handleTeacherChange(index, e.target.value)}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
                                     >
                                         <option value="">Select Teacher</option>
-                                        {teachers.map((teacher, i) => (
-                                            <option key={i} value={teacher}>
-                                                {teacher}
+                                        {teachers.map((teacher) => (
+                                            <option key={teacher.id} value={teacher.id}>
+                                                {teacher.name}
                                             </option>
                                         ))}
                                     </select>
@@ -221,7 +254,10 @@ export default function Classtable() {
                             <tr>
                                 <td colSpan="2" className="px-6 py-4">
                                     <div className="flex justify-end">
-                                        <button className="w-20 bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] text-black dark:hover:bg-[#253553] hover:text-white text-center py-2 px-4 rounded text-xs">
+                                        <button 
+                                            onClick={handleSave}
+                                            className="w-20 bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] text-black dark:hover:bg-[#253553] hover:text-white text-center py-2 px-4 rounded text-xs"
+                                        >
                                             Save
                                         </button>
                                     </div>

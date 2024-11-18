@@ -61,13 +61,7 @@ export default function Teachertable() {
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&includeUser=true`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&includeUser=true`
       );
 
       if (!response.ok) {
@@ -75,7 +69,11 @@ export default function Teachertable() {
       }
 
       const data = await response.json();
-      setTeachers(data);
+      const teachersWithStatus = data.map(teacher => ({
+        ...teacher,
+        status: teacher.status || 'active'
+      }));
+      setTeachers(teachersWithStatus);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -131,25 +129,33 @@ export default function Teachertable() {
     }
   };
 
-  const handleDelete = async (teacherId) => {
-    if (window.confirm('Are you sure you want to delete this teacher?')) {
-      try {
-        const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+  const handleStatusChange = async (teacherId, currentStatus) => {
+    try {
+      const status = currentStatus || 'active';
+      const newStatus = status === 'active' ? 'inactive' : 'active';
+      
+      const response = await fetch(`http://localhost:4000/api/auth/teacher/status/${teacherId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
 
-        if (!response.ok) {
-          throw new Error('Failed to delete teacher');
-        }
-
-        fetchTeachers();
-      } catch (error) {
-        console.error('Error deleting teacher:', error);
-        setError('Failed to delete teacher. Please try again.');
+      if (!response.ok) {
+        throw new Error('Failed to update status');
       }
+
+      setTeachers(prevTeachers =>
+        prevTeachers.map(teacher =>
+          teacher.id === teacherId
+            ? { ...teacher, status: newStatus }
+            : teacher
+        )
+      );
+    } catch (error) {
+      console.error('Error updating status:', error);
+      setError('Failed to update teacher status');
     }
   };
 
@@ -157,6 +163,39 @@ export default function Teachertable() {
     (teacher) =>
       teacher.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (teacher.user?.email || teacher.email)?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const ActionCell = ({ teacher }) => (
+    <td className="px-6 py-4">
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center">
+          <button
+            onClick={() => handleStatusChange(teacher.id, teacher.status)}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              teacher.status !== 'inactive' ? 'bg-green-500' : 'bg-gray-200'
+            }`}
+          >
+            <span className="sr-only">Toggle status</span>
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                teacher.status !== 'inactive' ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+          <span className={`ml-2 text-sm ${
+            teacher.status !== 'inactive' ? 'text-green-600' : 'text-gray-500'
+          }`}>
+            {teacher.status !== 'inactive' ? 'Active' : 'Inactive'}
+          </span>
+        </div>
+        <button
+          onClick={() => handleEdit(teacher)}
+          className="text-blue-600 hover:text-blue-900"
+        >
+          <FaEdit className="w-4 h-4" />
+        </button>
+      </div>
+    </td>
   );
 
   if (isLoading) {
@@ -272,22 +311,7 @@ export default function Teachertable() {
                     <td className="px-6 py-4">{teacher.dateOfBirth}</td>
                     <td className="px-6 py-4">{teacher.username}</td>
                     <td className="px-6 py-4">{teacher.password}</td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleEdit(teacher)}
-                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-2"
-                      >
-                        <FaEdit className="inline mr-1" />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(teacher.id)}
-                        className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                      >
-                        <FaTrash className="inline mr-1" />
-                        Delete
-                      </button>
-                    </td>
+                    <ActionCell teacher={teacher} />
                   </tr>
                 ))}
               </tbody>

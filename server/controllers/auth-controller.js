@@ -293,11 +293,28 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+const updateTeacherStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    if (!['active', 'inactive'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+
+    const result = await auth.updateTeacherStatus(id, status);
+    res.status(200).json({ message: 'Status updated successfully', data: result });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   login,
   register,
   publishResult,
   getLedgerStatus,
   getUserProfile,
-  updateUserProfile
+  updateUserProfile,
+  updateTeacherStatus
 };

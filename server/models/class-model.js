@@ -133,9 +133,26 @@ const getSubjectsByClass = async (classId, section, year) => {
 const assignTeacher = async (subjectId, teacherId, classId, section) => {
     try {
         const createClient = await connectdb();
+        
+        // First verify the teacher exists and is active
+        const { data: teacherData, error: teacherError } = await createClient
+            .from('teachers')
+            .select('id')
+            .eq('id', teacherId)
+            .eq('status', 'active')
+            .single();
+
+        if (teacherError || !teacherData) {
+            throw new Error('Teacher not found or inactive');
+        }
+
+        // Update the subject with the teacher ID
         const { data, error } = await createClient
             .from('subjects')
-            .update({ teacher_id: teacherId })
+            .update({ 
+                teacher_id: teacherId,
+                updated_at: new Date().toISOString()
+            })
             .eq('id', subjectId)
             .eq('class_id', classId)
             .eq('section', section)
@@ -149,4 +166,23 @@ const assignTeacher = async (subjectId, teacherId, classId, section) => {
     }
 };
 
-module.exports ={createClass, getClass, createSubject, getSubjects, getSubjectsByClass, assignTeacher};
+const getTeachers = async () => {
+    try {
+        const createClient = await connectdb();
+        const { data, error } = await createClient
+            .from('teachers')
+            .select('id, first_name, last_name')
+            .eq('status', 'active');
+            
+        if (error) throw error;
+        return data.map(teacher => ({
+            id: teacher.id,
+            name: `${teacher.first_name} ${teacher.last_name}`
+        }));
+    } catch (error) {
+        console.error("Error fetching teachers:", error);
+        return [];
+    }
+};
+
+module.exports ={createClass, getClass, createSubject, getSubjects, getSubjectsByClass, assignTeacher, getTeachers};
