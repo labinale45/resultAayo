@@ -5,6 +5,7 @@ const { verify } = require('jsonwebtoken');
 const { createImage } = require('../models/image-model');
 
 const { v4: uuidv4 } = require('uuid');
+const { response } = require('express');
 
 const register = async (req, res) => {
   try {
@@ -59,6 +60,9 @@ const register = async (req, res) => {
    res.status(201).json({
       message : role + " added successfully",	
     });  
+
+    console.log(role + "Added Successfully")
+    
     try{// Send email with username and password
       mail.sendMail({email,username,password});
     }catch(error){

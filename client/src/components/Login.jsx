@@ -38,6 +38,7 @@ export default function Login({ onClose }) {
       }
 
       localStorage.setItem('userData', JSON.stringify(data.userData));
+      localStorage.setItem('token', data.token);
       
       switch (data.message) {
         case "Admin":

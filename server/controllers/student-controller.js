@@ -7,7 +7,7 @@ const deleteStudent = async (req, res) => {
     const supabase = await connectdb();
 
     const { error } = await supabase
-      .from('students')
+      .from('users')
       .delete()
       .eq('id', id);
 

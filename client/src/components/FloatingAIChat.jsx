@@ -22,7 +22,7 @@ export default function FloatingAIChat() {
       setChatHistory(prev => [...prev, { type: 'ai', content: response }]);
     } catch (error) {
       console.error('Error:', error);
-      setChatHistory(prev => [...prev, { type: 'error', content: 'Sorry, I encountered an error.' }]);
+      setChatHistory(prev => [...prev, { type: 'error', content: error.message || 'Sorry, I encountered an error.' }]);
     } finally {
       setIsLoading(false);
     }

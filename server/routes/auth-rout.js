@@ -59,4 +59,3 @@ router.route('/dashboard/history').get(dashboardController.getHistory);
 router.route('/ai-response').post(aiAuthMiddleware, aiController.getAIResponse);
 
 module.exports = router;
-

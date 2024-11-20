@@ -1,16 +1,9 @@
 const getAIResponse = async (prompt) => {
   try {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
     const response = await fetch('http://localhost:4000/api/auth/ai-response', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({ prompt }),
     });

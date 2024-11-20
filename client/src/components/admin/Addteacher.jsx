@@ -81,6 +81,7 @@ function Addteacher({ onClose, teacher, onSave }) {
 
       const data = await response.json();
       setSuccessMessage(data.message);
+      alert(data.message);
       
       if (onSave) {
         onSave();

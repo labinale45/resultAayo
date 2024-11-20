@@ -71,6 +71,11 @@ const getRecordsByYear = async (req, res) => {
 
     if (error) throw error;
 
+    // Check if data is empty and return a relevant message
+    if (!data || data.length === 0) {
+      return res.status(404).json({ message: `No records found for ${status} in ${year}` });
+    }
+
     // Format data based on status
     const formattedData = data.map((record) => {
       let imageUrl = null;
@@ -89,10 +94,6 @@ const getRecordsByYear = async (req, res) => {
           .from(imgaePath)
           .getPublicUrl(`${record.img_url.split("/").pop()}`);
         imageUrl = publicUrl;
-
-        // const bucketName = 'users';
-        // const folderPath = userRole.toLowerCase() + 's'; // 'students' or 'teachers'
-        // const filePath = `${folderPath}/${fileName}`;
       }
       const baseFormat = {
         id: record.id,
