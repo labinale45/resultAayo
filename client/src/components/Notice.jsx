@@ -56,7 +56,7 @@ function Notice() {
     }
   }, [selectedYear]);
 
-  const filteredNotices = notices.filter(notice => {
+  const filteredNotices = notices && notices?.filter(notice => {
     const matchesSearch = notice.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          notice.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filter === "all" || 

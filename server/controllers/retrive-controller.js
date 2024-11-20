@@ -64,21 +64,21 @@ const getRecordsByYear = async (req, res) => {
 
     console.log(`Fetching ${status} for year:`, year, `and class ID:`, classId);
 
-    const { data, error } = await supabaseClient
+    // Start building the query
+    let query = supabaseClient
       .from(status)
       .select("*")
       .gte("created_at", `${year}-01-01`)
-      .lte("created_at", `${year}-12-31`)
-      .eq("class", classId);
+      .lte("created_at", `${year}-12-31`);
+
+    // Add class filter only for students
+    if (status === "students" && classId) {
+      query = query.eq("class", classId);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
-    if (!data || data.length === 0) {
-      return []; // Return empty array if no class found
-  }
-    // Check if data is empty and return a relevant message
-    // if (!data || data.length === 0) {
-    //   return res.status(404).json({ message: `No records found for ${status} in ${year} for class ID ${classId}` });
-    // }
 
     // Format data based on status
     const formattedData = data.map((record) => {
