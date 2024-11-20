@@ -172,11 +172,11 @@ export default function Studenttable() {
       }
     }
   };
-  const filteredStudents = students.filter(
-    (student) =>
-      student.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // const filteredStudents = students.filter(
+  //   (student) =>
+  //     student.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     student.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   return (
     <div className="relative mt-7">
@@ -297,56 +297,64 @@ export default function Studenttable() {
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.map((student) => (
-                  <tr
-                    key={student.id}
-                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                  >
-                    <td
-                      className="sticky left-0 z-20 bg-white dark:bg-gray-800"
-                      style={{ width: "400px" }}
-                    >
-                      <div className="flex">
-                        <div className="w-[80px] px-6 py-4">
-                          {student.classes}
-                        </div>
-                        <img
-                          className="w-10 h-10 rounded-full object-cover mb-2"
-                          src={student.img_url || "/assets/profile.png"}
-                          alt={`${student.fullName}'s photo`}
-                          onError={(e) => {
-                            e.target.src = "/assets/profile.png";
-                          }}
-                        />
-                        <div className="text-base font-semibold break-words">
-                          {student.fullName}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">{student.rollNo}</td>
-                    <td className="px-6 py-4">{student.email}</td>
-                    <td className="px-6 py-4">{student.parentName}</td>
-                    <td className="px-6 py-4">{student.contact}</td>
-                    <td className="px-6 py-4">{student.address}</td>
-                    <td className="px-6 py-4">{student.dateOfBirth}</td>
-                    <td className="px-6 py-4">{student.username}</td>
-                    <td className="px-6 py-4">{student.password}</td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleEdit(student)}
-                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-2"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(student.id)}
-                        className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                      >
-                        Delete
-                      </button>
+                {students.length === 0 ? (
+                  <tr>
+                    <td colSpan="10" className="text-center py-4 text-red-500">
+                      No records found for the selected year and class.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  students.map((student) => (
+                    <tr
+                      key={student.id}
+                      className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                    >
+                      <td
+                        className="sticky left-0 z-20 bg-white dark:bg-gray-800"
+                        style={{ width: "400px" }}
+                      >
+                        <div className="flex">
+                          <div className="w-[80px] px-6 py-4">
+                            {student.classes}
+                          </div>
+                          <img
+                            className="w-10 h-10 rounded-full object-cover mb-2"
+                            src={student.img_url || "/assets/profile.png"}
+                            alt={`${student.fullName}'s photo`}
+                            onError={(e) => {
+                              e.target.src = "/assets/profile.png";
+                            }}
+                          />
+                          <div className="text-base font-semibold break-words">
+                            {student.fullName}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">{student.rollNo}</td>
+                      <td className="px-6 py-4">{student.email}</td>
+                      <td className="px-6 py-4">{student.parentName}</td>
+                      <td className="px-6 py-4">{student.contact}</td>
+                      <td className="px-6 py-4">{student.address}</td>
+                      <td className="px-6 py-4">{student.dateOfBirth}</td>
+                      <td className="px-6 py-4">{student.username}</td>
+                      <td className="px-6 py-4">{student.password}</td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleEdit(student)}
+                          className="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-2"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(student.id)}
+                          className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

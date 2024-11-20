@@ -24,6 +24,7 @@ function Addstudent({ onClose, student, onSave }) {
   const [image, setImage] = useState("");
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
+  const [selectedClassId, setSelectedClassId] = useState("");
 
   // useEffect(() => {
   //   if (student) {
@@ -71,6 +72,7 @@ function Addstudent({ onClose, student, onSave }) {
                 parent_name,
                 role,
                studentClass,
+               class_id: selectedClassId,
                image: imageBase64,
             })
         });
@@ -172,13 +174,13 @@ useEffect(() => {
               </label>
              
               <select
-          value={selectedClass}
-          onChange={(e) => setSelectedClass(e.target.value)}
+          value={selectedClassId}
+          onChange={(e) => setSelectedClassId(e.target.value)}
           className="txt p-2 mt-6  w-full rounded-xl border shadow-xl"
         >
-          <option value="">Class</option>
+          <option value="">Select Class</option>
           {classes.map((cls) => (
-            <option key={cls.id} value={cls.grade}>
+            <option key={cls.id} value={cls.id}>
               {cls.grade}
             </option>
           ))}

@@ -109,7 +109,7 @@ const getSubjectsByClass = async (classId, section, year) => {
             .select(`
                 id,
                 subject_name,
-                teacher:teachers(
+                teacher_id:teachers(
                     id,
                     first_name,
                     last_name
@@ -122,7 +122,7 @@ const getSubjectsByClass = async (classId, section, year) => {
         return (subjectsData || []).map(item => ({
             id: item.id,
             name: item.subject_name,
-            teacher: item.teacher ? `${item.teacher.first_name} ${item.teacher.last_name}` : ""
+            teacher: item.teacher_id ? `${item.teacher_id.first_name} ${item.teacher_id.last_name}`||`${item.teacher.first_name} ${item.teacher.last_name}` : ''
         }));
     } catch (error) {
         console.error("Error fetching subjects:", error);
@@ -154,8 +154,6 @@ const assignTeacher = async (subjectId, teacherId, classId, section) => {
                 updated_at: new Date().toISOString()
             })
             .eq('id', subjectId)
-            .eq('class_id', classId)
-            .eq('section', section)
             .select();
 
         if (error) throw error;

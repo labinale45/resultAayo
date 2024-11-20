@@ -60,21 +60,25 @@ const getRecordsByYear = async (req, res) => {
     const supabaseClient = await connectdb();
     const { year } = req.params;
     const status = req.query.status;
+    const classId = req.query.class;
 
-    console.log(`Fetching ${status} for year:`, year);
+    console.log(`Fetching ${status} for year:`, year, `and class ID:`, classId);
 
     const { data, error } = await supabaseClient
       .from(status)
       .select("*")
       .gte("created_at", `${year}-01-01`)
-      .lte("created_at", `${year}-12-31`);
+      .lte("created_at", `${year}-12-31`)
+      .eq("class", classId);
 
     if (error) throw error;
-
-    // Check if data is empty and return a relevant message
     if (!data || data.length === 0) {
-      return res.status(404).json({ message: `No records found for ${status} in ${year}` });
-    }
+      return []; // Return empty array if no class found
+  }
+    // Check if data is empty and return a relevant message
+    // if (!data || data.length === 0) {
+    //   return res.status(404).json({ message: `No records found for ${status} in ${year} for class ID ${classId}` });
+    // }
 
     // Format data based on status
     const formattedData = data.map((record) => {

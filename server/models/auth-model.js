@@ -1,4 +1,3 @@
-
 const connectdb = require('../utils/connectdb');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -149,11 +148,15 @@ const createUser = async (userData) => {
           });
       }
       }
+
+      // Destructure class_id from userData
+      const { class_id } = userData; // Ensure class_id is included in userData
+
       const { data: studentRecord, error: studentError } = await createClient
         .from('students')
-        .insert([{student_id: userId,first_name, last_name, address, phone_number, parent_name,img_url: imageUrl, created_at: new Date().toISOString() }]);
+        .insert([{ student_id: userId, first_name, last_name, address, phone_number, parent_name, img_url: imageUrl, class: class_id, created_at: new Date().toISOString() }]); // Include class_id in the insert
       
-        if (studentError) throw studentError;
+      if (studentError) throw studentError;
     }
   } catch (error) {
     console.error('Error creating user:', error.message);

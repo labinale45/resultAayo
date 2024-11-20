@@ -240,12 +240,29 @@ export default function Classtable() {
                                         onChange={(e) => handleTeacherChange(index, e.target.value)}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
                                     >
-                                        <option value="">Select Teacher</option>
-                                        {teachers.map((teacher) => (
+                                        
+                                        {subject.teacherId === null ? (
+                                          <>
+                                            <option value="">Select Teacher</option>
+                                            {teachers.map((teacher) => (
+                                              <option key={teacher.id} value={teacher.id}>
+                                                {teacher.name}
+                                              </option>
+                                            ))}
+                                          </>
+                                        ) : (
+                                          <>
+                                          <option>{subjects.teacher.name}</option>
+                                          {teachers.map((teacher) => (
                                             <option key={teacher.id} value={teacher.id}>
                                                 {teacher.name}
                                             </option>
+                                            
                                         ))}
+                                        </>
+                                        )
+                                        }
+
                                     </select>
                                 </td>
                             </tr>

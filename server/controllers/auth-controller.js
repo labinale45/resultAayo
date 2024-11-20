@@ -9,7 +9,7 @@ const { response } = require('express');
 
 const register = async (req, res) => {
   try {
-    const { last_name,first_name, email, gender, role,address,phone_number,parent_name,dob ,studentClass,image } = req.body;
+    const { class_id,last_name,first_name, email, gender, role,address,phone_number,parent_name,dob ,studentClass,image } = req.body;
     const supabaseClient = await connectdb();
     
     // Check if user already exists
@@ -56,13 +56,13 @@ const register = async (req, res) => {
 
 
     // Create new user
-   auth.createUser({ username, email, password, gender, role, first_name, last_name, address, phone_number, parent_name,dob,studentClass,image });
+   auth.createUser({ class_id,username, email, password, gender, role, first_name, last_name, address, phone_number, parent_name,dob,studentClass,image });
    res.status(201).json({
       message : role + " added successfully",	
     });  
 
     console.log(role + "Added Successfully")
-    
+
     try{// Send email with username and password
       mail.sendMail({email,username,password});
     }catch(error){

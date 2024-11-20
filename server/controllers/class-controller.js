@@ -38,6 +38,7 @@ const getSubjectsByClass = async (req, res) => {
 
         const subjects = await classmodel.getSubjectsByClass(classId, section, year);
         res.json(subjects);
+        console.log(subjects);
     } catch (error) {
         console.error("Error in getSubjectsByClass:", error);
         res.status(500).json({ 
@@ -50,6 +51,7 @@ const getSubjectsByClass = async (req, res) => {
 const assignTeacher = async (req, res) => {
     try {
         const { subjectId, teacherId, classId, section } = req.body;
+        console.log(subjectId,teacherId,classId,section);
 
         if (!subjectId || !teacherId || !classId || !section) {
             return res.status(400).json({ 
@@ -63,6 +65,8 @@ const assignTeacher = async (req, res) => {
             classId, 
             section
         );
+
+        console.log( result);
 
         res.status(200).json({ 
             message: "Teacher assigned successfully", 
