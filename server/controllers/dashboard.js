@@ -14,11 +14,15 @@ const getHistory = async(req, res) => {
   try {
     const { startDate, endDate, class: selectedClass } = req.query;
     
-    if (!startDate || !endDate) {
-      return res.status(400).json({ error: 'Start date and end date are required' });
-    }
+    // Set default startDate to 7 days ago if not provided
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
+    
+    const start = startDate || sevenDaysAgo.toISOString().split('T')[0];
+    const end = endDate || today.toISOString().split('T')[0];
 
-    const historicalData = await getHistoricalData(startDate, endDate, selectedClass);
+    const historicalData = await getHistoricalData(start, end, selectedClass);
     res.status(200).json(historicalData);
   } catch (error) {
     console.error('Error fetching historical data:', error);

@@ -23,6 +23,10 @@ const getHistoricalData = async (startDate, endDate, selectedClass) => {
   try {
     const createClient = await connectdb();
     
+    // Adjust endDate to include the current date
+    const currentDate = new Date();
+    endDate = currentDate.toISOString().split('T')[0]; // Set endDate to today
+
     // Get all teachers and students within date range
     const teacherQuery = createClient
       .from("teachers")

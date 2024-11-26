@@ -73,6 +73,13 @@ export default function Admindashboard() {
 
     fetchClasses();
     fetchDashboardData();
+    
+    // Set up polling for real-time updates
+    const intervalId = setInterval(() => {
+      fetchDashboardData();
+    }, 5000); // Fetch data every 5 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
   }, []);
 
   useEffect(() => {

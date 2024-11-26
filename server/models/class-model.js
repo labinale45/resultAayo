@@ -147,7 +147,7 @@ const assignTeacher = async (subjectId, teacherId, classId, section) => {
         }
 
         // Update the subject with the teacher ID
-        const { data, error } = await createClient
+        const { data: subjectData, error: subjectError } = await createClient
             .from('subjects')
             .update({ 
                 teacher_id: teacherId,
@@ -156,8 +156,21 @@ const assignTeacher = async (subjectId, teacherId, classId, section) => {
             .eq('id', subjectId)
             .select();
 
-        if (error) throw error;
-        return data;
+        if (subjectError) throw subjectError;
+
+        const { data: classData, error: classError } = await createClient
+            .from('class')
+            .update({
+                teacher_id: teacherId,
+                updated_at: new Date().toISOString()
+            })
+            .eq('class', classId)
+            .eq('sec', section)
+            .select();
+
+        if (classError) throw classError;
+
+        return { subjectData, classData }; // Return both subject and class data
     } catch (error) {
         console.error("Error assigning teacher:", error);
         throw error;

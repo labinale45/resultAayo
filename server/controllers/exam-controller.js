@@ -149,7 +149,7 @@ const getLedgerStatus = async (req, res) => {
 
 const enterMarks = async (req, res) => {
     try {
-        const { year, examType, className, subject, marks } = req.body;
+        const { year, examType, class:className, subject, marks } = req.body;
         const createClient = await connectdb();
         
         // Insert marks for each student
@@ -182,5 +182,100 @@ const enterMarks = async (req, res) => {
     }
 };
 
+const getMarksData = async (req, res) => {
+    try {
+        const { year, examType, classes } = req.query;
+    console.log('Received parameters:', { year, examType, classes});
+        
+        const createClient = await connectdb();
+        console.log('Database connection established.');
 
-module.exports = {createExam, createNotice, getLedgerStatus, enterMarks};
+        if (!year || !examType || !classes) {
+            return res.status(400).json({ message: "Year, examType, and class are required." });
+        }
+
+        const {data:classData, error: classError}= await createClient
+        .from('class')
+        .select('id')
+        .eq('class', classes)
+        .gte('created_at', `${year}-01-01`)
+        .lte('created_at', `${year}-12-31`);
+
+        if (classError || !classData || classData.length === 0) {
+            console.error('No class data found or error occurred:', classError);
+            return res.status(400).json({ message: "No class data found for the given parameters." });
+        }
+
+        const {data:examData, error: examError}= await createClient
+        .from('exams')
+        .select('id')
+        .eq('exam_type', examType)
+        .gte('created_at', `${year}-01-01`)
+        .lte('created_at', `${year}-12-31`);
+
+        if (examError || !examData || examData.length === 0) {
+            console.error('No exam data found or error occurred:', examError);
+            return res.status(400).json({ message: "No exam data found for the given parameters." });
+        }
+
+        const { data, error } = await createClient
+            .from('markSetup')
+            .select('id,class_id,subject_id, FM, PM')
+            .gte('created_at', `${year}-01-01`)
+            .lte('created_at', `${year}-12-31`)
+            .eq('class_id', classData[0].id)
+            .eq('id', examData[0].id);
+
+        if (error) {
+            console.error('Database query error:', error.message);
+            throw error; // This will be caught in the catch block
+        }
+
+        if (!data || data.length === 0) {
+            console.log('No data found for the given parameters.');
+            return res.status(200).json([]); // Return an empty array if no data found
+        }
+
+        console.log('Data fetched successfully:', data);
+        return res.status(200).json(data);
+    } catch (error) {
+        console.error('Error fetching marks data:', error.message);
+        return res.status(500).json({ message: "Failed to fetch marks data", error: error.message });
+    }
+};
+
+const getSubjectsByClass = async (req, res) => {
+    try {
+        const { classId, year } = req.query; // Get classId and year from query parameters
+        const createClient = await connectdb();
+
+        console.log(classId, year);
+        // Get the class ID using class, section, and year from updated_at
+        const { data: classData, error: classError } = await createClient
+            .from('class')
+            .select('id')
+            .eq('class', classId)
+            .gte('updated_at', `${year}-01-01`)
+            .lte('updated_at', `${year}-12-31`);
+
+        if (classError) throw classError;
+        if (!classData || classData.length === 0) {
+            return res.status(404).json({ message: "No class found" }); // Return 404 if no class found
+        }
+
+        // Fetch subjects based on class_id
+        const { data: subjectsData, error: subjectsError } = await createClient
+            .from('subjects')
+            .select('id, subject_name')
+            .eq('class_id', classData[0].id); // Fetch subjects based on class_id
+
+        if (subjectsError) throw subjectsError;
+        console.log(subjectsData);
+        return res.status(200).json(subjectsData); // Return subjects data
+    } catch (error) {
+        console.error("Error fetching subjects:", error.message);
+        return res.status(500).json({ message: "Failed to fetch subjects", error: error.message });
+    }
+};
+
+module.exports = {createExam, createNotice, getLedgerStatus, enterMarks, getMarksData, getSubjectsByClass};

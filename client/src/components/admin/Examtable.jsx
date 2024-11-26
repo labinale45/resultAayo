@@ -12,25 +12,20 @@ export default function Examtable() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [state, setState] = useState("exams");
-  const [subjects, setSubjects] = useState([
-    { name: "Computer Science", fullMarks: "", passMarks: "" },
-    { name: "Mathematics", fullMarks: "", passMarks: "" },
-    { name: "Science", fullMarks: "", passMarks: "" },
-    { name: "English", fullMarks: "", passMarks: "" },
-    { name: "Social Studies", fullMarks: "", passMarks: "" },
-    { name: "HPE", fullMarks: "", passMarks: "" },
-    { name: "O.Math", fullMarks: "", passMarks: "" },
-  ]);
+  const [subjects, setSubjects] = useState([]);
   const [examTypes, setExamTypes] = useState([]);
   const [classes, setClasses] = useState([]);
-const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [marksData, setMarksData] = useState([]);
 
   useEffect(() => {
     YearSelect();
     fetchExamTypes();
     fetchClasses();
-    if (selectedYear) { fetchExamData(); }
-  }, [selectedYear]);
+    if (selectedYear && selectedClass) {
+      fetchMarksData();
+    }
+  }, [selectedYear, selectedExamType, selectedClass]);
 
   const YearSelect = async () => {
     try {
@@ -61,12 +56,16 @@ const [selectedSubject, setSelectedSubject] = useState("");
     }
   };
 
-  const fetchExamData = async () => {
-    setIsLoading(true);
-    setError(null);
+  const fetchMarksData = async () => {
     try {
+      console.log('Fetching marks data with parameters:', {
+        year: selectedYear,
+        examType: selectedExamType,
+        class: selectedClass
+      });
+
       const response = await fetch(
-        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&examType=${selectedExamType}&class=${selectedClass}`,
+        `http://localhost:4000/api/auth/marks?year=${selectedYear}&examType=${selectedExamType}&classes=${selectedClass}`,
         {
           method: 'GET',
           headers: {
@@ -76,17 +75,59 @@ const [selectedSubject, setSelectedSubject] = useState("");
       );
 
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to fetch marks data:', errorData);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      setSubjects(data);
+      console.log('Fetched marks data:', data);
+
+      if (Array.isArray(data) && data.length > 0) {
+        setMarksData(data);
+      } else {
+        console.warn('No marks data found, fetching subjects instead.');
+        const subjectsResponse = await fetch(`http://localhost:4000/api/auth/subjects?classId=${selectedClass}&year=${selectedYear}`);
+        const subjectsData = await subjectsResponse.json();
+        setSubjects(subjectsData);
+        console.log(subjectsData);
+      }
     } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
+      console.error('Error in fetchMarksData:', error.message);
+      setMarksData([]);
+      setSubjects([]);
     }
   };
+
+  // const fetchExamData = async () => {
+  //   setIsLoading(true);
+  //   setError(null);
+  //   try {
+  //     await fetchMarksData();
+  //     const response = await fetch(
+  //       `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&examType=${selectedExamType}&class=${selectedClass}`,
+  //       {
+  //         method: 'GET',
+  //         headers: {
+  //           'Content-Type': 'application/json'
+  //         }
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       console.error('Failed to fetch exam data:', errorData);
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+
+  //     const data = await response.json();
+  //     setSubjects(data);
+  //   } catch (error) {
+  //     setError(error.message);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const fetchExamTypes = async () => {
     try {
@@ -165,7 +206,7 @@ const [selectedSubject, setSelectedSubject] = useState("");
           >
             +Create Exam
           </button>
-          <button className="         bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs ">
+          <button className="  bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs ">
             Edit
           </button>
           <button className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs ">
@@ -198,46 +239,85 @@ const [selectedSubject, setSelectedSubject] = useState("");
                 </tr>
               </thead>
               <tbody>
-                {subjects.map((subject, index) => (
-                  <tr
-                    key={index}
-                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                  >
-                    <td className="px-6 py-4 sticky left-0 z-20 bg-white dark:bg-gray-800">
-                      {subject.name}
-                    </td>
-                    <td className="px-6 py-4 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
-                      <input
-                        type="text"
-                        value={subject.fullMarks}
-                        onChange={(e) =>
-                          handleInputChange(index, "fullMarks", e.target.value)
-                        }
-                        className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </td>
-                    <td className="px-6 py-4 sticky left-[240px] z-20 bg-white dark:bg-gray-800">
-                      <input
-                        type="text"
-                        value={subject.passMarks}
-                        onChange={(e) =>
-                          handleInputChange(index, "passMarks", e.target.value)
-                        }
-                        className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </td>
-                  </tr>
-                ))}
-                <tr>
-                  <td colSpan="3" className="px-6 py-4">
-                    <div className="flex justify-end">
-                      <button className=" w-20 bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec]  text-black dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs ">
-                        Save
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
+  {Array.isArray(marksData) && marksData.length > 0 ? (
+    marksData.map((mark, index) => (
+      <tr
+        key={index}
+        className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+      >
+        <td className="px-6 py-4 sticky left-0 z-20 bg-white dark:bg-gray-800">
+          {mark.subject_name} {/* Assuming marksData contains subject_name */}
+        </td>
+        <td className="px-6 py-4 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
+          <input
+            type="text"
+            value={mark.FM || ''} // Full Marks from marksData
+            onChange={(e) =>
+              handleInputChange(index, "fullMarks", e.target.value)
+            }
+            className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+          />
+        </td>
+        <td className="px-6 py-4 sticky left-[240px] z-20 bg-white dark:bg-gray-800">
+          <input
+            type="text"
+            value={mark.PM || ''} // Pass Marks from marksData
+            onChange={(e) =>
+              handleInputChange(index, "passMarks", e.target.value)
+            }
+            className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+          />
+        </td>
+      </tr>
+    ))
+  ) : Array.isArray(subjects) && subjects.length > 0 ? (
+    subjects.map((subject, index) => (
+      <tr
+        key={index}
+        className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+      >
+        <td className="px-6 py-4 sticky left-0 z-20 bg-white dark:bg-gray-800">
+          {subject.subject_name} {/* Display subject name */}
+        </td>
+        <td className="px-6 py-4 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
+          <input
+            type="text"
+            value={''} // No marks data available
+            onChange={(e) =>
+              handleInputChange(index, "fullMarks", e.target.value)
+            }
+            className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+          />
+        </td>
+        <td className="px-6 py-4 sticky left-[240px] z-20 bg-white dark:bg-gray-800">
+          <input
+            type="text"
+            value={''} // No marks data available
+            onChange={(e) =>
+              handleInputChange(index, "passMarks", e.target.value)
+            }
+            className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+          />
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="3" className="px-6 py-4 text-center text-gray-500">
+        No data available
+      </td>
+    </tr>
+  )}
+  <tr>
+    <td colSpan="3" className="px-6 py-4">
+      <div className="flex justify-end">
+        <button className=" w-20 bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec]  text-black dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs ">
+          Save
+        </button>
+      </div>
+    </td>
+  </tr>
+</tbody>
             </table>
           </div>
         </div>

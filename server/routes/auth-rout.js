@@ -50,6 +50,7 @@ router.route('/classes').get(retrive.getClasses);
 
 // Marks routes
 router.route('/enter-marks').post(examController.enterMarks);
+router.route('/marks').get(examController.getMarksData);
 
 // Dashboard routes
 router.route('/dashboard/counts').get(dashboardController.dashboard);
@@ -57,5 +58,8 @@ router.route('/dashboard/history').get(dashboardController.getHistory);
 
 // AI routes
 router.route('/ai-response').post(aiAuthMiddleware, aiController.getAIResponse);
+
+// New route for fetching subjects by class ID
+router.route('/subjects').get(examController.getSubjectsByClass);
 
 module.exports = router;
