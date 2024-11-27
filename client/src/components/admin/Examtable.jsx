@@ -15,10 +15,12 @@ export default function Examtable() {
   const [subjects, setSubjects] = useState([]);
   const [examTypes, setExamTypes] = useState([]);
   const [classes, setClasses] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [marksData, setMarksData] = useState([]);
   const [passMarks,setPassMarks] =useState([]);
   const [fullMarks, setFullMarks] = useState([]);
+  const [FM,setFM] = useState([]);
+  const [PM,setPM] = useState([]);
 
   useEffect(() => {
     YearSelect();
@@ -28,6 +30,12 @@ export default function Examtable() {
       fetchMarksData();
     }
   }, [selectedYear, selectedExamType, selectedClass]);
+
+  useEffect(() => {
+    if (subjects.length > 0) {
+      setSelectedSubjects(subjects.map(subject => subject.subject_name));
+    }
+  }, [subjects]);
 
   const YearSelect = async () => {
     try {
@@ -101,36 +109,6 @@ export default function Examtable() {
     }
   };
 
-  // const fetchExamData = async () => {
-  //   setIsLoading(true);
-  //   setError(null);
-  //   try {
-  //     await fetchMarksData();
-  //     const response = await fetch(
-  //       `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&examType=${selectedExamType}&class=${selectedClass}`,
-  //       {
-  //         method: 'GET',
-  //         headers: {
-  //           'Content-Type': 'application/json'
-  //         }
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       const errorData = await response.json();
-  //       console.error('Failed to fetch exam data:', errorData);
-  //       throw new Error(`HTTP error! status: ${response.status}`);
-  //     }
-
-  //     const data = await response.json();
-  //     setSubjects(data);
-  //   } catch (error) {
-  //     setError(error.message);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
   const fetchExamTypes = async () => {
     try {
       const response = await fetch('http://localhost:4000/api/auth/exam-types');
@@ -153,13 +131,49 @@ export default function Examtable() {
     }
   };
 
-  const handleInputChange = (index, field, value) => {
-    const updatedSubjects = [...subjects];
-    updatedSubjects[index][field] = value;
-    setSubjects(updatedSubjects);
+  const showTable = selectedYear && selectedExamType && selectedClass;
+
+  const handleSaveMarks = async () => {
+    try {
+      console.log("saveData",selectedSubjects);
+        const response = await fetch('http://localhost:4000/api/auth/enter-marks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                year: selectedYear,
+                examType: selectedExamType,
+                classes: selectedClass,
+                subjects: subjects,// Assuming marksData is structured correctly
+                fullMarks: fullMarks,
+                passMarks: passMarks
+            }),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            alert(result.message);
+        } else {
+            alert(result.message);
+        }
+    } catch (error) {
+        console.error('Error saving marks:', error);
+        alert('Failed to save marks. Please try again.');
+    }
   };
 
-  const showTable = selectedYear && selectedExamType && selectedClass;
+  const toggleSubjectSelection = (subjectName) => {
+    setSelectedSubjects((prevSelected) => {
+      if (prevSelected.includes(subjectName)) {
+        // If already selected, remove it
+        return prevSelected.filter((name) => name !== subjectName);
+      } else {
+        // Otherwise, add it to the selection
+        return [...prevSelected, subjectName];
+      }
+    });
+  };
 
   return (
     <div className="relative mt-7">
@@ -241,39 +255,45 @@ export default function Examtable() {
                 </tr>
               </thead>
               <tbody>
-  {Array.isArray(marksData) && marksData.length > 0 ? (
+              {Array.isArray(marksData) && marksData.length > 0 ? (
     marksData.map((mark, index) => (
       <tr
         key={index}
         className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
       >
-        <td className="px-6 py-4 sticky left-0 z-20 bg-white dark:bg-gray-800">
-          {mark.subject_name} {/* Assuming marksData contains subject_name */}
+         <td
+          className="px-6 py-4 sticky left-0 z-20 bg-white dark:bg-gray-800"
+          onClick={() => toggleSubjectSelection(mark.subjects.subject_name)} // Updated to match subjects
+          style={{
+            backgroundColor: selectedSubjects.includes(mark.subjects.subject_name) ? '#d1e7dd' : 'transparent',
+          }}
+        >
+          {mark.subjects.subject_name} {/* Assuming marksData contains subject_name */}
         </td>
         <td className="px-6 py-4 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
-                      <input
-                        type="text"
-                        value={fullMarks[index] || ''} // Individual full marks for each subject
-                        onChange={(e) => {
-                          const updatedFullMarks = [...fullMarks]; // Create a copy of the current fullMarks array
-                          updatedFullMarks[index] = e.target.value; // Update the specific index
-                          setFullMarks(updatedFullMarks); // Set the new state
-                        }}
-                        className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </td>
-                    <td className="px-6 py-4 sticky left-[240px] z-20 bg-white dark:bg-gray-800">
-                      <input
-                        type="text"
-                        value={passMarks[index] || ''} // Individual pass marks for each subject
-                        onChange={(e) => {
-                          const updatedPassMarks = [...passMarks]; // Create a copy of the current passMarks array
-                          updatedPassMarks[index] = e.target.value; // Update the specific index
-                          setPassMarks(updatedPassMarks); // Set the new state
-                        }}
-                        className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </td>
+          <input
+            type="text"
+            value={mark.FM || ''} // Updated to use fullMarks from marksData
+            onChange={(e) => {
+              const updatedFullMarks = [...FM]; // Create a copy of the current fullMarks array
+              updatedFullMarks[index] = e.target.value; // Update the specific index
+              setFM(updatedFullMarks); // Set the new state
+            }}
+            className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+          />
+        </td>
+        <td className="px-6 py-4 sticky left-[240px] z-20 bg-white dark:bg-gray-800">
+          <input
+            type="text"
+            value={mark.PM || ''} // Updated to use passMarks from marksData
+            onChange={(e) => {
+              const updatedPassMarks = [...PM]; // Create a copy of the current passMarks array
+              updatedPassMarks[index] = e.target.value; // Update the specific index
+              setPM(updatedPassMarks); // Set the new state
+            }}
+            className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+          />
+        </td>
       </tr>
     ))
   ) : Array.isArray(subjects) && subjects.length > 0 ? (
@@ -282,26 +302,36 @@ export default function Examtable() {
         key={index}
         className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
       >
-        <td className="px-6 py-4 sticky left-0 z-20 bg-white dark:bg-gray-800">
+        <td
+          className="px-6 py-4 sticky left-0 z-20 bg-white dark:bg-gray-800"
+          onClick={() => toggleSubjectSelection(subject.subject_name)} // Unchanged
+          style={{
+            backgroundColor: selectedSubjects.includes(subject.subject_name) ? '#d1e7dd' : 'transparent',
+          }}
+        >
           {subject.subject_name} {/* Display subject name */}
         </td>
         <td className="px-6 py-4 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
           <input
             type="text"
-            value={fullMarks} // No marks data available
-            onChange={(e) =>
-              setFullMarks(e.target.value)
-            }
+            value={fullMarks[index] || ''} // Individual full marks for each subject
+            onChange={(e) => {
+              const updatedFullMarks = [...fullMarks]; // Create a copy of the current fullMarks array
+              updatedFullMarks[index] = e.target.value; // Update the specific index
+              setFullMarks(updatedFullMarks); // Set the new state
+            }}
             className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
           />
         </td>
         <td className="px-6 py-4 sticky left-[240px] z-20 bg-white dark:bg-gray-800">
           <input
             type="text"
-            value={passMarks} // No marks data available
-            onChange={(e) =>
-              setPassMarks(e.target.value)
-            }
+            value={passMarks[index] || ''} // Individual pass marks for each subject
+            onChange={(e) => {
+              const updatedPassMarks = [...passMarks]; // Create a copy of the current passMarks array
+              updatedPassMarks[index] = e.target.value; // Update the specific index
+              setPassMarks(updatedPassMarks); // Set the new state
+            }}
             className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
           />
         </td>
@@ -317,7 +347,7 @@ export default function Examtable() {
   <tr>
     <td colSpan="3" className="px-6 py-4">
       <div className="flex justify-end">
-        <button className=" w-20 bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec]  text-black dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs ">
+        <button onClick={handleSaveMarks} className=" w-20 bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec]  text-black dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs ">
           Save
         </button>
       </div>

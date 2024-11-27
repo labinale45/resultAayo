@@ -149,34 +149,110 @@ const getLedgerStatus = async (req, res) => {
 
 const enterMarks = async (req, res) => {
     try {
-        const { year, examType, class:className, subject, marks } = req.body;
+        const { year, examType, subjects, fullMarks, passMarks } = req.body;
         const createClient = await connectdb();
+        console.log("Received request to enter marks:", req.body);
         
-        // Insert marks for each student
-        const { data, error } = await createClient
-            .from('marks')
-            .upsert(marks.map(student => ({
-                year,
-                exam_type: examType,
-                class: className,
-                subject,
-                student_id: student.rollNo,
-                theory_marks: student.th,
-                practical_marks: student.pr,
-                total_marks: parseInt(student.th) + parseInt(student.pr),
-                created_at: new Date().toISOString()
-            })));
+        // Fetch exam ID
+        const { data: examData, error: examError } = await createClient
+            .from('exams')
+            .select('id')
+            .eq('exam_type', examType)
+            .single();
 
-        if (error) throw error;
+        if (examError || !examData) {
+            return res.status(400).json({ message: "Exam not found" });
+        }
+
+        const examId = examData.id;
+
+        // Fetch class IDs for each subject based on subject ID
+        const classIds = await Promise.all(subjects.map(async (subjectId) => {
+            const { data, error } = await createClient
+                .from('subjects')
+                .select('class_id') // Selecting class_id based on subject ID
+                .eq('id', subjectId.id)
+                .single();
+
+            if (error || !data) {
+                throw new Error(`Class not found for subject ID: ${subjectId.subject_name}`);
+            }
+            return data.class_id;
+        }));
+
+        // Prepare markSetupData for upsert
+        const markSetupData = subjects.map((subjectId, index) => ({
+            id: examId,
+            class_id: classIds[index],
+            subject_id: subjectId.id, // Mapping only subject_id
+            FM: fullMarks[index],
+            PM: passMarks[index],
+            created_at: new Date().toISOString()
+        }));
+
+        // Log the markSetupData to check for undefined values
+        console.log("Mark Setup Data:", markSetupData);
+
+        // Upsert logic
+        for (const mark of markSetupData) {
+            const { id, class_id, subject_id, FM, PM } = mark;
+
+            // Check for undefined values
+            if (!subject_id || !class_id || !id) {
+                console.error('Invalid data found:', mark);
+                throw new Error('One or more required fields are undefined.');
+            }
+
+            // Check if the record already exists
+            const { data: existingData, error: existingError } = await createClient
+                .from('markSetup')
+                .select('*')
+                .eq('id', id)
+                .eq('class_id', class_id)
+                .eq('subject_id', subject_id)
+                .limit(1)
+                .single();
+
+            if (existingError) {
+                // Handle the case where no records are found
+                if (existingError.code === 'PGRST116') { // No rows found
+                    // Proceed to insert a new record
+                } else {
+                    throw existingError; // Other errors
+                }
+            }
+
+            if (existingData) {
+                // Update existing record
+                const { error: updateError } = await createClient
+                    .from('markSetup')
+                    .update({ FM, PM })
+                    .eq('id', existingData.id)
+                    .eq('class_id',existingData.class_id)
+                    .eq('subject_id',existingData.subject_id); // Assuming 'id' is the primary key
+
+                if (updateError) {
+                    throw updateError;
+                }
+            } else {
+                // Insert new record
+                const { error: insertError } = await createClient
+                    .from('markSetup')
+                    .insert(mark);
+
+                if (insertError) {
+                    throw insertError;
+                }
+            }
+        }
 
         return res.status(200).json({
-            message: "Marks entered successfully",
-            data
+            message: "Mark setup updated successfully"
         });
     } catch (error) {
-        console.error('Error entering marks:', error.message);
+        console.error('Error entering mark setup:', error.message);
         return res.status(500).json({
-            message: "Failed to enter marks",
+            message: "Failed to enter mark setup",
             error: error.message
         });
     }
@@ -218,9 +294,21 @@ const getMarksData = async (req, res) => {
             return res.status(400).json({ message: "No exam data found for the given parameters." });
         }
 
+        const {data:subjectData, error: subjectError}= await createClient
+        .from('subjects')
+        .select('id')
+        .eq('class_id', classData[0].id)
+        .gte('created_at', `${year}-01-01`)
+        .lte('created_at', `${year}-12-31`);
+
+        if (subjectError || !subjectData || subjectData.length === 0) {
+            console.error('No subject data found or error occurred:', subjectError);
+            return res.status(400).json({ message: "No subject data found for the given parameters." });
+        }
+
         const { data, error } = await createClient
             .from('markSetup')
-            .select('id,class_id,subject_id, FM, PM')
+            .select('id, class_id, subject_id, FM, PM, subjects(subject_name)') 
             .gte('created_at', `${year}-01-01`)
             .lte('created_at', `${year}-12-31`)
             .eq('class_id', classData[0].id)
