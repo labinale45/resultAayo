@@ -17,6 +17,8 @@ export default function Examtable() {
   const [classes, setClasses] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [marksData, setMarksData] = useState([]);
+  const [passMarks,setPassMarks] =useState([]);
+  const [fullMarks, setFullMarks] = useState([]);
 
   useEffect(() => {
     YearSelect();
@@ -249,25 +251,29 @@ export default function Examtable() {
           {mark.subject_name} {/* Assuming marksData contains subject_name */}
         </td>
         <td className="px-6 py-4 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
-          <input
-            type="text"
-            value={mark.FM || ''} // Full Marks from marksData
-            onChange={(e) =>
-              handleInputChange(index, "fullMarks", e.target.value)
-            }
-            className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
-          />
-        </td>
-        <td className="px-6 py-4 sticky left-[240px] z-20 bg-white dark:bg-gray-800">
-          <input
-            type="text"
-            value={mark.PM || ''} // Pass Marks from marksData
-            onChange={(e) =>
-              handleInputChange(index, "passMarks", e.target.value)
-            }
-            className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
-          />
-        </td>
+                      <input
+                        type="text"
+                        value={fullMarks[index] || ''} // Individual full marks for each subject
+                        onChange={(e) => {
+                          const updatedFullMarks = [...fullMarks]; // Create a copy of the current fullMarks array
+                          updatedFullMarks[index] = e.target.value; // Update the specific index
+                          setFullMarks(updatedFullMarks); // Set the new state
+                        }}
+                        className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </td>
+                    <td className="px-6 py-4 sticky left-[240px] z-20 bg-white dark:bg-gray-800">
+                      <input
+                        type="text"
+                        value={passMarks[index] || ''} // Individual pass marks for each subject
+                        onChange={(e) => {
+                          const updatedPassMarks = [...passMarks]; // Create a copy of the current passMarks array
+                          updatedPassMarks[index] = e.target.value; // Update the specific index
+                          setPassMarks(updatedPassMarks); // Set the new state
+                        }}
+                        className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </td>
       </tr>
     ))
   ) : Array.isArray(subjects) && subjects.length > 0 ? (
@@ -282,9 +288,9 @@ export default function Examtable() {
         <td className="px-6 py-4 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
           <input
             type="text"
-            value={''} // No marks data available
+            value={fullMarks} // No marks data available
             onChange={(e) =>
-              handleInputChange(index, "fullMarks", e.target.value)
+              setFullMarks(e.target.value)
             }
             className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
           />
@@ -292,9 +298,9 @@ export default function Examtable() {
         <td className="px-6 py-4 sticky left-[240px] z-20 bg-white dark:bg-gray-800">
           <input
             type="text"
-            value={''} // No marks data available
+            value={passMarks} // No marks data available
             onChange={(e) =>
-              handleInputChange(index, "passMarks", e.target.value)
+              setPassMarks(e.target.value)
             }
             className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
           />

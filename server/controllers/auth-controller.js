@@ -298,18 +298,30 @@ const updateUserProfile = async (req, res) => {
 };
 
 const updateTeacherStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body; // Expecting the new status in the request body
+
   try {
-    const { id } = req.params;
-    const { status } = req.body;
-    
-    if (!['active', 'inactive'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status value' });
+    const supabaseClient = await connectdb();
+    if (!supabaseClient) {
+      return res.status(500).json({ error: "Database connection failed" });
     }
 
-    const result = await auth.updateTeacherStatus(id, status);
-    res.status(200).json({ message: 'Status updated successfully', data: result });
+    // Update the teacher's status in the database
+    const { error } = await supabaseClient
+      .from("teachers") // Assuming the table is named "teachers"
+      .update({ status })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error updating teacher status:", error);
+      return res.status(500).json({ error: "Failed to update teacher status" });
+    }
+
+    return res.status(200).json({ message: "Teacher status updated successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Server error in updateTeacherStatus:", error);
+    return res.status(500).json({ error: error.message || "Failed to update teacher status" });
   }
 };
 

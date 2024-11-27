@@ -116,6 +116,7 @@ const getRecordsByYear = async (req, res) => {
             fullName: `${record.first_name} ${record.last_name}`,
             subject: record.subject,
             img_url: imageUrl,
+             tstatus: record.status,
           };
         case "students":
           return {
