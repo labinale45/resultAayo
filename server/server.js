@@ -4,7 +4,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDb = require('./utils/connectdb');
 const authRouter = require('./routes/auth-rout');
-const { dashboard } = require('./controllers/dashboard');
+const authMiddleware = require('./middlewares/authmiddleware');
+const { login } = require('./controllers/auth-controller');
 
 // Middleware setup
 app.use(cors({
@@ -17,9 +18,9 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(bodyParser.json());
 
-// Routes (without auth middleware)
+//auth
 app.use('/api/auth', authRouter);
-app.use('/api/dashboard', dashboard);
+app.use(authMiddleware);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

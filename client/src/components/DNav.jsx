@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Darklightmode from "./Mini Component/Darklightmode";
@@ -22,6 +22,7 @@ export default function Dnav({ currentPath }) {
   const router = useRouter();
   const menuRef = useRef(null);
   const [userData, setUserData] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -74,7 +75,7 @@ export default function Dnav({ currentPath }) {
   };
 
   const handleLogoutConfirm = () => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("token");
     localStorage.removeItem("userData");
     setShowLogoutConfirmation(false);
     router.push("/");

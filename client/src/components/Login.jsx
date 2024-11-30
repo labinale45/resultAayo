@@ -18,7 +18,7 @@ export default function Login({ onClose }) {
   const handleLogin = async (formData) => {
     setIsLoading(true);
     setErrorMessage("");
-    
+  
     try {
       const response = await fetch("http://localhost:4000/api/auth/login", {
         method: 'POST',
@@ -32,26 +32,36 @@ export default function Login({ onClose }) {
       });
 
       const data = await response.json();
-      
+    
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
 
       localStorage.setItem('userData', JSON.stringify(data.userData));
       localStorage.setItem('token', data.token);
-      
+      document.cookie = `token=${data.token}; path=/`;
+      document.cookie = `userData=${JSON.stringify(data.userData)}; path=/`;
+    
       switch (data.message) {
         case "Admin":
-          route.push("/admin");
-          setIsLoading(false);
+          const adminCheck = await fetch("http://localhost:4000/api/auth/admin", {
+            headers: {
+              'Authorization': `Bearer ${data.token}`
+            }
+          });
+          const adminResponse = await adminCheck.json();
+        
+          if (adminResponse.authorized) {
+            route.push("/admin");
+          } else {
+            route.push("/");
+          }
           break;
         case "teachers":
           route.push("/teacher");
-          setIsLoading(false);
           break;
         case "students":
           route.push("/student");
-          setIsLoading(false);
           break;
         default:
           throw new Error('Invalid role');
@@ -59,11 +69,11 @@ export default function Login({ onClose }) {
     } catch (error) {
       console.error('Login error:', error);
       setErrorMessage(error.message);
+      route.push("/");
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="bg-white dark:bg-[#253553] dark:text-white flex rounded-xl shadow-lg max-w-4xl p-6 relative">
       <button
