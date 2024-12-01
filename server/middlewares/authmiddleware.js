@@ -24,8 +24,22 @@ const authMiddleware = (req, res, next) => {
         message: "Access denied",
         redirect: "/"
       });
+
     }
-    
+    else if(req.path === '/teacher' && decoded.role !== 'teachers') {
+      return res.status(403).json({
+        authorized: false,
+        message: "Access denied",
+        redirect: "/"
+      });
+    }
+    else if(req.path === '/student' && decoded.role !== 'students') {
+      return res.status(403).json({
+        authorized: false,
+        message: "Access denied",
+        redirect: "/"
+      });
+    }
     next();
   } catch (err) {
     res.status(401).json({ 

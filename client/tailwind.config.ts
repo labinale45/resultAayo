@@ -17,6 +17,8 @@ module.exports = {
         fly1: 'fly1 50s ease-in-out infinite',
         fly2: 'fly2 55s ease-in-out infinite',
         fly3: 'fly3 65s ease-in-out infinite',
+        fadeIn: 'fadeIn 1s ease-in-out',
+        slideIn: 'slideIn 1s ease forwards',
       },
       keyframes: {
         fly: {
@@ -41,6 +43,14 @@ module.exports = {
           '0%, 100%': { transform: 'translate(50vw, 100vh)' },
           '33%': { transform: 'translate(100vw, 50vh)' },
           '66%': { transform: 'translate(0, 0)' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideIn: {
+          '0%': { transform: 'translateY(-50px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
         },
       }
     },

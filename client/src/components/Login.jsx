@@ -69,7 +69,6 @@ export default function Login({ onClose }) {
     } catch (error) {
       console.error('Login error:', error);
       setErrorMessage(error.message);
-      route.push("/");
     } finally {
       setIsLoading(false);
     }

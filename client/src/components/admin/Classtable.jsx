@@ -133,6 +133,7 @@ export default function Classtable() {
       );
 
       await Promise.all(promises);
+      
       fetchClassData();
     } catch (error) {
       console.error('Error saving teacher assignments:', error);

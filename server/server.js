@@ -20,7 +20,6 @@ app.use(bodyParser.json());
 
 //auth
 app.use('/api/auth', authRouter);
-app.use(authMiddleware);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
