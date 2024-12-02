@@ -44,16 +44,17 @@ export default function Login({ onClose }) {
     
       switch (data.message) {
         case "Admin":
-          const adminCheck = await fetch("http://localhost:4000/api/auth/admin", {
-            headers: {
-              'Authorization': `Bearer ${data.token}`
-            }
-          });
-          const adminResponse = await adminCheck.json();
+          // const adminCheck = await fetch("http://localhost:4000/api/auth/admin", {
+          //   headers: {
+          //     'Authorization': `Bearer ${data.token}`
+          //   }
+          // });
+          // const adminResponse = await adminCheck.json();
         
-          if (adminResponse.authorized) {
-            route.push("/admin");
-          } 
+          // if (adminResponse.authorized) {
+          //   route.push("/admin");
+          // } 
+          route.push("/admin");
           break;
         case "teachers":
           route.push("/teacher");
