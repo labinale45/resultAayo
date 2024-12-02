@@ -24,7 +24,13 @@ export default function Examtable() {
 
   useEffect(() => {
     YearSelect();
-    fetchExamTypes();
+    if (selectedYear) {
+      fetchExamTypes();
+    }
+  }, [selectedYear]);
+
+  useEffect(() => {
+    YearSelect();
     fetchClasses();
     if (selectedYear && selectedClass) {
       fetchMarksData();
@@ -111,7 +117,7 @@ export default function Examtable() {
 
   const fetchExamTypes = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/auth/exam-types');
+      const response = await fetch(`http://localhost:4000/api/auth/exam-types?year=${selectedYear}`);
       if (!response.ok) throw new Error('Failed to fetch exam types');
       const data = await response.json();
       setExamTypes(data);
