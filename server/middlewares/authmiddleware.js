@@ -1,53 +1,21 @@
-"use server";
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
-
-dotenv.config();
 
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const token = req.headers['authorization']?.split(' ')[1]; // Assuming Bearer token
 
   if (!token) {
-    return res.status(401).json({ 
-      authorized: false,
-      redirect: "/"
-    });
+    return res.status(401).json({ message: 'No token provided' });
   }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Failed to authenticate token' });
+    }
+
+    // Attach user information to the request object
     req.user = decoded;
-    
-    if (req.path === '/admin' && decoded.role !== 'Admin') {
-      return res.status(403).json({
-        authorized: false,
-        message: "Access denied",
-        redirect: "/"
-      });
-
-    }
-    else if(req.path === '/teacher' && decoded.role !== 'teachers') {
-      return res.status(403).json({
-        authorized: false,
-        message: "Access denied",
-        redirect: "/"
-      });
-    }
-    else if(req.path === '/student' && decoded.role !== 'students') {
-      return res.status(403).json({
-        authorized: false,
-        message: "Access denied",
-        redirect: "/"
-      });
-    }
     next();
-  } catch (err) {
-    res.status(401).json({ 
-      authorized: false,
-      message: 'Token is not valid',
-      redirect: "/"
-    });
-  }
+  });
 };
 
 module.exports = authMiddleware;

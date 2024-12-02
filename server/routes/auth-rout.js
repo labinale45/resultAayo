@@ -3,7 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/auth-controller');
 const examController = require('../controllers/exam-controller');
 const classController = require('../controllers/class-controller');
-const retrive =  require('../controllers/retrive-controller');
+const retrive = require('../controllers/retrive-controller');
 const dashboardController = require('../controllers/dashboard');
 const authMiddleware = require('../middlewares/authmiddleware');
 const { deleteTeacher, updateTeacher, getTeacher } = require('../controllers/teacher-controller');
@@ -45,7 +45,7 @@ router.route('/teachers').get(classController.getTeachers);
 // Data retrieval routes
 router.route('/year').get(retrive.getYears);
 router.route('/records/:year').get(retrive.getRecordsByYear);
-router.route('/exam-types').get(retrive.getExamTypes);
+router.route('/exam-types').get(retrive.getExamTypes); // Updated to handle exam types by year
 router.route('/classes').get(retrive.getClasses);
 
 // Marks routes
@@ -57,47 +57,13 @@ router.route('/dashboard/counts').get(dashboardController.dashboard);
 router.route('/dashboard/history').get(dashboardController.getHistory);
 
 // AI routes
-router.route('/ai-response').post( aiController.getAIResponse);
+router.route('/ai-response').post(aiController.getAIResponse);
 
 // New route for fetching subjects by class ID
 router.route('/subjects').get(examController.getSubjectsByClass);
 
-
-
-// Add these protected routes with authMiddleware
-// Protected Admin Route
-  //Check if user has Admin role from the decoded JWT token
-  
-//   router.get('/admin', authMiddleware, (req, res) => {
-//     if (req.user.role === 'Admin') {
-//       res.status(200).json({ 
-//         authorized: true,
-//         message: "Welcome Admin",
-//         user: req.user 
-//       });
-//     } else {
-//       res.status(403).json({ 
-//         authorized: false,
-//         message: "Access denied",
-//         redirect: "/"
-//       });
-//     }
-//   });
-  
-// router.get('/teacher', authMiddleware, (req, res) => {
-//   if (req.user.role === 'teachers') {
-//     res.status(200).json({ authorized: true });
-//   } else {
-//     res.status(403).json({ authorized: false });
-//   }
-// });
-
-// router.get('/student', authMiddleware, (req, res) => {
-//   if (req.user.role === 'students') {
-//     res.status(200).json({ authorized: true });
-//   } else {
-//     res.status(403).json({ authorized: false });
-//   }
-// });
+// Add this route to fetch classes assigned to a specific teacher
+router.get('/teacher/:teacherId/classes', classController.getClassesByTeacher);
+router.get('/teacher/:teacherId/subjects', examController.getAssignedSubjects);
 
 module.exports = router;

@@ -366,4 +366,54 @@ const getSubjectsByClass = async (req, res) => {
     }
 };
 
-module.exports = {createExam, createNotice, getLedgerStatus, enterMarks, getMarksData, getSubjectsByClass};
+const getAssignedSubjects = async (req, res) => {
+    try {
+        const { teacherId } = req.params;
+        const createClient = await connectdb();
+
+        const {data: teacherData, error: teacherError } = await createClient
+        .from('teachers')
+        .select('id')
+        .eq('teacher_id', teacherId)
+
+
+        if (teacherError) throw teacherError;
+        if (!teacherData || teacherData.length === 0) {
+            return res.status(404).json({ message: "No teacher found" }); // Return 404 if no teacher found
+        }
+
+        const { data: subjectData, error: subjectError } = await createClient
+        .from('subjects')
+        .select('subject_name')
+        .eq('teacher_id', teacherData[0].id);
+        if (subjectError) throw subjectError;
+
+        if (subjectData.length === 0) {
+            console.warn("No classes assigned for this teacher.");
+        }
+
+         // Use a Set to track unique classes
+    const uniqueSubject = new Set();
+
+    // Map the assignedClass data and add unique classes to the Set
+    const subjects = (subjectData || []).map(item => {
+      const subject = item.subject_name || '';
+      if (subject) {
+        uniqueSubject.add(subject); // Add to Set for uniqueness
+      }
+     return subject; // Return the subject name
+      
+    });
+    // Convert the Set back to an array
+     const uqSubject = Array.from(uniqueSubject); // Return unique class names
+     console.log(uqSubject);
+     return res.status(200).json(uqSubject); // Return the unique classes
+
+    }catch (error) {
+        console.error("Error fetching subjects:", error.message);
+        return res.status(500).json({ message: "Failed to fetch subjects", error: error.message });
+    }
+};
+
+module.exports = { getAssignedSubjects,createExam, createNotice, getLedgerStatus, enterMarks, getMarksData, getSubjectsByClass};
+

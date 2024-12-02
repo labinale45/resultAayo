@@ -196,4 +196,62 @@ const getTeachers = async () => {
     }
 };
 
-module.exports ={createClass, getClass, createSubject, getSubjects, getSubjectsByClass, assignTeacher, getTeachers};
+const getClassesByTeacher = async (teacherId) => {
+    try {
+        console.log("Model teacher Id:", teacherId);
+        const createClient = await connectdb();
+
+        const { data: teacherData, error: teacherError } = await createClient
+        .from('teachers')
+        .select('id')
+        .eq('teacher_id', teacherId)
+
+        if (teacherError) {
+            console.error("Teacher Query Error: ", teacherError);
+            throw teacherError;
+        }
+        if (!teacherData || teacherData.length === 0) {
+            console.warn("No teacher data found.");
+            return [];
+        }
+
+        const { data: assignedClass, error: assignedClassError } = await createClient
+            .from('subjects')
+            .select(`class_id:class(class)`)
+            .eq('teacher_id', teacherData[0].id);
+
+        if (assignedClassError) {
+            console.error("Query Error: ", assignedClassError);
+            throw assignedClassError;
+        }
+
+        console.log("Model Data: ", assignedClass);
+        
+        if (assignedClass.length === 0) {
+            console.warn("No classes assigned for this teacher.");
+        }
+
+         // Use a Set to track unique classes
+    const uniqueClasses = new Set();
+
+    // Map the assignedClass data and add unique classes to the Set
+    const classes = (assignedClass || []).map(item => {
+      const className = item.class_id?.class || '';
+      if (className) {
+        uniqueClasses.add(className); // Add to Set for uniqueness
+      }
+
+      return className; // Return the class name
+    });
+
+    // Convert the Set back to an array
+    return Array.from(uniqueClasses); // Return unique class names
+
+    } catch (error) {
+        console.error("Error in getClassesByTeacher: ", error);
+        return [];
+    }
+};
+
+
+module.exports ={ getClassesByTeacher ,createClass, getClass, createSubject, getSubjects, getSubjectsByClass, assignTeacher, getTeachers};

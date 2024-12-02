@@ -53,9 +53,7 @@ export default function Login({ onClose }) {
         
           if (adminResponse.authorized) {
             route.push("/admin");
-          } else {
-            route.push("/");
-          }
+          } 
           break;
         case "teachers":
           route.push("/teacher");

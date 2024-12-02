@@ -161,10 +161,24 @@ const getRecordsByYear = async (req, res) => {
 // Add these new controller functions
 const getExamTypes = async (req, res) => {
   try {
+    const year = req.query.year; // Get the year from the query parameters
+    console.log("Fetching exam types for year:", year);
+
+    // Validate the year
+    if (!year) {
+      return res.status(400).json({ error: "Year is required" });
+    }
+
+    const startDate = `${year}-01-01`; // Start of the year
+    const endDate = `${year}-12-31`; // End of the year
+
     const supabaseClient = await connectdb();
+
     const { data, error } = await supabaseClient
       .from("exams")
-      .select("exam_type");
+      .select("exam_type")
+      .gte("created_at", startDate) // Use dynamic start date
+      .lte("created_at", endDate); // Use dynamic end date
 
     if (error) throw error;
 
