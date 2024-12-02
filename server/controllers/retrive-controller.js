@@ -241,9 +241,44 @@ const getClasses = async (req, res) => {
   }
 };
 
+const getRecordsByYearAndClass = async (req, res) => {
+  const { year } = req.params;
+  const { cls } = req.query; // Get the class from query parameters
+
+  console.log("Fetching records for year:", year, "and class:", cls);
+
+  try {
+    // Fetch records based on year and class
+    const supabaseClient = await connectdb();
+    const {data, error} = await supabaseClient
+     .from("students")
+     .select(`first_name,last_name, rollNo`)
+     .eq("class", cls)
+     .gte("created_at", `${year}-01-01`)
+     .lte("created_at", `${year}-12-31`);
+
+
+     console.log("Fetched data:", data);
+     if (error) throw error;
+    
+     if (!data || data.length === 0) {
+
+      return res.status(404).json({ error: "No records found for the given year and class" });
+    }
+  
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching records:", error);
+    res.status(500).json({ error: "Failed to fetch records" });
+  }
+};
+
 module.exports = {
+  getRecordsByYearAndClass,
   getYears,
   getRecordsByYear,
   getExamTypes,
   getClasses,
 };
+
+

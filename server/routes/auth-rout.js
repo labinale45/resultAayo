@@ -45,6 +45,7 @@ router.route('/teachers').get(classController.getTeachers);
 // Data retrieval routes
 router.route('/year').get(retrive.getYears);
 router.route('/records/:year').get(retrive.getRecordsByYear);
+router.route('/studentRecords/:year').get(retrive.getRecordsByYearAndClass);   
 router.route('/exam-types').get(retrive.getExamTypes); // Updated to handle exam types by year
 router.route('/classes').get(retrive.getClasses);
 

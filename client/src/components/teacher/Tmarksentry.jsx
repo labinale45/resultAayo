@@ -48,6 +48,11 @@ import axios from "axios";
       }
     }, [teacherId]);
 
+    useEffect(() => {
+      if (selectedYear && selectedExamType && selectedClass && selectedSubject) {
+        fetchStudents();
+      }
+    }, [selectedYear, selectedExamType, selectedClass, selectedSubject]);
 
 
     
@@ -102,7 +107,7 @@ import axios from "axios";
         const classIds = await response.json();
         const classes = classIds.map(id => ({
           id: id,
-          name: `Class ${id}`
+          name: `${id}`
         }));
         setClasses(classes);
       } catch (error) {
@@ -168,25 +173,26 @@ import axios from "axios";
       setIsLoading(false);
     }
   };
-
   // Add this function to fetch students when class is selected
   const fetchStudents = async () => {
-    if (selectedClass) {
+    if (selectedClass && selectedYear) {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:4000/api/auth/records/${selectedYear}?status=students`
+          `http://localhost:4000/api/auth/studentRecords/${selectedYear}?status=students&cls=${selectedClass}`
         );
-        const classStudents = response.data
-          .filter((student) => student.grade === selectedClass)
-          .map((student) => ({
-            rollNo: student.id,
-            name: student.fullName,
-            th: "",
-            pr: "",
-            total: 0,
-          }));
-        setStudents(classStudents);
+        const classStudents = response.data.map((student) => ({
+          rollNo: student.rollNo||"N/A",
+          name: student.first_name + " " + student.last_name||"",
+        }));
+
+        if (response.data.length === 0) {
+          setStudents([]);
+                }
+                else{
+                  setStudents(classStudents);
+                }
+
       } catch (error) {
         console.error("Error fetching students:", error);
       } finally {
@@ -195,12 +201,6 @@ import axios from "axios";
     }
   };
 
-  // Add this useEffect to trigger student fetch
-  useEffect(() => {
-    if (selectedClass && selectedYear) {
-      fetchStudents();
-    }
-  }, [selectedClass, selectedYear]);
     return (
       <div className="relative mt-5 p-4 bg-white rounded-lg shadow-md">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -287,42 +287,52 @@ import axios from "axios";
                   </tr>
                 </thead>
                 <tbody>
-                  {students.map((student, index) => (
-                    <tr
-                      key={index}
-                      className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                    >
-                      <td className="px-4 py-2 sticky left-0 z-20 bg-white dark:bg-gray-800">
-                        {student.rollNo}
-                      </td>
-                      <td className="px-4 py-2 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
-                        {student.name}
-                      </td>
-                      <td className="px-4 py-2 sticky left-[240px] z-20 bg-white dark:bg-gray-800">
-                        <input
-                          type="text"
-                          value={student.th}
-                          onChange={(e) =>
-                            handleInputChange(index, "th", e.target.value)
-                          }
-                          className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </td>
-                      <td className="px-4 py-2 sticky left-[360px] z-20 bg-white dark:bg-gray-800">
-                        <input
-                          type="text"
-                          value={student.pr}
-                          onChange={(e) =>
-                            handleInputChange(index, "pr", e.target.value)
-                          }
-                          className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </td>
-                      <td className="px-4 py-2 sticky left-[480px] z-20 bg-white dark:bg-gray-800">
-                        {student.total}
-                      </td>
-                    </tr>
-                  ))}
+                  {students.length === 0 ? (
+                  
+                   <tr>
+                    <td colSpan="10" className="text-center py-4 text-red-500">
+                     Student Not Found.
+                    </td>
+                  </tr>
+   
+                  ) : (
+                    students.map((student, index) => (
+                      <tr
+                        key={index}
+                        className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                      >
+                        <td className="px-4 py-2 sticky left-0 z-20 bg-white dark:bg-gray-800">
+                          {student.rollNo}
+                        </td>
+                        <td className="px-4 py-2 sticky left-[120px] z-20 bg-white dark:bg-gray-800">
+                          {student.name}
+                        </td>
+                        <td className="px-4 py-2 sticky left-[240px] z-20 bg-white dark:bg-gray-800">
+                          <input
+                            type="text"
+                            value={student.th}
+                            onChange={(e) =>
+                              handleInputChange(index, "th", e.target.value)
+                            }
+                            className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </td>
+                        <td className="px-4 py-2 sticky left-[360px] z-20 bg-white dark:bg-gray-800">
+                          <input
+                            type="text"
+                            value={student.pr}
+                            onChange={(e) =>
+                              handleInputChange(index, "pr", e.target.value)
+                            }
+                            className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </td>
+                        <td className="px-4 py-2 sticky left-[480px] z-20 bg-white dark:bg-gray-800">
+                          {student.total}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                   <tr>
                     <td colSpan="5" className="px-4 py-4">
                       <div className="flex justify-end">
