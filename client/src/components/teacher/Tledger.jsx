@@ -14,6 +14,20 @@ const TLedger = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [classes, setClasses] = useState([]);
   const [examTypes, setExamTypes] = useState([]);
+  const [teacherId, setTeacherId] = useState(null);
+
+  
+  useEffect(() => {
+    // Fetch teacherId from token
+    const token = localStorage.getItem("token"); // Assuming you store the token in localStorage
+    if (token) {
+      const decodedToken = JSON.parse(atob(token.split('.')[1])); // Decode the token
+      console.log("decotedTOken",decodedToken); // Log the decoded token for debugging
+      if (decodedToken.role === "teachers") {
+        setTeacherId(decodedToken.id); // Assuming the teacher ID is stored as 'id' in the token
+      }
+    }
+})
 
   useEffect(() => {
     fetchYears();
@@ -38,12 +52,16 @@ const TLedger = () => {
       setError("Failed to fetch years");
     }
   };
-  const fetchClasses = async () => {
+  const fetchClasses = async (teacherId) => {
     try {
-      const response = await fetch("http://localhost:4000/api/auth/classes");
+      const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/classes`);
       if (!response.ok) throw new Error("Failed to fetch classes");
-      const data = await response.json();
-      setClasses(data);
+      const classIds = await response.json();
+      const classes = classIds.map(id => ({
+        id: id,
+        name: `${id}`
+      }));
+      setClasses(classes);
     } catch (error) {
       console.error("Error fetching classes:", error);
     }

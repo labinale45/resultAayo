@@ -147,7 +147,7 @@ const getLedgerStatus = async (req, res) => {
 };
 
 
-const enterMarks = async (req, res) => {
+const setupMarks = async (req, res) => {
     try {
         const { year, examType, subjects, fullMarks, passMarks } = req.body;
         const createClient = await connectdb();
@@ -158,6 +158,8 @@ const enterMarks = async (req, res) => {
             .from('exams')
             .select('id')
             .eq('exam_type', examType)
+            .gte('created_at', `${year}-01-01`)
+            .lte('created_at', `${year}-12-31`)
             .single();
 
         if (examError || !examData) {
@@ -415,5 +417,172 @@ const getAssignedSubjects = async (req, res) => {
     }
 };
 
-module.exports = { getAssignedSubjects,createExam, createNotice, getLedgerStatus, enterMarks, getMarksData, getSubjectsByClass};
+const enterMarks = async (req, res)=>{
+    try{
+        const {year, examType , className, subject,marks} = req.body;
+        const createClient = await connectdb();
+
+        console.log(year, examType, className, subject,marks);
+
+
+
+        const {data: examData, error: examError} = await createClient 
+        .from('exams')
+        .select('id')
+        .eq('exam_type', examType)
+        .gte('created_at', `${year}-01-01`)
+        .lte('created_at', `${year}-12-31`)
+        .single();
+
+        console.log("examData: ",examData);
+
+        if (examError) throw examError;
+        if (!examData || examData.length === 0) {
+            return res.status(404).json({ message: "No exam found" }); // Return 404 if no exam found
+        }
+
+        
+
+        const {data: classData, error: classError} = await createClient
+        .from('class')
+        .select('id')
+        .eq('class', className)
+        .gte('updated_at', `${year}-01-01`)
+        .lte('updated_at', `${year}-12-31`)
+        .single();
+
+        console.log("classData: ",classData);
+
+        if (classError) throw classError;
+        if (!classData || classData.length === 0) {
+            return res.status(404).json({ message: "No class found" }); // Return 404 if no class found
+        }
+
+
+        const {data: subjectData, error: subjectError} = await createClient
+        .from('subjects')
+        .select('id')
+        .eq('subject_name', subject)
+        .eq('class_id', classData.id)
+        .single();
+
+
+        console.log("subjectData: ",subjectData);
+
+        if (subjectError) throw subjectError;
+        if (!subjectData || subjectData.length === 0) {
+            return res.status(404).json({ message: "No subject found" }); // Return 404 if no subject found
+        }
+
+       
+
+        const {data: studentData, error: studentError} = await createClient
+        .from('students')
+        .select('id')
+        .eq('class_id', classData.id)
+        .in('rollNo', marks.map(mark => mark.rollNo));
+
+        console.log("studentData: ",studentData);
+
+        if (studentError) throw studentError;
+        if (!studentData || studentData.length === 0) {
+            return res.status(404).json({ message: "No student found" }); // Return 404 if no student found
+        }
+
+
+         // Prepare markSetupData for upsert
+         const markSheetsData = marks.map((mark, index) => ({
+            class: className,
+            student_id: studentData.map(student => student.id)[index], // Mapping only student_id
+            subject_id: subjectData.id, // Mapping only subject_id
+            exam_id: examData.id,
+            TH: marks.map(mark => mark.th)[index],
+            PR: marks.map(mark => mark.pr)[index],
+            created_at: new Date().toISOString()
+        }));
+
+        // Log the markSetupData to check for undefined values
+        console.log("Mark Sheets Data:", markSheetsData);
+
+        // Upsert logic
+        for (const mark of markSheetsData) {
+            const { class:className, student_id, subject_id, exam_id, TH, PR } = mark;
+
+            console.log("Mark Data:", mark);
+            
+            // Check for undefined values
+            if (!className||!student_id || !subject_id || !exam_id || !TH || !PR) {
+                console.error('Invalid data found:', mark);
+                throw new Error('One or more required fields are undefined.');
+            }
+
+            // Check if the record already exists
+            const { data: existingData, error: existingError } = await createClient
+                .from('marksheets')
+                .select('*')
+                .eq('class',className)
+                .eq('student_id', student_id)
+                .eq('subject_id', subject_id)
+                .eq('exam_id', exam_id)
+                .limit(1)
+                .single();
+
+            if (existingError) {
+                // Handle the case where no records are found
+                if (existingError.code === 'PGRST116') { // No rows found
+                    // Proceed to insert a new record
+                } else {
+                    throw existingError; // Other errors
+                }
+            }
+
+            if (existingData) {
+                // Update existing record
+                const { error: updateError } = await createClient
+                    .from('marksheets')
+                    .update({ TH, PR })
+                    .eq('class',className)
+                    .eq('student_id', student_id)
+                    .eq('subject_id', subject_id)
+                    .eq('exam_id', exam_id)// Assuming 'id' is the primary key
+
+                if (updateError) {
+                    throw updateError;
+                }
+            } else {
+                // Insert new record
+                const { error: insertError } = await createClient
+                    .from('marksheets')
+                    .insert(mark);
+
+                if (insertError) {
+                    throw insertError;
+                }
+            }
+        }
+        return res.status(200).json({
+            message: "Mark Entered successfully"
+        });
+        
+
+       }
+       catch(error){
+        console.error("Error fetching subjects:", error.message);
+        return res.status(500).json({ message: "Failed to fetch subjects", error: error.message });
+    }
+
+};
+
+
+
+module.exports = { 
+    getAssignedSubjects,
+    createExam, 
+    createNotice, 
+    getLedgerStatus, 
+    setupMarks,
+    enterMarks, 
+    getMarksData, 
+    getSubjectsByClass
+};
 

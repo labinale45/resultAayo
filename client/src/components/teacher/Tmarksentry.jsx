@@ -151,6 +151,17 @@ import axios from "axios";
   const handleSaveMarks = async () => {
     setIsLoading(true);
     try {
+      // Validate marks before submission
+
+      const validMarks = students.map(student => ({
+        rollNo: student.rollNo,
+        name: student.name,
+        th: student.th || 0,
+        pr: student.pr || 0,
+        total: student.total || 0
+      }));
+
+
       const response = await axios.post(
         "http://localhost:4000/api/auth/enter-marks",
         {
@@ -158,21 +169,23 @@ import axios from "axios";
           examType: selectedExamType,
           className: selectedClass,
           subject: selectedSubject,
-          marks: students,
+          marks: validMarks,
         }
       );
-
+  
       if (response.status === 200) {
         alert("Marks saved successfully!");
-        // Optionally reset form or refresh data
+        //] Optional: Reset form or refresh data
+         fetchStudents(); // Optionally refresh student data
       }
     } catch (error) {
       console.error("Error saving marks:", error);
-      alert("Failed to save marks. Please try again.");
+      alert(error.response?.data?.message || "Failed to save marks. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
+  
   // Add this function to fetch students when class is selected
   const fetchStudents = async () => {
     if (selectedClass && selectedYear) {

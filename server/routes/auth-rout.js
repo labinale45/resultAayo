@@ -50,8 +50,9 @@ router.route('/exam-types').get(retrive.getExamTypes); // Updated to handle exam
 router.route('/classes').get(retrive.getClasses);
 
 // Marks routes
-router.route('/enter-marks').post(examController.enterMarks);
+router.route('/setup-marks').post(examController.setupMarks);
 router.route('/marks').get(examController.getMarksData);
+router.route('/enter-marks').post(examController.enterMarks);
 
 // Dashboard routes
 router.route('/dashboard/counts').get(dashboardController.dashboard);

@@ -142,7 +142,7 @@ export default function Examtable() {
   const handleSaveMarks = async () => {
     try {
       console.log("saveData",selectedSubjects);
-        const response = await fetch('http://localhost:4000/api/auth/enter-marks', {
+        const response = await fetch('http://localhost:4000/api/auth/setup-marks', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -159,9 +159,9 @@ export default function Examtable() {
 
         const result = await response.json();
         if (response.ok) {
-            alert(result.message);
+            alert("Marks saved successfully!");
         } else {
-            alert(result.message);
+            alert("Failed to save marks. Please try again.");	
         }
     } catch (error) {
         console.error('Error saving marks:', error);
