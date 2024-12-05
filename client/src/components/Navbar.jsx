@@ -129,12 +129,13 @@ export default function Navbar() {
                     Module
                   </li>
                 </Link>
+                
                 <button
                   onClick={() => {
                     setShowLogin(true);
                     setNav(false);
                   }}
-                  className="text-white p-2 sm:col-span-4 h-10 justify-left shadow-xl font-bold bg-[#8AA4D6] hover:bg-[#253553] hover:text-white py-2 px-4 rounded text-sm hover:scale-105 duration-300"
+                  className="text-white p-2 sm:col-span-4 h-10 justify-left shadow-xl font-bold bg-[#8AA4D6] hover:bg-[#253553] focus:bg-[#253553] hover:text-white py-2 px-4 rounded text-sm hover:scale-105 duration-300"
                 >
                   Login
                 </button>

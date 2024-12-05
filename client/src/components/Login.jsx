@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -42,37 +42,31 @@ export default function Login({ onClose }) {
       document.cookie = `token=${data.token}; path=/`;
       document.cookie = `userData=${JSON.stringify(data.userData)}; path=/`;
     
-      switch (data.message) {
-        case "Admin":
-          // const adminCheck = await fetch("http://localhost:4000/api/auth/admin", {
-          //   headers: {
-          //     'Authorization': `Bearer ${data.token}`
-          //   }
-          // });
-          // const adminResponse = await adminCheck.json();
+      // Use a Promise to ensure page load before stopping spinner
+      await new Promise((resolve) => {
+        switch (data.message) {
+          case "Admin":
+            route.push("/admin");
+            break;
+          case "teachers":
+            route.push("/teacher");
+            break;
+          case "students":
+            route.push("/student");
+            break;
+          default:
+            throw new Error('Invalid role');
+        }
         
-          // if (adminResponse.authorized) {
-          //   route.push("/admin");
-          // } 
-          route.push("/admin");
-          break;
-        case "teachers":
-          route.push("/teacher");
-          break;
-        case "students":
-          route.push("/student");
-          break;
-        default:
-          throw new Error('Invalid role');
-      }
+        // Add a small delay to ensure spinner shows during page transition
+        setTimeout(resolve, 1000);
+      });
     } catch (error) {
       console.error('Login error:', error);
       setErrorMessage(error.message);
-    } finally {
       setIsLoading(false);
     }
-  };
-  return (
+  };  return (
     <div className="bg-white dark:bg-[#253553] dark:text-white flex rounded-xl shadow-lg max-w-4xl p-6 relative">
       <button
         onClick={onClose}
