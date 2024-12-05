@@ -252,7 +252,7 @@ const getRecordsByYearAndClass = async (req, res) => {
     const supabaseClient = await connectdb();
     const {data, error} = await supabaseClient
      .from("students")
-     .select(`first_name,last_name, rollNo`)
+     .select(`id,first_name,last_name, rollNo`)
      .eq("class", cls)
      .gte("created_at", `${year}-01-01`)
      .lte("created_at", `${year}-12-31`);

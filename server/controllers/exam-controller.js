@@ -573,9 +573,87 @@ const enterMarks = async (req, res)=>{
 
 };
 
+const retrieveMarks = async (req, res) => {
+    try {
+        const { year, examType, className, subject } = req.query;
+        const createClient = await connectdb();
+
+        // Fetch exam data
+        const { data: examData, error: examError } = await createClient 
+            .from('exams')
+            .select('id')
+            .eq('exam_type', examType)
+            .gte('created_at', `${year}-01-01`)
+            .lte('created_at', `${year}-12-31`)
+            .single();
+
+            console.log("examData: ",examData);
+
+        if (examError || !examData) {
+            return res.status(404).json({ message: "No exam found" });
+        }
+
+        // Fetch class data
+        const { data: classData, error: classError } = await createClient
+            .from('class')
+            .select('id')
+            .eq('class', className)
+            .gte('updated_at', `${year}-01-01`)
+            .lte('updated_at', `${year}-12-31`)
+            .single();
+
+            console.log("classData: ",classData);
+
+        if (classError || !classData) {
+            return res.status(404).json({ message: "No class found" });
+        }
+
+        // Fetch subject data
+        const { data: subjectData, error: subjectError } = await createClient
+            .from('subjects')
+            .select('id')
+            .eq('subject_name', subject)
+            .eq('class_id', classData.id)
+            .single();
+
+            console.log("subjectData: ",subjectData);
+        if (subjectError || !subjectData) {
+            return res.status(404).json({ message: "No subject found" });
+        }
+
+        // Retrieve marks
+        const { data: marksData, error: marksError } = await createClient
+            .from('marksheets')
+            .select('*')
+            .eq('class', className)
+            .eq('subject_id', subjectData.id)
+            .eq('exam_id', examData.id);
+
+        if (marksError) {
+            return res.status(500).json({ message: "Error retrieving marks", error: marksError });
+        }
+        console.log("Marks Data:", marksData);
+        // Transform data for frontend
+        const transformedMarks = marksData.map(mark => ({
+            student_id: mark.student_id,
+            th: mark.TH,
+            pr: mark.PR,
+            total: mark.TH + mark.PR
+        }));
+        console.log("Transformed Marks:", transformedMarks);
+
+        return res.status(200).json(transformedMarks);
+    } catch (error) {
+        console.error("Error retrieving marks:", error);
+        return res.status(500).json({ message: "Failed to retrieve marks", error: error.message });
+    }
+};
+
+
 
 
 module.exports = { 
+    retrieveMarks,
     getAssignedSubjects,
     createExam, 
     createNotice, 

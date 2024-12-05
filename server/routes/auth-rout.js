@@ -53,6 +53,8 @@ router.route('/classes').get(retrive.getClasses);
 router.route('/setup-marks').post(examController.setupMarks);
 router.route('/marks').get(examController.getMarksData);
 router.route('/enter-marks').post(examController.enterMarks);
+router.route('/retrieve-marks').get(examController.retrieveMarks);
+
 
 // Dashboard routes
 router.route('/dashboard/counts').get(dashboardController.dashboard);

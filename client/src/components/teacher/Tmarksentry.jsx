@@ -51,6 +51,7 @@ import axios from "axios";
     useEffect(() => {
       if (selectedYear && selectedExamType && selectedClass && selectedSubject) {
         fetchStudents();
+        fetchExistingMarks();
       }
     }, [selectedYear, selectedExamType, selectedClass, selectedSubject]);
 
@@ -195,10 +196,12 @@ import axios from "axios";
           `http://localhost:4000/api/auth/studentRecords/${selectedYear}?status=students&cls=${selectedClass}`
         );
         const classStudents = response.data.map((student) => ({
+          id: student.id,
           rollNo: student.rollNo||"N/A",
           name: student.first_name + " " + student.last_name||"",
         }));
 
+        console.log("classStudents", classStudents);
         if (response.data.length === 0) {
           setStudents([]);
                 }
@@ -210,6 +213,49 @@ import axios from "axios";
         console.error("Error fetching students:", error);
       } finally {
         setLoading(false);
+      }
+    }
+  };
+
+  const fetchExistingMarks = async () => {
+    if (selectedYear && selectedExamType && selectedClass && selectedSubject) {
+      try {
+        const response = await axios.get(
+          `http://localhost:4000/api/auth/retrieve-marks`,
+          {
+            params: {
+              year: selectedYear,
+              examType: selectedExamType,
+              className: selectedClass,
+              subject: selectedSubject
+            }
+          }
+        );
+
+        if (response.data.length > 0) {
+          // Update students state with existing marks
+          const updatedStudents = students.map(student => {
+            const existingMark = response.data.find(
+              mark => mark.student_id === student.id
+            );
+
+            console.log("existingMark", existingMark);
+
+            if (existingMark) {
+              return {
+                ...student,
+                th: existingMark.th || "", // Ensure fallback to empty string
+                pr: existingMark.pr || "", // Ensure fallback to empty string
+                total: existingMark.total || 0 // Ensure fallback to 0
+              };
+            }
+            return student;
+          });
+
+          setStudents(updatedStudents);
+        }
+      } catch (error) {
+        console.error("Error fetching existing marks:", error);
       }
     }
   };
@@ -310,10 +356,7 @@ import axios from "axios";
    
                   ) : (
                     students.map((student, index) => (
-                      <tr
-                        key={index}
-                        className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                      >
+                      <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <td className="px-4 py-2 sticky left-0 z-20 bg-white dark:bg-gray-800">
                           {student.rollNo}
                         </td>
@@ -324,9 +367,7 @@ import axios from "axios";
                           <input
                             type="text"
                             value={student.th}
-                            onChange={(e) =>
-                              handleInputChange(index, "th", e.target.value)
-                            }
+                            onChange={(e) => handleInputChange(index, "th", e.target.value)}
                             className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
                           />
                         </td>
@@ -334,9 +375,7 @@ import axios from "axios";
                           <input
                             type="text"
                             value={student.pr}
-                            onChange={(e) =>
-                              handleInputChange(index, "pr", e.target.value)
-                            }
+                            onChange={(e) => handleInputChange(index, "pr", e.target.value)}
                             className="w-12 h-8 text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
                           />
                         </td>
