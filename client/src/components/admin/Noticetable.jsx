@@ -204,8 +204,10 @@ console.log("notices", notices)
           onClick={() => setSelectedImage(null)}
         >
           <div className="relative max-w-[90%] max-h-[90vh]">
-            <img 
-              src={selectedImage} 
+            <Image
+              src={selectedImage}
+              width={1000}
+              height={1000} 
               alt="Preview"
               className="max-w-full max-h-[90vh] object-contain"
             />

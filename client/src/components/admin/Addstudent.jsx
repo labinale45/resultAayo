@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 
 import { IoPersonAddSharp } from "react-icons/io5";
 import { MdOutlineAddReaction } from "react-icons/md";
+import Image from "next/image";
 
 function Addstudent({ onClose, student, onSave }) {
   const [first_name, setFirstName] = useState("");
@@ -25,23 +26,6 @@ function Addstudent({ onClose, student, onSave }) {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedClassId, setSelectedClassId] = useState("");
-
-  // useEffect(() => {
-  //   if (student) {
-  //     setFullName(student.Fullname);
-  //     setEmail(student.Email);
-  //     setContact(student.Contact);
-  //     setAddress(student.Address);
-  //     setDob(student.DOB);
-  //     setGender(student.Gender);
-  //     setJoinedYear(student.Year);
-  //     setStudentClass(student.Class);
-  //     setRollNo(student.Rollno);
-  //     setUsername(student.username);
-  //     setPassword(student.password);
-  //     setParentName(student.Parentsname);
-  //   }
-  // }, [student]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -231,8 +215,7 @@ useEffect(() => {
               <input
                 className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
                 type="tel"
-                pattern="(\+977?)?[9][6-9]\d{8}"
-                //maxLength="10"
+                pattern="(\+977?)?[9][6-9]\d{8}"      
                 value={phone_number}
                 onChange={(e) => setContact(e.target.value)}
                 required
@@ -265,10 +248,12 @@ useEffect(() => {
             <div className="ps-20 absolute top-40 right-14 z-10 p-4">
   <label htmlFor="photo-upload" className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-gray-300 rounded-full cursor-pointer hover:border-blue-500 transition-all duration-200">
     {image ? (
-      <img 
+      <Image
         src={URL.createObjectURL(image)} 
         alt="Preview" 
         className="w-full h-full object-cover rounded-full"
+        width={20}
+        height={20}
       />
     ) : (
       <>

@@ -80,12 +80,8 @@ export default function Admindashboard() {
     }, 5000); // Fetch data every 5 seconds
 
     return () => clearInterval(intervalId); // Cleanup on unmount
-  }, []);
-
-  useEffect(() => {
-    fetchDashboardData();
   }, [dateRange.startDate, dateRange.endDate, selectedClass]);
-
+  
   const options = {
     responsive: true,
     maintainAspectRatio: false,

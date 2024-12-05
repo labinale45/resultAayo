@@ -202,10 +202,12 @@ function Notice() {
             onClick={() => setSelectedImage(null)}
           >
             <div className="relative max-w-[90%] max-h-[90vh]">
-              <img 
-                src={selectedImage} 
+              <Image
+                src={selectedImage}
+                width={1000}
+                height={1000}
                 alt="Preview"
-                className="max-w-full max-h-[90vh] object-contain"
+                className="max-w-full max-h-[90vh] object-contain z-50"
               />
               <button 
                 className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2"

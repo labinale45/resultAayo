@@ -151,8 +151,10 @@ const handleSubmit = async (e) => {
           </div>
 
           <div className="w-1/3">
-            <img
+            <Image
               className="rounded-3xl  h-full "
+              width={full}
+              height={full}
               src="/assets/popup.png"
               alt=""
             />

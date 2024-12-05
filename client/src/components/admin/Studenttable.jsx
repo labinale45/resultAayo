@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Addstudent from "@/components/admin/Addstudent";
 import { CgLaptop } from "react-icons/cg";
 import { FaSearch, FaEdit, FaTrash } from "react-icons/fa";
+import Image from "next/image";
 
 export default function Studenttable() {
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -317,9 +318,11 @@ export default function Studenttable() {
                           <div className="w-[80px] px-6 py-4">
                             {student.classes}
                           </div>
-                          <img
+                          <Image
                             className="w-10 h-10 rounded-full object-cover mb-2"
                             src={student.img_url || "/assets/profile.png"}
+                            width={20}
+                            height={20}
                             alt={`${student.fullName}'s photo`}
                             onError={(e) => {
                               e.target.src = "/assets/profile.png";

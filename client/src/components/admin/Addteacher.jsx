@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import supabase from "@/utils/client";
 import { IoPersonAddSharp } from "react-icons/io5";
 import { MdOutlineAddReaction } from "react-icons/md";
+import Image from "next/image";
 
 function Addteacher({ onClose, teacher, onSave }) {
   const [first_name, setFirstName] = useState("");
@@ -211,9 +212,12 @@ function Addteacher({ onClose, teacher, onSave }) {
             <div className="ps-20 absolute top-5 right-16 z-10 p-4">
   <label htmlFor="photo-upload" className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-gray-300 rounded-full cursor-pointer hover:border-blue-500 transition-all duration-200">
     {image ? (
-      <img 
+      <Image
+      
         src={URL.createObjectURL(image)} 
-        alt="Preview" 
+        alt="Preview"
+        width={20}
+        height={20} 
         className="w-full h-full object-cover rounded-full"
       />
     ) : (
@@ -245,10 +249,12 @@ function Addteacher({ onClose, teacher, onSave }) {
 
         <div className="w-1/3 relative">
           
-          <img
+          <Image
             className="rounded-3xl h-full w-full object-cover"
             src="/assets/popup.png"
             alt=""
+            width={1000}
+            height={1000}
           />
         </div>
       </div>

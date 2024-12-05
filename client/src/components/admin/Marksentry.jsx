@@ -13,9 +13,12 @@ function Marksentry({ onClose }) {
 
         <div className="sm:w-1/2 px=15">
           <div className="flex items-center mt-4">
-            <img
+            <Image
               src="/assets/Addstudentorteacher.png"
               className="h-12 w-12 mr-2"
+              width={12}
+              height={12}
+              alt="Addstudentorteacher"
             />
             <h1 className="text-[#253553] underline text-2xl font-bold">
               __Mark entry
@@ -48,7 +51,7 @@ function Marksentry({ onClose }) {
 
           <input type="file" id="photo-upload" class="hidden" />
         </div>
-        <img className="rounded-3xl" src="/assets/popup.png" alt="" />
+        <Image width={500} height={500} className="rounded-3xl" src="/assets/popup.png" alt="" />
       </div>
     </div>
   );

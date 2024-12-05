@@ -120,8 +120,10 @@ export default function Login({ onClose }) {
         </form>
       </div>
       <div className="sm:block hidden w-1/2">
-        <img
+        <Image
           className="rounded-2xl"
+          width={500}
+          height={500}
           src="/assets/popup.png"
           alt="Login Illustration"
         />

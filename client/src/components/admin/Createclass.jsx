@@ -96,8 +96,10 @@ function Createclass({ onClose }) {
         </form>
       </div>
 
-      <img
+      <Image
         className="rounded-3xl sm:block w-full"
+        width={full}
+        height={full}
         src="/assets/popup.png"
         alt=""
       />

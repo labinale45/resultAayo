@@ -1,11 +1,13 @@
 "use client"
 import React,{useState} from "react";
 import { IoPersonAddSharp } from "react-icons/io5";
+import Image from "next/image";
 function Createnotice({ onClose }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [image, setImage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
+
 
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -107,8 +109,10 @@ function Createnotice({ onClose }) {
           </form>
         </div>
 
-        <img
+        <Image
           className="rounded-3xl sm:block hidden w-1/2"
+          width={500}
+          height={500}
           src="/assets/popup.png"
           alt=""
         />

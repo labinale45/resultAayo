@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import Image from "next/image";
 
 function Module() {
   useEffect(() => {
@@ -37,7 +38,7 @@ function Module() {
             data-aos="fade-right"
             data-aos-delay="100"
           >
-            <img src="/assets/Modules.png" alt="Logo" className="mb-4" />
+            <Image width={500} height={500} src="/assets/Modules.png" alt="Logo" className="mb-4" />
           </div>
 
           <div
@@ -100,7 +101,7 @@ function Module() {
             data-aos="fade-left"
             data-aos-delay="400"
           >
-            <img src="/assets/Modules.png" alt="Logo" className="mb-4" />
+            <Image width={500} height={500} src="/assets/Modules.png" alt="Logo" className="mb-4" />
           </div>
         </div>
 
@@ -110,7 +111,7 @@ function Module() {
             data-aos="fade-right"
             data-aos-delay="500"
           >
-            <img src="/assets/Modules.png" alt="Logo" className="mb-4" />
+            <Image width={500} height={500} src="/assets/Modules.png" alt="Logo" className="mb-4" />
           </div>
           <div
             className="sm:col-span-6 p-4 ms-20"

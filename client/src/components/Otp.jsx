@@ -7,7 +7,7 @@ function Otp() {
   return (
     <div className="flex justify-center items-center h-screen bg-blue-300">
       <div className="w-96 p-9 shadow-lg shadow-blue-700 bg-white rounded-md">
-        <img src="/assets/Logo.png" alt="Logo" className="mb-4" />
+        <Image width={full} height={full} src="/assets/Logo.png" alt="Logo" className="mb-4" />
         <h1 className="text-2xl block text-center font-semibold">
           Enter verification code
         </h1>
