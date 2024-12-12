@@ -34,7 +34,7 @@ export default function Admindashboard() {
     labels: [],
     datasets: [
       {
-        label: "Students",
+        label: "Student",
         data: [],
         borderColor: "rgb(255, 99, 132)",
         backgroundColor: "rgba(255, 99, 132, 0.5)",
@@ -173,6 +173,7 @@ export default function Admindashboard() {
       console.error('Error fetching classes:', error);
     }
   };
+
   const fetchDashboardData = async () => {
     try {
       // Fetch total counts
@@ -196,31 +197,69 @@ export default function Admindashboard() {
         return;
       }
 
-      // Update chart data
-      setChartData({
-        labels: historicalData.map(item => new Date(item.date).toLocaleDateString()),
-        datasets: [
-          {
-            label: "Students",
-            data: historicalData.map(item => item.counts.students),
-            borderColor: "rgb(255, 99, 132)",
-            backgroundColor: "rgba(255, 99, 132, 0.5)",
-            tension: 0.4
-          },
-          {
-            label: "Teachers",
-            data: historicalData.map(item => item.counts.teachers),
-            borderColor: "rgb(53, 162, 235)",
-            backgroundColor: "rgba(53, 162, 235, 0.5)",
-            tension: 0.4
-          },
-        ],
-      });
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      // Optionally add error state handling here
+    // Process historical data with persistent counts
+    const processedHistoricalData = processChartData(historicalData);
+
+    setChartData({
+      labels: processedHistoricalData.labels,
+      datasets: [
+        {
+          label: "Students",
+          data: processedHistoricalData.studentData,
+          borderColor: "rgb(255, 99, 132)",
+          backgroundColor: "rgba(255, 99, 132, 0.5)",
+          tension: 0.4
+        },
+        {
+          label: "Teachers",
+          data: processedHistoricalData.teacherData,
+          borderColor: "rgb(53, 162, 235)",
+          backgroundColor: "rgba(53, 162, 235, 0.5)",
+          tension: 0.4
+        },
+      ],
+    });
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+  }
+};
+
+
+// New helper function to process chart data
+const processChartData = (historicalData) => {
+  const labels = [];
+  const studentData = [];
+  const teacherData = [];
+  
+  let lastStudentCount = 0;
+  let lastTeacherCount = 0;
+
+  // Sort historical data by date to ensure chronological processing
+  const sortedData = historicalData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  sortedData.forEach(item => {
+    const date = new Date(item.date).toLocaleDateString();
+    
+    // Update last known counts
+    if (item.counts.students !== undefined) {
+      lastStudentCount = item.counts.students;
     }
+    if (item.counts.teachers !== undefined) {
+      lastTeacherCount = item.counts.teachers;
+    }
+
+    // Add to labels and data arrays
+    labels.push(date);
+    studentData.push(lastStudentCount);
+    teacherData.push(lastTeacherCount);
+  });
+
+  return {
+    labels,
+    studentData,
+    teacherData
   };
+};
 
   const handleDateRangeChange = (type, value) => {
     if (type === 'startDate' && new Date(value) > new Date(dateRange.endDate)) {

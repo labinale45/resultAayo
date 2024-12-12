@@ -1,3 +1,4 @@
+
 const connectdb = require('../../utils/connectdb');
 const dotenv = require('dotenv');
 
@@ -50,34 +51,42 @@ const getHistoricalData = async (startDate, endDate, selectedClass) => {
       throw new Error(teacherResult.error || studentResult.error);
     }
 
-    // Create a map of dates
+    // Create a map of dates with cumulative counts
     const dateMap = new Map();
     const start = new Date(startDate);
     const end = new Date(endDate);
 
+    // Initialize cumulative counters
+    let cumulativeTeachers = 0;
+    let cumulativeStudents = 0;
+
+    // Iterate through dates and track cumulative counts
     for (let date = start; date <= end; date.setDate(date.getDate() + 1)) {
       const dateStr = date.toISOString().split('T')[0];
+      
+      // Count new teachers on this date
+      const newTeachersOnDate = teacherResult.data.filter(
+        teacher => new Date(teacher.created_at).toISOString().split('T')[0] === dateStr
+      ).length;
+
+      // Count new students on this date
+      const newStudentsOnDate = studentResult.data.filter(
+        student => new Date(student.created_at).toISOString().split('T')[0] === dateStr
+      ).length;
+
+      // Update cumulative counts
+      cumulativeTeachers += newTeachersOnDate;
+      cumulativeStudents += newStudentsOnDate;
+
+      // Store cumulative counts for the date
       dateMap.set(dateStr, {
         date: dateStr,
-        counts: { teachers: 0, students: 0 }
+        counts: { 
+          teachers: cumulativeTeachers, 
+          students: cumulativeStudents 
+        }
       });
     }
-
-    // Count teachers per day
-    teacherResult.data.forEach(teacher => {
-      const date = new Date(teacher.created_at).toISOString().split('T')[0];
-      if (dateMap.has(date)) {
-        dateMap.get(date).counts.teachers++;
-      }
-    });
-
-    // Count students per day
-    studentResult.data.forEach(student => {
-      const date = new Date(student.created_at).toISOString().split('T')[0];
-      if (dateMap.has(date)) {
-        dateMap.get(date).counts.students++;
-      }
-    });
 
     // Convert map to array and sort by date
     return Array.from(dateMap.values()).sort((a, b) => 
@@ -88,7 +97,6 @@ const getHistoricalData = async (startDate, endDate, selectedClass) => {
     throw error;
   }
 };
-
 module.exports = {
   getHistoricalData,
   getTotalCount
