@@ -6,7 +6,7 @@ const TLedger = () => {
   const [year, setYear] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedExamType, setSelectedExamType] = useState("");
-  const [isPublished, setIsPublished] = useState(false);
+  const [isPublished, setIsPublished] = useState(false) ;
   const [state, setState] = useState("ledgers");
   const [years, setYears] = useState([]);
   const [error, setError] = useState(null);
@@ -15,8 +15,7 @@ const TLedger = () => {
   const [classes, setClasses] = useState([]);
   const [examTypes, setExamTypes] = useState([]);
   const [teacherId, setTeacherId] = useState(null);
-
-  
+  const [selectedYear,setSelectedYear] = useState(null);
   useEffect(() => {
     // Fetch teacherId from token
     const token = localStorage.getItem("token"); // Assuming you store the token in localStorage
@@ -29,10 +28,21 @@ const TLedger = () => {
     }
 })
 
-  useEffect(() => {
-    fetchYears();
-    fetchClasses();
+
+useEffect(() => {
+  if (teacherId) {
+    fetchClasses(teacherId);
+    console.log("classes : ", classes);
+  }
+}, [teacherId]);
+useEffect(() => {
+  fetchYears();
+  if (selectedYear) {
     fetchExamTypes();
+  }
+}, [selectedYear]);
+
+  useEffect(() => {
     if (year && selectedClass && selectedExamType) {
       checkPublicationStatus();
     }
@@ -66,12 +76,16 @@ const TLedger = () => {
       console.error("Error fetching classes:", error);
     }
   };
+
   const fetchExamTypes = async () => {
     try {
-      const response = await fetch("http://localhost:4000/api/auth/exam-types");
+      // Correct the URL structure to use a query parameter or path parameter
+      const response = await fetch(`http://localhost:4000/api/auth/exam-types?year=${selectedYear}`);
+  
       if (!response.ok) throw new Error("Failed to fetch exam types");
-      const data = await response.json();
-      setExamTypes(data);
+
+      const examData = await response.json();
+      setExamTypes(examData);
     } catch (error) {
       console.error("Error fetching exam types:", error);
     }
@@ -88,74 +102,82 @@ const TLedger = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            year,
+            year: selectedYear,
             class: selectedClass,
             examType: selectedExamType,
           }),
         }
       );
-
+  
       if (!response.ok) {
         throw new Error("Failed to check publication status");
+
       }
-
+  
       const data = await response.json();
-      console.log(data);
-      setIsPublished(data.isPublished);
-
-      if (data.isPublished) {
+      console.log("Full ledger data:", data);
+      console.log("isPublished:", data.data.isPublished);
+      setIsPublished(data.data.isPublished);
+  
+      if (data.data.isPublished) {
+        // Fetch and display student records
         const ledgerResponse = await fetch(
           `http://localhost:4000/api/auth/records/${year}?status=ledgers&class=${selectedClass}&examType=${selectedExamType}`
         );
-
+  
         if (ledgerResponse.ok) {
           const ledgerData = await ledgerResponse.json();
           setStudents(ledgerData);
         }
       }
+
     } catch (error) {
-      setError("Error checking publication status");
+      setIsPublished(false);
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   const handlePrint = () => {
     window.print();
   };
 
+  const showTable =
+  selectedYear && selectedExamType && selectedClass && isPublished;
+
   return (
-    <div className="container mx-auto p-4">
+    <div className="px-9 py-8 container mx-auto">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="mb-4 flex flex-wrap justify-center gap-4"
       >
         <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          className="p-2 border border-gray-300 rounded-md"
-        >
-          <option value="">Select Year</option>
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            className="bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+          >
+            <option value="">Select Year</option>
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
 
-        <select
-          value={selectedClass}
-          onChange={(e) => setSelectedClass(e.target.value)}
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
-        >
-          <option value="">Select Class</option>
-          {classes.map((cls) => (
-            <option key={cls.grade} value={cls.grade}>
-              {cls.grade}
-            </option>
-          ))}
-        </select>
+             <select
+  value={selectedClass}
+  onChange={(e) => setSelectedClass(e.target.value)}
+  className="bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+>
+  <option value="">Select Class</option>
+  {classes.map((cls) => (
+    <option key={cls.id} value={cls.name}>
+      {cls.name}
+    </option>
+  ))}
+</select>
 
         <select
           value={selectedExamType}
@@ -177,9 +199,8 @@ const TLedger = () => {
         </div>
       )}
 
-      {error && <div className="text-red-500 text-center p-4">{error}</div>}
 
-      {isPublished && students.length > 0 && (
+      {showTable && !isLoading && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -189,9 +210,9 @@ const TLedger = () => {
             <div className="mb-8 text-center">
               <h2 className="text-4xl font-semibold">School Name</h2>
               <p className="text-3xl mt-4">
-                {examType} Examination {year}
+              {selectedExamType} Examination {selectedYear}
               </p>
-              <p className="text-left text-2xl">Class: {className}</p>
+              <p className="text-left text-2xl">Class: {selectedClass}</p>
             </div>
             <table className="w-full border-collapse">
               <thead>
@@ -214,7 +235,16 @@ const TLedger = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {students.map((student) => (
+
+              {students.length === 0 ? (
+                 
+                 <tr>
+                 <td colSpan="10" className="text-center py-4 text-red-500">
+                  Student Not Found.
+                 </td>
+               </tr>
+              ):(
+                students.map((student) => (
                   <tr key={student.rollNo}>
                     <td className="border p-2">{student.rollNo}</td>
                     <td className="border p-2">{student.name}</td>
@@ -222,7 +252,8 @@ const TLedger = () => {
                     <td className="border p-2">{student.percentage}%</td>
                     <td className="border p-2">{student.grade}</td>
                   </tr>
-                ))}
+                ))
+              )}
               </tbody>
             </table>
             <div className="mt-6 flex justify-end gap-4">
@@ -238,10 +269,18 @@ const TLedger = () => {
       )}
 
       {!isPublished && year && selectedClass && selectedExamType && (
+          <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-white rounded-lg shadow-lg p-6"
+        >
         <div className="text-center p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
           <p className="text-yellow-700">Results not published yet</p>
         </div>
+        </motion.div>
       )}
+
+      {}
     </div>
   );
 };

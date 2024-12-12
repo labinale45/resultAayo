@@ -3,6 +3,7 @@ import React from "react";
 import { TagsInput } from "react-tag-input-component";
 import { useState } from "react";
 import { IoPersonAddSharp } from "react-icons/io5";
+import Image from "next/image";
 
 function Createclass({ onClose }) {
   const [className, setClassName] = useState("");
@@ -98,8 +99,8 @@ function Createclass({ onClose }) {
 
       <Image
         className="rounded-3xl sm:block w-full"
-        width={full}
-        height={full}
+        width={500}
+        height={500}
         src="/assets/popup.png"
         alt=""
       />

@@ -12,7 +12,7 @@ export default function Ledgertable() {
   const [students, setStudents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [state, setState] = useState("ledgers");
+  const [state, setState] = useState("marksheets");
   const [examTypes, setExamTypes] = useState([]);
   const [classes, setClasses] = useState([]);
 
@@ -80,15 +80,18 @@ export default function Ledgertable() {
       setIsLoading(false);
     }
   };
-
+  
   const fetchExamTypes = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/auth/exam-types');
-      if (!response.ok) throw new Error('Failed to fetch exam types');
-      const data = await response.json();
-      setExamTypes(data);
+      // Correct the URL structure to use a query parameter or path parameter
+      const response = await fetch(`http://localhost:4000/api/auth/exam-types?year=${selectedYear}`);
+  
+      if (!response.ok) throw new Error("Failed to fetch exam types");
+
+      const examData = await response.json();
+      setExamTypes(examData);
     } catch (error) {
-      console.error('Error fetching exam types:', error);
+      console.error("Error fetching exam types:", error);
     }
   };
 

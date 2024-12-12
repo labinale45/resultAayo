@@ -226,7 +226,7 @@ const getClasses = async (req, res) => {
       .map(([className, sections]) => ({
         id: className.toLowerCase().replace(/\s+/g, "-"),
         grade: className,
-        sections: Array.from(sections).sort(),
+        sections: Array.from(sections),
       }))
       .sort((a, b) => {
         const gradeA = parseInt(a.grade.replace(/\D/g, ""));

@@ -206,11 +206,12 @@ const getLedgerStatus = async (req, res) => {
   const { data: ledgerData, error: ledgerError } = await supabaseClient
     .from('ledgers')
     .select('*')
-    .eq('year', year)
     .eq('class', className)
     .eq('exam_type', examType)
+    .eq('year', year)
     .single();
-    
+
+    console.log("ledgerData",ledgerData);
     res.status(200).json({
       message: 'Ledger status fetched successfully',
       data: ledgerData

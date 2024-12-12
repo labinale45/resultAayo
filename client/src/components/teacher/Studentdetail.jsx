@@ -14,6 +14,25 @@ export default function Studentdetail() {
   const [searchTerm, setSearchTerm] = useState("");
   const [state] = useState("students");
   const [classes, setClasses] = useState([]);
+  const [teacherId, setTeacherId] = useState(null);
+
+  useEffect(() => {
+    // Fetch teacherId from token
+    const token = localStorage.getItem("token"); // Assuming you store the token in localStorage
+    if (token) {
+      const decodedToken = JSON.parse(atob(token.split('.')[1])); // Decode the token
+      console.log("decotedTOken",decodedToken); // Log the decoded token for debugging
+      if (decodedToken.role === "teachers") {
+        setTeacherId(decodedToken.id); // Assuming the teacher ID is stored as 'id' in the token
+      }
+    }
+})
+useEffect(() => {
+  if (teacherId) {
+    fetchClasses(teacherId);
+    console.log("classes : ", classes);
+  }
+}, [teacherId]);
 
   const fetchYears = async () => {
     try {
@@ -30,12 +49,16 @@ export default function Studentdetail() {
     }
   };
 
-  const fetchClasses = async () => {
+  const fetchClasses = async (teacherId) => {
     try {
-      const response = await fetch("http://localhost:4000/api/auth/classes");
+      const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/classes`);
       if (!response.ok) throw new Error("Failed to fetch classes");
-      const data = await response.json();
-      setClasses(data);
+      const classIds = await response.json();
+      const classes = classIds.map(id => ({
+        id: id,
+        name: `${id}`
+      }));
+      setClasses(classes);
     } catch (error) {
       console.error("Error fetching classes:", error);
     }
@@ -58,7 +81,6 @@ export default function Studentdetail() {
 
   useEffect(() => {
     fetchYears();
-    fetchClasses();
   }, []);
 
   useEffect(() => {
@@ -74,7 +96,7 @@ export default function Studentdetail() {
   );
 
   return (
-    <div className="relative mt-7">
+    <div className="px-9 py-8 relative mt-7">
       <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
         <div className="flex gap-4 w-full md:w-auto">
           <select
@@ -91,17 +113,17 @@ export default function Studentdetail() {
           </select>
 
           <select
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
-          >
-            <option value="">Select Class</option>
-            {classes.map((cls) => (
-              <option key={cls.grade} value={cls.grade}>
-                {cls.grade}
-              </option>
-            ))}
-          </select>
+  value={selectedClass}
+  onChange={(e) => setSelectedClass(e.target.value)}
+  className="bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+>
+  <option value="">Select Class</option>
+  {classes.map((cls) => (
+    <option key={cls.id} value={cls.name}>
+      {cls.name}
+    </option>
+  ))}
+</select>
         </div>
 
         <div className="relative w-full md:w-96">

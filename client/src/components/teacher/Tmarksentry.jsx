@@ -210,7 +210,7 @@ import axios from "axios";
                 }
 
       } catch (error) {
-        console.error("Error fetching students:", error);
+        setStudents([]);
       } finally {
         setLoading(false);
       }
@@ -261,7 +261,7 @@ import axios from "axios";
   };
 
     return (
-      <div className="relative mt-5 p-4 bg-white rounded-lg shadow-md">
+      <div className="relative mt-5 px-9 py-8 bg-white rounded-lg shadow-md">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <select
             value={selectedYear}

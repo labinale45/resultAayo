@@ -1,6 +1,7 @@
 "use client";
 import { IoPersonAddSharp } from "react-icons/io5";
 import React,{useState,  useEffect} from "react";
+import Image from "next/image";
 
 export default function Createexam({ onClose }) {
 const [examType, setExamType] = useState("");
@@ -153,8 +154,8 @@ const handleSubmit = async (e) => {
           <div className="w-1/3">
             <Image
               className="rounded-3xl  h-full "
-              width={full}
-              height={full}
+              width={500}
+              height={500}
               src="/assets/popup.png"
               alt=""
             />
