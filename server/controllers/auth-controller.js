@@ -7,6 +7,42 @@ const { createImage } = require('../models/image-model');
 const { v4: uuidv4 } = require('uuid');
 const { response } = require('express');
 
+const ledgerModel = require('../models/ledger-model');
+
+const createLedgerConfiguration = async (req, res) => {
+  try {
+    const configData = req.body;
+    const result = await ledgerModel.createLedgerConfiguration(configData);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error creating ledger configuration:', error);
+    res.status(500).json({ error: 'Failed to create ledger configuration' });
+  }
+};
+
+const getLedgerConfiguration = async (req, res) => {
+  try {
+    const { schoolName } = req.params;
+    const result = await ledgerModel.getLedgerConfiguration(schoolName);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching ledger configuration:', error);
+    res.status(500).json({ error: 'Failed to fetch ledger configuration' });
+  }
+};
+
+const generateLedgerSheet = async (req, res) => {
+  try {
+    const examData = req.body;
+    const result = await ledgerModel.generateLedgerSheet(examData);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error generating ledger sheet:', error);
+    res.status(500).json({ error: 'Failed to generate ledger sheet' });
+  }
+};
+
+
 const register = async (req, res) => {
   try {
     const { class_id,last_name,first_name, email, gender, role,address,phone_number,parent_name,dob ,studentClass,image } = req.body;
@@ -333,5 +369,8 @@ module.exports = {
   getLedgerStatus,
   getUserProfile,
   updateUserProfile,
-  updateTeacherStatus
+  updateTeacherStatus,
+  createLedgerConfiguration,
+  getLedgerConfiguration,
+  generateLedgerSheet
 };

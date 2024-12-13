@@ -12,6 +12,7 @@ import {
   FaEdit,
   FaSignOutAlt,
   FaExclamationTriangle,
+  FaUserCog,
 } from "react-icons/fa";
 
 export default function Dnav({ currentPath }) {
@@ -42,6 +43,7 @@ export default function Dnav({ currentPath }) {
     const fetchUserProfile = async () => {
       try {
         const userData = JSON.parse(localStorage.getItem('userData'));
+
         if (!userData?.username) {
           throw new Error('No user data found');
         }
@@ -84,6 +86,11 @@ export default function Dnav({ currentPath }) {
   const handleLogoutCancel = () => {
     setShowLogoutConfirmation(false);
   };
+
+  const handleSettingClick = () => {
+    router.push("/admin/setting"); // Navigate to the settings page
+  };
+  
 
   const handleMenuItemClick = (path) => {
     if (path !== currentPath) {
@@ -139,6 +146,13 @@ export default function Dnav({ currentPath }) {
                 >
                   <FaSignOutAlt className="mr-2" /> Logout
                 </button>
+               
+                  <button
+                    onClick={handleSettingClick}
+                    className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <FaUserCog className="mr-2" /> Setting
+                  </button>
               </div>
             )}
           </div>

@@ -1,4 +1,5 @@
-"use client";
+
+ "use client";
 
 import React, { useState, useEffect } from "react";
 import Gradesheet from "./Gradesheet";
@@ -15,6 +16,15 @@ export default function Ledgertable() {
   const [state, setState] = useState("marksheets");
   const [examTypes, setExamTypes] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [schoolName, setSchoolName] = useState("");
+  const [schoolAddress, setSchoolAddress] = useState("");
+  const [establishmentYear, setEstablishmentYear] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleSave =() =>{
+    setIsEditing(false);
+  }
+
 
   useEffect(() => {
     YearSelect();
@@ -247,15 +257,49 @@ export default function Ledgertable() {
       {isFormComplete && (
         <div id="ledger" className="border border-gray-300 rounded-lg p-4 ">
           <div className="mb-8 text-center">
-            <h2 className="text-4xl font-semibold">XYZ School</h2>
-            <p>123 Street Name, City</p>
-            <p>Estd: 1990</p>
+          <h2 className="text-4xl font-semibold">{schoolName}</h2>
+      <p>{schoolAddress}</p>
+      <p>Estd: {establishmentYear}</p>
             <p className="text-3xl">
               {selectedExamType}-{selectedYear}
             </p>
             <p className="text-left text-2xl">Class: {selectedClass}</p>
+            <button onClick={() => setIsEditing(true)} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
+          Edit
+        </button>
           </div>
 
+          {isEditing && (
+        <div className="mb-8 text-center">
+          <input
+            type="text"
+            value={schoolName}
+            onChange={(e) => setSchoolName(e.target.value)}
+            placeholder="School Name"
+            className="border p-2 rounded mr-2"
+          />
+          <input
+            type="text"
+            value={schoolAddress}
+            onChange={(e) => setSchoolAddress(e.target.value)}
+            placeholder="School Address"
+            className="border p-2 rounded mr-2"
+          />
+          <input
+            type="text"
+            value={establishmentYear}
+            onChange={(e) => setEstablishmentYear(e.target.value)}
+            placeholder="Establishment Year"
+            className="border p-2 rounded mr-2"
+          />
+          <button onClick={handleSave} className="bg-green-500 text-white px-4 py-2 rounded">
+            Save
+          </button>
+          <button onClick={() => setIsEditing(false)} className="bg-red-500 text-white px-4 py-2 rounded ml-2">
+            Cancel
+          </button>
+        </div>
+      )}
           <table className="min-w-full border-collapse border border-gray-300">
             <thead>
               <tr>

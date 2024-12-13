@@ -66,6 +66,11 @@ router.route('/ai-response').post(aiController.getAIResponse);
 // New route for fetching subjects by class ID
 router.route('/subjects').get(examController.getSubjectsByClass);
 
+// ledger routes
+router.post('/ledger-configuration', authController.createLedgerConfiguration);
+router.get('/ledger-configuration/:schoolName', authController.getLedgerConfiguration);
+router.post('/generate-ledger-sheet', authController.generateLedgerSheet);
+
 // Add this route to fetch classes assigned to a specific teacher
 router.get('/teacher/:teacherId/classes', classController.getClassesByTeacher);
 router.get('/teacher/:teacherId/subjects', examController.getAssignedSubjects);
