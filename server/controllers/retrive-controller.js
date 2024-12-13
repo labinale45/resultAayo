@@ -125,6 +125,9 @@ const getRecordsByYear = async (req, res) => {
             grade: record.grade,
             parentName: record.parent_name,
             img_url: imageUrl,
+            class: record.class,
+            rollNo: record.rollNo,
+            
           };
         case "notices":
           return {

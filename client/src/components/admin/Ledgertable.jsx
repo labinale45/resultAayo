@@ -28,12 +28,19 @@ export default function Ledgertable() {
 
   useEffect(() => {
     YearSelect();
-    fetchExamTypes();
     fetchClasses();
     if (selectedYear && selectedClass && selectedExamType) {
       fetchLedgerData();
     }
   }, [selectedYear, selectedClass, selectedExamType]);
+
+  useEffect(()=>{
+    if(selectedYear){
+      fetchExamTypes();
+    }else{
+      setExamTypes([]);
+    }
+  },[selectedYear]);
 
   const YearSelect = async () => {
     try {
@@ -100,6 +107,7 @@ export default function Ledgertable() {
 
       const examData = await response.json();
       setExamTypes(examData);
+
     } catch (error) {
       console.error("Error fetching exam types:", error);
     }

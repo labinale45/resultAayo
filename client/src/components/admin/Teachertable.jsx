@@ -252,11 +252,11 @@ export default function Teachertable() {
           ))}
         </select>
 
-        <div className="relative w-full md:w-96">
+        <div className="flex relative w-full md:w-96">
           <input
             type="text"
             placeholder="Search teachers..." // Placeholder for search input
-            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-[#2A2B32] border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all"
+            className="w-full h-10 pl-12 pr-4 py-3 bg-white dark:bg-[#2A2B32] border-2 border-gray-200 dark:border-gray-700 rounded-full focus:ring-2 focus:ring-blue-500 transition-all"
             value={searchTerm} // Bind search term to state
             onChange={(e) => setSearchTerm(e.target.value)} // Update state on change
           />

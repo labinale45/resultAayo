@@ -35,10 +35,13 @@ useEffect(() => {
     console.log("classes : ", classes);
   }
 }, [teacherId]);
+
 useEffect(() => {
   fetchYears();
   if (selectedYear) {
     fetchExamTypes();
+  }else{
+    setExamTypes([]);
   }
 }, [selectedYear]);
 

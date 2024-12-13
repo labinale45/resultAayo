@@ -140,19 +140,20 @@ export default function Dnav({ currentPath }) {
                 >
                   <FaEdit className="mr-2" /> Edit Profile
                 </button>
-                <button
-                  onClick={handleLogoutClick}
-                  className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  <FaSignOutAlt className="mr-2" /> Logout
-                </button>
-               
+                
                   <button
                     onClick={handleSettingClick}
                     className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FaUserCog className="mr-2" /> Setting
                   </button>
+                  <hr className="shadow-slate-500"></hr>
+                  <button
+                  onClick={handleLogoutClick}
+                  className="flex justify-center items-center w-full text-left px-4 py-2 text-sm  hover:text-red-400 text-gray-700 hover:bg-gray-200"
+                >
+                  <FaSignOutAlt className="mr-2" /> Logout
+                </button>
               </div>
             )}
           </div>

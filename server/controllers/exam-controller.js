@@ -371,7 +371,10 @@ const getSubjectsByClass = async (req, res) => {
 const getAssignedSubjects = async (req, res) => {
     try {
         const { teacherId } = req.params;
+        const {classId} = req.query;
         const createClient = await connectdb();
+
+        console.log("teacher ID and class ID",teacherId, classId);
 
         const {data: teacherData, error: teacherError } = await createClient
         .from('teachers')
@@ -384,10 +387,24 @@ const getAssignedSubjects = async (req, res) => {
             return res.status(404).json({ message: "No teacher found" }); // Return 404 if no teacher found
         }
 
+        const {data: classData, error: classError } = await createClient
+        .from('class')
+        .select('id')
+        .eq('class', classId)
+
+        if (classError) throw classError;
+        if (!classData || classData.length === 0) {
+            return res.status(404).json({ message: "No class found" }); // Return 404 if no class found
+        }
+
+
         const { data: subjectData, error: subjectError } = await createClient
         .from('subjects')
         .select('subject_name')
-        .eq('teacher_id', teacherData[0].id);
+        .eq('teacher_id', teacherData[0].id)
+        .eq('class_id', classData[0].id);
+
+
         if (subjectError) throw subjectError;
 
         if (subjectData.length === 0) {

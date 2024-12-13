@@ -4,12 +4,22 @@ const { decode } = require('base64-arraybuffer');
 const deleteStudent = async (req, res) => {
   try {
     const { id } = req.params;
+
+    console.log("studentid",id);
     const supabase = await connectdb();
+
+    const { data: student, error: studentError } = await supabase
+    .from('students')
+    .select("student_id")
+    .eq('id', id)
+    .single();
+    
+    if (studentError) throw studentError;
 
     const { error } = await supabase
       .from('users')
       .delete()
-      .eq('id', id);
+      .eq('id', student.student_id);
 
     if (error) throw error;
 

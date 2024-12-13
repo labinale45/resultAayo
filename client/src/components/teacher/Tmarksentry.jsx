@@ -36,17 +36,24 @@ import axios from "axios";
       YearSelect();
       if (selectedYear) {
         fetchExamTypes();
+      } else {
+        setExamTypes([]);
       }
     }, [selectedYear]);
 
 
-    useEffect(() => {
-      if (teacherId) {
-        fetchClasses(teacherId);
-        fetchSubjects(teacherId);
-        console.log("classes, Subjects ", classes, subjects);
-      }
-    }, [teacherId]);
+  // Update the useEffect to pass classId when fetching subjects
+useEffect(() => {
+  
+  fetchClasses(teacherId);
+  if (teacherId && selectedClass) {
+      fetchSubjects(teacherId, selectedClass); // Pass selectedClass as classId
+      console.log("classes, Subjects ", classes, subjects);
+  }
+  else if(!selectedClass){
+    setSubjects([]);
+  }
+}, [teacherId, selectedClass]); // Add selectedClass as a dependency
 
     useEffect(() => {
       if (selectedYear && selectedExamType && selectedClass && selectedSubject) {
@@ -116,23 +123,22 @@ import axios from "axios";
       }
     };
 
-    const fetchSubjects = async (teacherId) => {
+    const fetchSubjects = async (teacherId, classId) => { // Add classId as a parameter
       try {
-       
-        const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/subjects`);
-        if (!response.ok) throw new Error("Failed to fetch subjects");
-        const subjectIds = await response.json();
-        console.log("subjectIds", subjectIds);
-        const subject = subjectIds.map(id => ({
-          name: ` ${id} `
-        }));
-        console.log("subject", subject);
-        setSubjects(subject);
-        
+          const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/subjects?classId=${classId}`); // Include classId in the URL
+          if (!response.ok) throw new Error("Failed to fetch subjects");
+          const subjectIds = await response.json();
+          console.log("subjectIds", subjectIds);
+          const subject = subjectIds.map(id => ({
+              name: ` ${id} `
+          }));
+          console.log("subject", subject);
+          setSubjects(subject);
+          
       } catch (error) {
-        console.error("Error fetching Subjects:", error);
+          console.error("Error fetching Subjects:", error);
       }
-    };
+  };
 
     const showTable =
     selectedYear && selectedExamType && selectedClass && selectedSubject;

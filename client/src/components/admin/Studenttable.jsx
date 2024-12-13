@@ -180,7 +180,7 @@ export default function Studenttable() {
   // );
 
   return (
-    <div className="relative mt-7">
+    <div className="relative mt-7 px-8">
       <div className="flex justify-center items-center mb-4">
         <select
           value={selectedYear}
@@ -207,11 +207,11 @@ export default function Studenttable() {
           ))}
         </select>
 
-        <div className="relative w-full md:w-96">
+        <div className="relative px-2 w-full md:w-96">
           <input
             type="text"
             placeholder="Search students..."
-            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-[#2A2B32] border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all"
+            className="w-full h-10 pl-12 pr-4 py-3 bg-white dark:bg-[#2A2B32] border-2 border-gray-200 dark:border-gray-700 rounded-full focus:ring-2 focus:ring-blue-500 transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -310,19 +310,18 @@ export default function Studenttable() {
                       key={student.id}
                       className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                     >
-                      <td
-                        className="sticky left-0 z-20 bg-white dark:bg-gray-800"
-                        style={{ width: "400px" }}
-                      >
-                        <div className="flex">
-                          <div className="w-[80px] px-6 py-4">
-                            {student.classes}
+
+                      <th scope="row" className="flex items-center px-6 py-4 text-gray-900 break-words dark:text-white sticky left-0 z-10 bg-white dark:bg-gray-800 max-w-[200px]">
+                      <div className="w-[80px] text-black px-2 py-4">
+                            {student.class}
                           </div>
+
+                        <div className="ml-12 flex flex-col">
                           <Image
-                            className="w-10 h-10 rounded-full object-cover mb-2"
+                           width={200}
+                           height={200}
+                           className="w-10 h-10 rounded-full object-cover mb-2"
                             src={student.img_url || "/assets/profile.png"}
-                            width={20}
-                            height={20}
                             alt={`${student.fullName}'s photo`}
                             onError={(e) => {
                               e.target.src = "/assets/profile.png";
@@ -332,7 +331,7 @@ export default function Studenttable() {
                             {student.fullName}
                           </div>
                         </div>
-                      </td>
+                      </th>
                       <td className="px-6 py-4">{student.rollNo}</td>
                       <td className="px-6 py-4">{student.email}</td>
                       <td className="px-6 py-4">{student.parentName}</td>
@@ -342,19 +341,25 @@ export default function Studenttable() {
                       <td className="px-6 py-4">{student.username}</td>
                       <td className="px-6 py-4">{student.password}</td>
                       <td className="px-6 py-4">
-                        <button
-                          onClick={() => handleEdit(student)}
-                          className="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-2"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(student.id)}
-                          className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                        >
-                          Delete
-                        </button>
-                      </td>
+  <div className="flex-col  justify-around items-center py-3">
+    <div className="flex gap-2 mb-3 text-gray-600 hover:scale-110 duration-200 hover:cursor-pointer">
+      <svg className="w-4 stroke-green-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+      </svg>
+      <button className="font-semibold text-sm text-green-700" onClick={() => handleEdit(student)}>Edit</button>
+    </div>
+    <div className="flex gap-2 text-gray-600 hover:scale-110 duration-200 hover:cursor-pointer">
+      <svg className="w-4 stroke-red-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        <line x1="10" y1="11" x2="10" y2="17"></line>
+        <line x1="14" y1="11" x2="14" y2="17"></line>
+      </svg>
+      <button className="font-semibold text-sm text-red-700" onClick={() => handleDelete(student.id)}>Delete</button>
+    </div>
+  </div>
+</td>
                     </tr>
                   ))
                 )}

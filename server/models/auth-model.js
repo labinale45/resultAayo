@@ -152,9 +152,19 @@ const createUser = async (userData) => {
       // Destructure class_id from userData
       const { class_id } = userData; // Ensure class_id is included in userData
 
+      const { data: classRecord, error: classError } = await createClient
+      .from('class')
+      .select('id')
+      .eq('class', class_id)
+      .single();
+      if (classError) throw classError;
+      if (!classRecord) {
+        return res.status(400).json({ message: "Invalid class_id" });
+      }
+
       const { data: studentRecord, error: studentError } = await createClient
         .from('students')
-        .insert([{ student_id: userId, first_name, last_name, address, phone_number, parent_name, img_url: imageUrl, class: class_id, created_at: new Date().toISOString() }]); // Include class_id in the insert
+        .insert([{ dob,student_id: userId, first_name, last_name, address, phone_number, parent_name, img_url: imageUrl, class: class_id, class_id: classRecord.id, created_at: new Date().toISOString() }]); // Include class_id in the insert
       
       if (studentError) throw studentError;
     }
