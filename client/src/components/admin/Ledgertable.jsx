@@ -226,6 +226,9 @@ export default function Ledgertable() {
           year: selectedYear,
           class: selectedClass,
           examType: selectedExamType,
+          schoolName: schoolName,
+          schoolAddress: schoolAddress,
+          establishmentYear: establishmentYear,
           students: students,
           isPublished: true
         })

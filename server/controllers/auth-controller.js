@@ -162,8 +162,9 @@ const login = async(req,res) => {
 const publishResult = async (req, res) => {
   try {
     const supabaseClient = await connectdb();
-    const { year, class: className, examType, students, isPublished } = req.body;
+    const { year, class: className, examType,schoolName, schoolAddress, establishmentYear, students, isPublished } = req.body;
 
+    console.log("Received request to publish results", req.body);
     // Validate required fields
     if (!year || !className || !examType || !students) {
       return res.status(400).json({ 
@@ -191,6 +192,9 @@ const publishResult = async (req, res) => {
       const { data, error } = await supabaseClient
         .from('ledgers')
         .update({
+          schoolName,
+          schoolAddress,
+          estdYear: establishmentYear,
           students: students,
           isPublished: isPublished,
           updated_at: new Date().toISOString()
@@ -211,6 +215,9 @@ const publishResult = async (req, res) => {
             year,
             class: className,
             exam_type: examType,
+            schoolName,
+            schoolAddress,
+            estdYear: establishmentYear,
             students,
             isPublished,
             created_at: new Date().toISOString()
