@@ -18,6 +18,20 @@ export default function Studenttable() {
   const [state, setState] = useState("students");
   const [searchTerm, setSearchTerm] = useState("");
   const [classes, setClasses] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+
+  
+  const handleAddStudent = () => {
+    setSelectedStudent(null); // Reset selected student for adding a new student
+    setIsEditing(false); // Set mode to add
+    setShowAddStudent(true); // Show the Addstudent form
+  };
+
+  const handleEditStudent = (student) => {
+    setSelectedStudent(student); // Set the selected student for editing
+    setIsEditing(true); // Set mode to edit
+    setShowAddStudent(true); // Show the Addstudent form
+  };
 
   useEffect(() => {
     YearSelect();
@@ -103,10 +117,10 @@ export default function Studenttable() {
   };
   console.log(students);
   // Handle Edit
-  const handleEdit = async (student) => {
+  const handleEdit = async (studentId) => {
     try {
       setError(null);
-      const response = await fetch(`http://localhost:4000/api/auth/student/${student.id}`, {
+      const response = await fetch(`http://localhost:4000/api/auth/student/${studentId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -121,15 +135,7 @@ export default function Studenttable() {
       }
 
       const studentData = await response.json();
-      
-      // Safely handle name splitting with fallback values
-      // let firstName = '', lastName = '';
-      // if (studentData.fullName && typeof studentData.fullName === 'string') {
-      //   const nameParts = studentData.fullName.split(' ').filter(part => part);
-      //   firstName = nameParts[0] || '';
-      //   lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-      // }
-
+      console.log("client",studentData);
       setSelectedStudent({
         id: studentData.id,
         first_name: studentData.first_name || '',
@@ -144,13 +150,13 @@ export default function Studenttable() {
         img_url: studentData.img_url || ''
       });
       
-      setShowAddStudent(true);
+      // Show the add student form for editing
+      setShowAddStudent(true); // Ensure the form pops up
     } catch (error) {
       console.error('Error fetching student details:', error);
       setError(error.message);
     }
   };
-
   // Handle Delete
   const handleDelete = async(studentId) => {
     if (window.confirm('Are you sure you want to delete this Student?')) {
@@ -219,28 +225,197 @@ export default function Studenttable() {
         </div>
 
         <button
-          onClick={() => setShowAddStudent(true)}
-          className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white text-center py-2 px-4 rounded text-xs absolute right-4"
-        >
-          +Add Student
-        </button>
+        onClick={handleAddStudent} // Update the onClick handler
+        className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white text-center py-2 px-4 rounded text-xs absolute right-4"
+      >
+        +Add Student
+      </button>
       </div>
 
       {showAddStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
-          <Addstudent 
-            onClose={() => {
-              setShowAddStudent(false);
-              setSelectedStudent(null);
-            }} 
-            student={selectedStudent}
-            onSave={() => {
-              fetchStudents();
-              setShowAddStudent(false);
-              setSelectedStudent(null);
-            }}
-          />
-        </div>
+        <Addstudent
+          onClose={() => setShowAddStudent(false)} // Close handler
+          student={selectedStudent} // Pass selected student (null for new)
+          onSave={() => {
+            // Logic to refresh student list or handle after save
+            fetchStudents();
+            setShowAddStudent(false);
+            setSelectedStudent(null);
+          }}
+          isEditing={isEditing} // Pass the editing state
+        />
+      )}
+
+      {showAddStudent && (
+               <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
+               <div className="bg-white p-10 rounded-lg shadow-lg">
+                 <div className="flex flex-wrap gap-5 items-center w-full max-md:max-w-full mb-10">
+                   <div className="flex flex-wrap flex-1 shrink gap-5 items-center self-stretch my-auto basis-0 min-w-[240px] max-md:max-w-full">
+                     <div className="flex relative flex-col justify-center self-stretch bg-gray-100 h-[70px] min-h-[70px] rounded-[16px] overflow-hidden w-[70px]">
+                       <div className="w-[100px] h-[100px] aspect-auto">
+                         <img src={selectedStudent?.img_url || "/assets/profile.png"} alt="Student" className="w-full h-full object-cover" />
+                       </div>
+                     </div>
+                     <div className="flex flex-col self-stretch my-auto min-w-[240px]">
+                       <div className="text-base text-gray-800">{selectedStudent?.first_name} {selectedStudent?.last_name}</div>
+                       <div className="mt-2 text-sm text-gray-500">Edit Student Details</div>
+                     </div>
+                   </div>
+                 </div>
+     
+                 <div className="grid grid-cols-2 gap-6 mb-10">
+                   <div id="input" className="relative">
+                     <input
+                       type="text"
+                       id="first_name"
+                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
+                       placeholder="First name"
+                       value={selectedStudent?.first_name || ''}
+                       onChange={(e) => setSelectedStudent({ ...selectedStudent, first_name: e.target.value })}
+                     />
+                     <label htmlFor="first_name" className="absolute text-[14px] leading-[150%] text-primary">First name</label>
+                   </div>
+     
+                   <div id="input" className="relative">
+                     <input
+                       type="text"
+                       id="last_name"
+                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
+                       placeholder="Last name"
+                       value={selectedStudent?.last_name || ''}
+                       onChange={(e) => setSelectedStudent({ ...selectedStudent, last_name: e.target.value })}
+                     />
+                     <label htmlFor="last_name" className="absolute text-[14px] leading-[150%] text-primary">Last name</label>
+                   </div>
+     
+                   <div id="input" className="relative">
+                     <input
+                       type="email"
+                       id="email"
+                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
+                       placeholder="E-mail"
+                       value={selectedStudent?.email || ''}
+                       onChange={(e) => setSelectedStudent({ ...selectedStudent, email: e.target.value })}
+                     />
+                     <label htmlFor="email" className="absolute text-[14px] leading-[150%] text-primary">E-mail</label>
+                   </div>
+     
+                   <div id="input" className="relative">
+                     <input
+                       type="tel"
+                       id="phone_number"
+                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
+                       placeholder="Phone"
+                       value={selectedStudent?.phone_number || ''}
+                       onChange={(e) => setSelectedStudent({ ...selectedStudent, phone_number: e.target.value })}
+                     />
+                     <label htmlFor="phone_number" className="absolute text-[14px] leading-[150%] text-primary">Phone</label>
+                   </div>
+     
+                   <div id="input" className="relative">
+                     <input
+                       type="text"
+                       id="address"
+                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
+                       placeholder="Address"
+                       value={selectedStudent?.address || ''}
+                       onChange={(e) => setSelectedStudent({ ...selectedStudent, address: e.target.value })}
+                     />
+                     <label htmlFor="address" className="absolute text-[14px] leading-[150%] text-primary">Address</label>
+                   </div>
+     
+                   <div id="input" className="relative">
+                     <input
+                       type="date"
+                       id="dob"
+                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
+                       value={selectedStudent?.dob || ''}
+                       onChange={(e) => setSelectedStudent({ ...selectedStudent, dob: e.target.value })}
+                     />
+                     <label htmlFor="dob" className="absolute text-[14px] leading-[150%] text-primary">Date of Birth</label>
+                   </div>
+     
+                   <div id="input" className="relative">
+                     <select
+                       id="gender"
+                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
+                       value={selectedStudent?.gender || 'Male'}
+                       onChange={(e) => setSelectedStudent({ ...selectedStudent, gender: e.target.value })}
+                     >
+                       <option value="Male">Male</option>
+                       <option value="Female">Female</option>
+                       <option value="Other">Other</option>
+                     </select>
+                     <label htmlFor="gender" className="absolute text-[14px] leading-[150%] text-primary">Gender</label>
+                   </div>
+     
+                   <div id="input" className="relative">
+                     <input
+                       type="text"
+                       id="username"
+                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
+                       placeholder="Username"
+                       value={selectedStudent?.username || ''}
+                       onChange={(e) => setSelectedStudent({ ...selectedStudent, username: e.target.value })}
+                     />
+                     <label htmlFor="username" className="absolute text-[14px] leading-[150%] text-primary">Username</label>
+                   </div>
+     
+                   <div id="input" className="relative">
+                     <input
+                       type="password"
+                       id="password"
+                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
+                       placeholder="Password"
+                       value={selectedStudent?.password || ''}
+                       onChange={(e) => setSelectedStudent({ ...selectedStudent, password: e.target.value })}
+                     />
+                     <label htmlFor="password" className="absolute text-[14px] leading-[150%] text-primary">Password</label>
+                   </div>
+     
+                   <div id="input" className="relative">
+                     <input
+                       type="file"
+                       id="img_url"
+                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
+                       onChange={(e) => {
+                         const file = e.target.files[0];
+                         if (file) {
+                           const reader = new FileReader();
+                           reader.onloadend = () => {
+                             setSelectedStudent({ ...selectedStudent, img_url: reader.result });
+                           };
+                           reader.readAsDataURL(file);
+                         }
+                       }}
+                     />
+                     <label htmlFor="img_url" className="absolute text-[14px] leading-[150%] text-primary">Upload Image</label>
+                   </div>
+                 </div>
+     
+                 <div className="sm:flex sm:flex-row-reverse flex gap-4">
+                   <button
+                     className="w-fit rounded-lg text-sm px-5 py-2 focus:outline-none h-[50px] border bg-violet-500 hover:bg-violet-600 focus:bg-violet-700 border-violet-500 text-white focus:ring-4 focus:ring-violet-200 hover:ring-4 hover:ring-violet-100 transition-all duration-300"
+                     type="button"
+                     onClick={() => {
+                       // Save changes logic here
+                       fetchStudents();
+                       setShowAddStudent(false);
+                       setSelectedStudent(null);
+                     }}
+                   >
+                     <div className="flex gap-2 items-center">Save changes</div>
+                   </button>
+                   <button
+                     className="w-fit rounded-lg text-sm px-5 py-2 focus:outline-none h-[50px] border bg-transparent border-primary text-primary focus:ring-4 focus:ring-gray-100"
+                     type="button"
+                     onClick={() => setShowAddStudent(false)}
+                   >
+                     Cancel
+                   </button>
+                 </div>
+               </div>
+             </div>
       )}
 
       {isLoading && (
@@ -342,21 +517,21 @@ export default function Studenttable() {
                       <td className="px-6 py-4">{student.password}</td>
                       <td className="px-6 py-4">
   <div className="flex-col  justify-around items-center py-3">
-    <div className="flex gap-2 mb-3 text-gray-600 hover:scale-110 duration-200 hover:cursor-pointer">
+    <div  onClick={() => handleEdit(student.id)} className="flex gap-2 mb-3 text-gray-600 hover:scale-110 duration-200 hover:cursor-pointer">
       <svg className="w-4 stroke-green-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
       </svg>
-      <button className="font-semibold text-sm text-green-700" onClick={() => handleEdit(student)}>Edit</button>
+      <button className="font-semibold text-sm text-green-700">Edit</button>
     </div>
-    <div className="flex gap-2 text-gray-600 hover:scale-110 duration-200 hover:cursor-pointer">
+    <div onClick={() => handleDelete(student.id)} className="flex gap-2 text-gray-600 hover:scale-110 duration-200 hover:cursor-pointer">
       <svg className="w-4 stroke-red-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="3 6 5 6 21 6"></polyline>
         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
         <line x1="10" y1="11" x2="10" y2="17"></line>
         <line x1="14" y1="11" x2="14" y2="17"></line>
       </svg>
-      <button className="font-semibold text-sm text-red-700" onClick={() => handleDelete(student.id)}>Delete</button>
+      <button className="font-semibold text-sm text-red-700" >Delete</button>
     </div>
   </div>
 </td>

@@ -90,7 +90,39 @@ export default function Ledgertable() {
       }
 
       const data = await response.json();
-      setStudents(data);
+
+      console.log("marksheets Data:", data);
+    
+        // Process the data to group subjects by student
+        const groupedStudents = {};
+
+        data.forEach(record => {
+            const key = `${record.students}-${record.rollNo}-${record.exam_type}-${record.class}`;
+            if (!groupedStudents[key]) {
+                groupedStudents[key] = {
+                    rollNo: record.rollNo,
+                    students: record.students,
+                    exam_type: record.exam_type,
+                    class: record.class,
+                    TH:[],
+                    PR:[],
+                    subjects: []
+                };
+            }
+            groupedStudents[key].subjects.push(record.subjects);
+            groupedStudents[key].TH.push(record.TH); 
+           groupedStudents[key].PR.push(record.PR);
+        });
+
+        // Convert the grouped object back to an array
+        const formattedStudents = Object.values(groupedStudents).map(student => ({
+            ...student,
+            subjects: student.subjects.join(', ') // Join subjects into a single string or format as needed
+        }));
+
+        console.log("Formatted Data:", formattedStudents);
+        setStudents(formattedStudents);
+
     } catch (error) {
       setError(error.message);
     } finally {
@@ -128,15 +160,13 @@ export default function Ledgertable() {
     const updatedStudents = students.map((student, i) => {
       if (i === index) {
         const updatedStudent = { ...student, [field]: value };
-        // Calculate totals and GPA
-        const mathTotal =
-          parseFloat(updatedStudent.mathTheory || 0) +
-          parseFloat(updatedStudent.mathPractical || 0);
-        const nepaliTotal =
-          parseFloat(updatedStudent.nepaliTheory || 0) +
-          parseFloat(updatedStudent.nepaliPractical || 0);
-        const total = mathTotal + nepaliTotal;
+
+        // Calculate totals and GPA based on arrays for each subject
+        const mathTotal = updatedStudent.TH.reduce((acc, curr) => acc + parseFloat(curr || 0), 0);
+        const nepaliTotal = updatedStudent.PR.reduce((acc, curr) => acc + parseFloat(curr || 0), 0);
+        const total = (mathTotal + nepaliTotal) / (updatedStudent.TH.length + updatedStudent.PR.length); // Adjusted for total subjects
         const gpa = (total / 4).toFixed(2);
+        
         return { ...updatedStudent, mathTotal, nepaliTotal, total, gpa };
       }
       return student;
@@ -317,12 +347,20 @@ export default function Ledgertable() {
                 <th className="border border-gray-300 p-2" rowSpan="2">
                   Name
                 </th>
-                <th className="border border-gray-300 p-2" colSpan="3">
-                  Math
-                </th>
-                <th className="border border-gray-300 p-2" colSpan="3">
-                  Nepali
-                </th>
+                
+                {students[0] && students[0].subjects.split(', ').map((subject, subjectIndex) => (
+                  <th key={subjectIndex} className=" border border-gray-300 p-2">
+                    {subject}
+                    <hr className="border border-slate-200"></hr>
+                    <tr className="flex justify-between ">
+                <td className=" text-gray-700 ">Theory</td>
+                <td className=" text-gray-700 ">Practical</td>
+                <td className=" text-gray-700 ">Total</td>
+              </tr>
+                  </th>
+                  
+                ))}
+
                 <th className="border border-gray-300 p-2" rowSpan="2">
                   Total Marks
                 </th>
@@ -330,25 +368,19 @@ export default function Ledgertable() {
                   GPA
                 </th>
               </tr>
-              <tr>
-                <th className="border border-gray-300 p-2">Theory</th>
-                <th className="border border-gray-300 p-2">Practical</th>
-                <th className="border border-gray-300 p-2">Total</th>
-                <th className="border border-gray-300 p-2">Theory</th>
-                <th className="border border-gray-300 p-2">Practical</th>
-                <th className="border border-gray-300 p-2">Total</th>
-              </tr>
             </thead>
             <tbody>
-              {students.map((student, index) => (
-                <tr key={student.rollNo}>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.rollNo}
-                  </td>
-                  <td className="border border-gray-300 p-2">{student.name}</td>
-                  <td className="border border-gray-300 p-2">
+  {students.map((student, index, subjectIndex) => (
+    <tr key={student.rollNo}>
+      <td className="border border-gray-300 p-2 text-center">
+        {student.rollNo}
+      </td>
+      <td className="border border-gray-300 p-2">{student.students}</td>
+      <td className="w-72">
+      <td className="w-24 border border-gray-300 p-2">
                     <input
                       type="number"
+                      placeholder="TH"
                       value={student.mathTheory}
                       onChange={(e) =>
                         handleInputChange(index, "mathTheory", e.target.value)
@@ -356,9 +388,10 @@ export default function Ledgertable() {
                       className="w-full p-1 border border-gray-300 rounded-md"
                     />
                   </td>
-                  <td className="border border-gray-300 p-2">
+                  <td className="w-24 border border-gray-300 p-2">
                     <input
                       type="number"
+                      placeholder="PR"
                       value={student.mathPractical}
                       onChange={(e) =>
                         handleInputChange(
@@ -370,12 +403,14 @@ export default function Ledgertable() {
                       className="w-full p-1 border border-gray-300 rounded-md"
                     />
                   </td>
-                  <td className="border border-gray-300 p-2 text-center">
+                  <td className=" w-24 border border-gray-300 p-2 text-center">
                     {student.mathTotal}
+                  </td>
                   </td>
                   <td className="border border-gray-300 p-2">
                     <input
                       type="number"
+                      placeholder="TH"
                       value={student.nepaliTheory}
                       onChange={(e) =>
                         handleInputChange(index, "nepaliTheory", e.target.value)
@@ -386,6 +421,7 @@ export default function Ledgertable() {
                   <td className="border border-gray-300 p-2">
                     <input
                       type="number"
+                      placeholder="PR"
                       value={student.nepaliPractical}
                       onChange={(e) =>
                         handleInputChange(
@@ -406,9 +442,9 @@ export default function Ledgertable() {
                   <td className="border border-gray-300 p-2 text-center">
                     {student.gpa}
                   </td>
-                </tr>
-              ))}
-            </tbody>
+                  </tr>
+  ))}
+</tbody>
           </table>
         </div>
       )}

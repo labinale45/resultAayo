@@ -61,9 +61,29 @@ const getRecordsByYear = async (req, res) => {
     const { year } = req.params;
     const status = req.query.status;
     const classId = req.query.class;
+    const examType = req.query.examType;
 
-    console.log(`Fetching ${status} for year:`, year, `and class ID:`, classId);
+    console.log(`Fetching ${status} for year:`, year, `and class ID:`, classId, `and exam type:`, examType);
 
+    const {data: examData, error: examError} = await supabaseClient
+    .from("exams")
+    .select("*")
+    .eq("exam_type", examType)
+    .gte("created_at", `${year}-01-01`)
+    .lte("created_at", `${year}-12-31`)
+    .single();
+
+    console.log("Exam Data:", examData);
+
+    const {data:studentData, error: studentError} = await supabaseClient
+    .from("students")
+    .select("*")
+    .eq("class", classId)
+    .gte("created_at", `${year}-01-01`)
+    .lte("created_at", `${year}-12-31`);
+
+
+    console.log("Student Data:", studentData);
     // Start building the query
     let query = supabaseClient
       .from(status)
@@ -76,8 +96,23 @@ const getRecordsByYear = async (req, res) => {
       query = query.eq("class", classId);
     }
 
+    if (status === "marksheets" && classId && examType && year) {
+
+      if (!examData || !studentData || studentData.length === 0) {
+        console.error("Exam data or student data is undefined or empty");
+        return res.status(400).json({ error: "Invalid exam or student data" });
+      }
+      
+      query = query.eq("class", classId)
+      .eq("exam_id", examData.id)
+      .eq("student_id", studentData[0].id)
+      .gte("created_at", `${year}-01-01`)
+      .lte("created_at", `${year}-12-31`)
+      .select(`*,student_id:students(first_name,last_name,rollNo), subject_id:subjects(subject_name), exam_id:exams(exam_type)`);
+    }
     const { data, error } = await query;
 
+    console.log("Query result:", data);
     if (error) throw error;
 
     // Format data based on status
@@ -100,12 +135,12 @@ const getRecordsByYear = async (req, res) => {
         imageUrl = publicUrl;
       }
       const baseFormat = {
-        id: record.id,
-        email: record.email,
-        contact: record.phone_number,
-        address: record.address,
-        dateOfBirth: new Date(record.dob).toLocaleDateString(),
-        username: record.username,
+        id: record.id || "",	
+        email: record.email || "",
+        contact: record.phone_number || "",
+        address: record.address || "",
+        dateOfBirth: new Date(record.dob).toLocaleDateString() || "",
+        username: record.username || "",
       };
 
       // Add status-specific formatting
@@ -145,6 +180,19 @@ const getRecordsByYear = async (req, res) => {
             exam_type: record.exam_type,
             students: record.students,
             isPublished: record.isPublished,
+            created_at: new Date(record.created_at).toLocaleDateString(),
+          };
+          case "marksheets":
+          return {
+            ...baseFormat,
+            year: record.year,
+            class: record.class,
+            rollNo: record.student_id.rollNo||"",	
+            subjects: record.subject_id.subject_name || "",
+            students: record.student_id.first_name +" " + record.student_id.last_name|| "",
+            exam_type: record.exam_id.exam_type || "",
+            TH: record.TH,
+            PR: record.PR,
             created_at: new Date(record.created_at).toLocaleDateString(),
           };
         default:

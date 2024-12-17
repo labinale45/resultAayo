@@ -100,6 +100,7 @@ const getStudent = async (req, res) => {
   try {
     const { id } = req.params;
     const supabase = await connectdb();
+    console.log("studentid",id);
 
     const { data: student, error: studentError } = await supabase
       .from('students')
@@ -133,7 +134,7 @@ const getStudent = async (req, res) => {
       password: student.users?.password || '',
       img_url: student.img_url || ''
     };
-
+    console.log("student Data",studentData);
     res.status(200).json(studentData);
   } catch (error) {
     console.error('Error fetching student:', error);
