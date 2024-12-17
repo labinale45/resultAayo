@@ -117,9 +117,11 @@ export default function Ledgertable() {
         // Convert the grouped object back to an array
         const formattedStudents = Object.values(groupedStudents).map(student => ({
             ...student,
-            subjects: student.subjects.join(', ') // Join subjects into a single string or format as needed
+            subjects: student.subjects.join(', '), // Join subjects into a single string or format as needed
+            totalScores: student.TH.map((_, index) => ( // Initialize totalScores based on the number of subjects
+                (parseFloat(student.TH[index] || 0) || 0) + (parseFloat(student.PR[index] || 0) || 0) // Calculate total for each subject
+            ))
         }));
-
         console.log("Formatted Data:", formattedStudents);
         setStudents(formattedStudents);
 
@@ -156,32 +158,48 @@ export default function Ledgertable() {
     }
   };
 
-  const handleInputChange = (index, field, value) => {
+  const handleInputChange = (index, subjectIndex, field, value) => {
     const updatedStudents = students.map((student, i) => {
       if (i === index) {
-        const updatedStudent = { ...student, [field]: value };
+        const updatedStudent = { ...student };
+  
+        // Ensure TH and PR are initialized as arrays if they are undefined
+        updatedStudent.TH = updatedStudent.TH || [];
+        updatedStudent.PR = updatedStudent.PR || [];
+  
+        // Update the specific field based on the input
+        if (field === "TH") {
+          updatedStudent.TH[subjectIndex] = value; // Update Theory score
+        } else if (field === "PR") {
+          updatedStudent.PR[subjectIndex] = value; // Update Practical score
+        }
 
+         // Calculate total for the specific subject
+      const theoryScore = parseFloat(updatedStudent.TH[subjectIndex]) || 0; // Parse Theory score
+      const practicalScore = parseFloat(updatedStudent.PR[subjectIndex]) || 0; // Parse Practical score
+      const totalScores = theoryScore + practicalScore; // Total marks for the subject
+  
         // Calculate totals and GPA based on arrays for each subject
-        const mathTotal = updatedStudent.TH.reduce((acc, curr) => acc + parseFloat(curr || 0), 0);
-        const nepaliTotal = updatedStudent.PR.reduce((acc, curr) => acc + parseFloat(curr || 0), 0);
-        const total = (mathTotal + nepaliTotal) / (updatedStudent.TH.length + updatedStudent.PR.length); // Adjusted for total subjects
-        const gpa = (total / 4).toFixed(2);
-        
-        return { ...updatedStudent, mathTotal, nepaliTotal, total, gpa };
+        const totalTheory = updatedStudent.TH.reduce((acc, curr) => acc + parseFloat(curr || 0), 0);
+        const totalPractical = updatedStudent.PR.reduce((acc, curr) => acc + parseFloat(curr || 0), 0);
+        const total = totalTheory + totalPractical; // Total marks
+        const gpa = (total / (updatedStudent.TH.length + updatedStudent.PR.length)).toFixed(2); // Calculate GPA
+  
+        return { ...updatedStudent,totalScores, total, gpa }; // Return updated student object
       }
-      return student;
+      return student; // Return unchanged student
     });
-    setStudents(updatedStudents);
+    setStudents(updatedStudents); // Update state with new students array
   };
 
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
-    printWindow.document.write("<html><head><title>Print Ledger</title>");
+    printWindow.document.write("<html><head><title>Ledger</title>");
     printWindow.document.write("<style>");
     printWindow.document.write(`
       body { font-family: Arial, sans-serif; }
       table { border-collapse: collapse; width: 100%; }
-      th, td { border: 1px solid black; padding: 8px; text-align: left; }
+      th, td { border: 1px solid black; padding: 8px; text-align: center; }
       th { background-color: #f2f2f2; }
     `);
     printWindow.document.write("</style></head><body>");
@@ -370,80 +388,51 @@ export default function Ledgertable() {
               </tr>
             </thead>
             <tbody>
-  {students.map((student, index, subjectIndex) => (
+            {students.map((student, index) => (
     <tr key={student.rollNo}>
-      <td className="border border-gray-300 p-2 text-center">
-        {student.rollNo}
-      </td>
+      <td className="border border-gray-300 p-2">{student.rollNo}</td>
       <td className="border border-gray-300 p-2">{student.students}</td>
-      <td className="w-72">
-      <td className="w-24 border border-gray-300 p-2">
-                    <input
-                      type="number"
-                      placeholder="TH"
-                      value={student.mathTheory}
-                      onChange={(e) =>
-                        handleInputChange(index, "mathTheory", e.target.value)
-                      }
-                      className="w-full p-1 border border-gray-300 rounded-md"
-                    />
-                  </td>
-                  <td className="w-24 border border-gray-300 p-2">
-                    <input
-                      type="number"
-                      placeholder="PR"
-                      value={student.mathPractical}
-                      onChange={(e) =>
-                        handleInputChange(
-                          index,
-                          "mathPractical",
-                          e.target.value
-                        )
-                      }
-                      className="w-full p-1 border border-gray-300 rounded-md"
-                    />
-                  </td>
-                  <td className=" w-24 border border-gray-300 p-2 text-center">
-                    {student.mathTotal}
-                  </td>
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    <input
-                      type="number"
-                      placeholder="TH"
-                      value={student.nepaliTheory}
-                      onChange={(e) =>
-                        handleInputChange(index, "nepaliTheory", e.target.value)
-                      }
-                      className="w-full p-1 border border-gray-300 rounded-md"
-                    />
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    <input
-                      type="number"
-                      placeholder="PR"
-                      value={student.nepaliPractical}
-                      onChange={(e) =>
-                        handleInputChange(
-                          index,
-                          "nepaliPractical",
-                          e.target.value
-                        )
-                      }
-                      className="w-full p-1 border border-gray-300 rounded-md"
-                    />
-                  </td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.nepaliTotal}
-                  </td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.total}
-                  </td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    {student.gpa}
-                  </td>
-                  </tr>
-  ))}
+      
+      {students[0] && students[0].subjects.split(', ').map((subject, subjectIndex) => (
+        <td className="w-72" key={subjectIndex}>
+          <td className="w-24 border border-gray-300 p-2">
+            <input
+              type="number"
+              placeholder="TH"
+              value={student.TH[subjectIndex] || ""}
+              onChange={(e) =>
+                handleInputChange(index, subjectIndex, "TH", e.target.value)
+              }
+              className="w-full p-1 border border-gray-300 rounded-md"
+            />
+          </td>
+          <td className="w-24 border border-gray-300 p-2">
+            <input
+              type="number"
+              placeholder="PR"
+              value={student.PR[subjectIndex] || ""}
+              onChange={(e) =>
+                handleInputChange(index, subjectIndex, "PR", e.target.value)
+              }
+              className="w-full p-1 border border-gray-300 rounded-md"
+            />
+          </td>
+          <td className="w-24 border border-gray-300 p-2 text-center">
+            {student.totalScores[subjectIndex] || student.totalScores}
+          </td>
+        </td>
+      ))}
+
+      <td className="border border-gray-300 p-2 text-center">
+        {student.total}
+      </td>
+      <td className="border border-gray-300 p-2 text-center">
+        {student.gpa}
+      </td>
+    </tr>
+))}
+
+
 </tbody>
           </table>
         </div>

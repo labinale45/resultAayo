@@ -82,6 +82,7 @@ const getRecordsByYear = async (req, res) => {
     .gte("created_at", `${year}-01-01`)
     .lte("created_at", `${year}-12-31`);
 
+    const studentIds = studentData.map(student => student.id);
 
     console.log("Student Data:", studentData);
     // Start building the query
@@ -95,7 +96,6 @@ const getRecordsByYear = async (req, res) => {
     if (status === "students" && classId) {
       query = query.eq("class", classId);
     }
-
     if (status === "marksheets" && classId && examType && year) {
 
       if (!examData || !studentData || studentData.length === 0) {
@@ -103,9 +103,15 @@ const getRecordsByYear = async (req, res) => {
         return res.status(400).json({ error: "Invalid exam or student data" });
       }
       
+      // Ensure studentIds is an array and not empty
+      if (!Array.isArray(studentIds) || studentIds.length === 0) {
+        console.error("No valid student IDs found");
+        return res.status(400).json({ error: "No valid student IDs found" });
+      }
+
       query = query.eq("class", classId)
       .eq("exam_id", examData.id)
-      .eq("student_id", studentData[0].id)
+      .in("student_id", studentIds) // Ensure this is an array
       .gte("created_at", `${year}-01-01`)
       .lte("created_at", `${year}-12-31`)
       .select(`*,student_id:students(first_name,last_name,rollNo), subject_id:subjects(subject_name), exam_id:exams(exam_type)`);
@@ -187,9 +193,9 @@ const getRecordsByYear = async (req, res) => {
             ...baseFormat,
             year: record.year,
             class: record.class,
-            rollNo: record.student_id.rollNo||"",	
+            rollNo: record.student_id.rollNo || "",	
             subjects: record.subject_id.subject_name || "",
-            students: record.student_id.first_name +" " + record.student_id.last_name|| "",
+            students: record.student_id.first_name+ " " +record.student_id.last_name|| "", 
             exam_type: record.exam_id.exam_type || "",
             TH: record.TH,
             PR: record.PR,
