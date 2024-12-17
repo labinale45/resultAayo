@@ -120,6 +120,8 @@ export default function Ledgertable() {
             subjects: student.subjects.join(', '), // Join subjects into a single string or format as needed
             totalScores: student.TH.map((_, index) => ( // Initialize totalScores based on the number of subjects
                 (parseFloat(student.TH[index] || 0) || 0) + (parseFloat(student.PR[index] || 0) || 0) // Calculate total for each subject
+
+                
             ))
         }));
         console.log("Formatted Data:", formattedStudents);
@@ -397,7 +399,7 @@ export default function Ledgertable() {
       <td className="border border-gray-300 p-2">{student.students}</td>
       
       {students[0] && students[0].subjects.split(', ').map((subject, subjectIndex) => (
-        <td className="w-72" key={subjectIndex}>
+        <td className="w-72 " key={subjectIndex}>
           <td className="w-24 border border-gray-300 p-2">
             <input
               type="number"

@@ -116,6 +116,14 @@ const getRecordsByYear = async (req, res) => {
       .lte("created_at", `${year}-12-31`)
       .select(`*,student_id:students(first_name,last_name,rollNo), subject_id:subjects(subject_name), exam_id:exams(exam_type)`);
     }
+
+    if (status === "ledgers" && classId && examType && year) {
+      query = query.eq("class", classId)
+      .eq("exam_type", examType)
+      .gte("created_at", `${year}-01-01`)
+      .lte("created_at", `${year}-12-31`)
+      .select(`*`);
+    }
     const { data, error } = await query;
 
     console.log("Query result:", data);
@@ -184,6 +192,9 @@ const getRecordsByYear = async (req, res) => {
             year: record.year,
             class: record.class,
             exam_type: record.exam_type,
+            schoolName: record.schoolName,
+            schoolAddress: record.schoolAddress,
+            estdYear: record.estdYear,
             students: record.students,
             isPublished: record.isPublished,
             created_at: new Date(record.created_at).toLocaleDateString(),

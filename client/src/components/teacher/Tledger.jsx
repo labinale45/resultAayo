@@ -125,11 +125,12 @@ useEffect(() => {
       if (data.data.isPublished) {
         // Fetch and display student records
         const ledgerResponse = await fetch(
-          `http://localhost:4000/api/auth/records/${year}?status=ledgers&class=${selectedClass}&examType=${selectedExamType}`
+          `http://localhost:4000/api/auth/records/${year}?status=${state}&class=${selectedClass}&examType=${selectedExamType}`
         );
   
         if (ledgerResponse.ok) {
           const ledgerData = await ledgerResponse.json();
+          console.log("Student records:", ledgerData);
           setStudents(ledgerData);
         }
       }
@@ -210,55 +211,72 @@ useEffect(() => {
           className="bg-white rounded-lg shadow-lg p-6"
         >
           <div id="ledger" className="overflow-x-auto">
-            <div className="mb-8 text-center">
-              <h2 className="text-4xl font-semibold">School Name</h2>
+          <div className="mb-8 text-center">
+  <h2 className="text-4xl font-semibold">{students.length > 0 ? students[0].schoolName : "School Name"}</h2>
+  <p>{students.length > 0 ? students[0].schoolAddress : "School Address"}</p>
+  <p>Estd: {students.length > 0 ? students[0].estdYear : "Year Established"}</p>
+
+            <p className="text-3xl"></p>
               <p className="text-3xl mt-4">
-              {selectedExamType} Examination {selectedYear}
+              {selectedExamType} {selectedYear}
               </p>
               <p className="text-left text-2xl">Class: {selectedClass}</p>
             </div>
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-gray-800">
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                    Roll No
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                    Name
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                    Total
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                    Percentage
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                    Grade
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  
+            <table className="min-w-full border-collapse border border-gray-300">
+            <thead>
+  <tr>
+    <th className="border border-gray-300 p-2" rowSpan="2">Roll No</th>
+    <th className="border border-gray-300 p-2" rowSpan="2">Name</th>
+    {students[0] && students[0].students[0].subjects ? (
+      students[0].students[0].subjects.split(', ').map((subject, subjectIndex) => (
+        <th key={subjectIndex} className="border border-gray-300 p-2">
+          {subject}
+          <hr className="border border-slate-200" />
+          <div className="flex justify-between">
+            <span className="text-gray-700">Theory</span>
+            <span className="text-gray-700">Practical</span>
+            <span className="text-gray-700">Total</span>
+          </div>
+        </th>
+      ))
+    ) : (
+      <th className="border border-gray-300 p-2">No Subjects Available</th>
+    )}
+    <th className="border border-gray-300 p-2" rowSpan="2">Total Marks</th>
+    <th className="border border-gray-300 p-2" rowSpan="2">GPA</th>
+  </tr>
+</thead>
 
-              {students.length === 0 ? (
-                 
-                 <tr>
-                 <td colSpan="10" className="text-center py-4 text-red-500">
-                  Student Not Found.
-                 </td>
-               </tr>
-              ):(
-                students.map((student) => (
-                  <tr key={student.rollNo}>
-                    <td className="border p-2">{student.rollNo}</td>
-                    <td className="border p-2">{student.name}</td>
-                    <td className="border p-2">{student.total}</td>
-                    <td className="border p-2">{student.percentage}%</td>
-                    <td className="border p-2">{student.grade}</td>
-                  </tr>
-                ))
-              )}
-              </tbody>
-            </table>
+  <tbody>
+  {students.map((student, index) => (
+      console.log("tablestudent", student),
+      <tr key={index}> 
+        <td className="border border-gray-300 p-2">{student.students[0].rollNo}</td>
+        <td className="border border-gray-300 p-2">{student.students[0].students}</td>
+        {students[0].students[0].subjects.split(', ').map((subject, subjectIndex) => (
+          <td className="w-72" key={subjectIndex}>
+             <td className="w-20  border border-gray-300 p-2">
+            <label className="w-full text-center ">
+              {students[0].students[0].TH[subjectIndex] || ""}</label>
+          </td>
+          <td className="w-20  border border-gray-300 p-2">
+            <label className="w-full text-center ">
+              {students[0].students[0].PR[subjectIndex] || ""}</label>
+          </td>
+          
+            <td className="w-20 border border-gray-300 p-2 text-center">
+              {students[0].students[0].totalScores[subjectIndex] || students[0].students[0].totalScores }
+            </td>
+          </td>
+        ))}
+        <td className="border border-gray-300 p-2 text-center">{students[0].students[0].total}</td>
+        <td className="border border-gray-300 p-2 text-center">{students[0].students[0].gpa}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
             <div className="mt-6 flex justify-end gap-4">
               <button
                 onClick={handlePrint}
