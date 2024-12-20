@@ -4,20 +4,42 @@ import { FaPrint } from "react-icons/fa";
 const Print = ({ targetRef }) => {
   const handlePrint = () => {
     const printContent = targetRef.current.innerHTML;
-    const originalContent = document.body.innerHTML;
-    const printStyles = `
-      <style>
-        @media print {
-          body * { visibility: hidden; }
-          #printSection, #printSection * { visibility: visible; }
-          #printSection { position: absolute; left: 0; top: 0; }
-        }
-      </style>
-    `;
-    document.body.innerHTML =
-      printStyles + `<div id="printSection">${printContent}</div>`;
-    window.print();
-    document.body.innerHTML = originalContent;
+    const printWindow = window.open('', '_blank'); // Open a new window
+    const styles = Array.from(document.styleSheets)
+        .map(sheet => {
+            try {
+                return Array.from(sheet.cssRules)
+                    .map(rule => rule.cssText)
+                    .join('\n');
+            } catch (e) {
+                return ''; // Ignore stylesheets that can't be accessed
+            }
+        })
+        .join('\n');
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print</title>
+          <style>
+            ${styles}
+            @media print {
+              body * { visibility: hidden; }
+              #printSection, #printSection * { visibility: visible; }
+              #printSection { position: absolute; left: 0; top: 0; }
+              table { width: 100%; border-collapse: collapse; } /* Ensure tables are full width */
+              th, td { border: 1px solid black; padding: 8px; text-align: left; } /* Add borders and padding */
+            }
+          </style>
+        </head>
+        <body>
+          <div id="printSection">${printContent}</div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close(); // Close the document to render it
+    printWindow.print(); // Trigger the print dialog
+    printWindow.close(); // Close the print window after printing
   };
 
   return (

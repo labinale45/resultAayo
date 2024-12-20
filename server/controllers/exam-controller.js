@@ -665,11 +665,23 @@ const retrieveMarks = async (req, res) => {
         return res.status(500).json({ message: "Failed to retrieve marks", error: error.message });
     }
 };
+const getUpcomingExamsByTeacher = async (teacherId) => {
+    const supabase = await connectdb();
+    const today = new Date().toISOString();
+    const { data, error } = await supabase
+        .from('exams')
+        .select('*')
+        .gte('deadline_date', today)
+        .eq('teacher_id', teacherId);
 
+    if (error) throw error;
+    return data; // Return the upcoming exams
+};
 
 
 
 module.exports = { 
+    getUpcomingExamsByTeacher,
     retrieveMarks,
     getAssignedSubjects,
     createExam, 

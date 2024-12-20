@@ -1,8 +1,9 @@
 
  "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect ,useRef} from "react";
 import Gradesheet from "./Gradesheet";
+import Print from "@/components/Mini Component/Print"
 
 export default function Ledgertable() {
   const [showGradesheet, setShowGradesheet] = useState(false);
@@ -70,6 +71,7 @@ export default function Ledgertable() {
       setYears([]);
     }
   };
+  
 
   const fetchLedgerData = async () => {
     setIsLoading(true);
@@ -194,21 +196,10 @@ export default function Ledgertable() {
     setStudents(updatedStudents); // Update state with new students array
   };
 
+  const gradesheetRef = useRef(null);
+
   const handlePrint = () => {
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write("<html><head><title>Ledger</title>");
-    printWindow.document.write("<style>");
-    printWindow.document.write(`
-      body { font-family: Arial, sans-serif; }
-      table { border-collapse: collapse; width: 100%; }
-      th, td { border: 1px solid black; padding: 8px; text-align: center; }
-      th { background-color: #f2f2f2; }
-    `);
-    printWindow.document.write("</style></head><body>");
-    printWindow.document.write(document.getElementById("ledger").innerHTML);
-    printWindow.document.write("</body></html>");
-    printWindow.document.close();
-    printWindow.print();
+    
   };
 
   const handlePublishResult = async () => {
@@ -251,7 +242,38 @@ export default function Ledgertable() {
 
   const handleGenerateGradesheet = () => {
     setShowGradesheet(true);
+  }
+  
+  // Update the function to pass the required props
+  const gradesheetData = {
+    schoolName,
+    schoolAddress,
+    establishmentYear,
+    studentsData: students.map(student => ({
+        students: student.students,
+        dateOfBirth: student.dateOfBirth, // Assuming you have this data
+        dateOfBirthAD: student.dateOfBirthAD, // Assuming you have this data
+        rollNo: student.rollNo,
+        examType: selectedExamType,
+        year: selectedYear,
+        subjects: student.subjects.split(', ').map((subject, index) => ({
+            name: subject,
+            th: {
+                creditHour: 3, // Example value, adjust as needed
+                gpa: student.gpa, // Assuming GPA is calculated for the student
+                grade: student.gpa >= 3.5 ? 'A' : student.gpa >= 2.5 ? 'B' : 'C' // Example grading logic
+            },
+            pr: {
+                creditHour: 1, // Example value, adjust as needed
+                gpa: student.gpa, // Assuming GPA is calculated for the student
+                grade: student.gpa >= 3.5 ? 'A' : student.gpa >= 2.5 ? 'B' : 'C' // Example grading logic
+            },
+            finalGrade: student.gpa >= 3.5 ? 'A' : student.gpa >= 2.5 ? 'B' : 'C', // Example final grade logic
+            remarks: 'Good' // Example remarks, adjust as needed
+        }))
+    }))
   };
+
 
   const isFormComplete = selectedYear && selectedClass && selectedExamType;
 
@@ -294,12 +316,13 @@ export default function Ledgertable() {
         </select>
 
         <div className="flex space-x-2 absolute right-4">
-          <button
+          {/* <button
             onClick={handlePrint}
             className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs"
           >
             Print Ledger
-          </button>
+          </button> */}
+          <Print targetRef={gradesheetRef} />
           <button
             onClick={handlePublishResult}
             className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs"
@@ -316,7 +339,7 @@ export default function Ledgertable() {
       </div>
 
       {isFormComplete && (
-        <div id="ledger" className="border border-gray-300 rounded-lg p-4 ">
+        <div ref={gradesheetRef} className="border border-gray-300 rounded-lg p-4 ">
           <div className="mb-8 text-center">
           <h2 className="text-4xl font-semibold">{schoolName}</h2>
       <p>{schoolAddress}</p>
@@ -381,7 +404,6 @@ export default function Ledgertable() {
                 <td className=" text-gray-700 ">Total</td>
               </tr>
                   </th>
-                  
                 ))}
 
                 <th className="border border-gray-300 p-2" rowSpan="2">
@@ -443,11 +465,14 @@ export default function Ledgertable() {
         </div>
       )}
 
-      {showGradesheet && (
-        <div className="fixed inset-0 bg-black  bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
-          <Gradesheet onClose={() => setShowGradesheet(false)} />
-        </div>
-      )}
+{showGradesheet && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
+                <Gradesheet 
+                    onClose={() => setShowGradesheet(false)} 
+                    {...gradesheetData} // Pass the data as props
+                />
+            </div>
+        )}
     </div>
   );
 }

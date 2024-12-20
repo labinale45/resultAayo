@@ -60,6 +60,9 @@ export default function Admindashboard() {
   const [classes, setClasses] = useState([]);
 
   useEffect(() => {
+
+    fetchClasses();
+    fetchDashboardData();
     // Register ChartJS components only on client-side
     ChartJS.register(
       CategoryScale,
@@ -71,8 +74,7 @@ export default function Admindashboard() {
       Legend
     );
 
-    fetchClasses();
-    fetchDashboardData();
+
     
     // Set up polling for real-time updates
     const intervalId = setInterval(() => {

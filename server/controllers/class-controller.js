@@ -101,6 +101,33 @@ const getClassesByTeacher = async (req, res) => {
   }
 };
 
-module.exports={getClassesByTeacher,addClass, getSubjectsByClass, assignTeacher, getTeachers}
+const getTotalStudentsByTeacher = async (teacherId) => {
+    const supabase = await connectdb();
+    const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .eq('teacher_id', teacherId);
+
+    if (error) throw error;
+    return data.length; // Return the total number of students
+};
+
+const getAveragePerformanceByTeacher = async (teacherId) => {
+    const supabase = await connectdb();
+    const { data, error } = await supabase
+        .from('marks')
+        .select('average')
+        .eq('teacher_id', teacherId);
+
+    if (error) throw error;
+    const totalAverage = data.reduce((acc, mark) => acc + mark.average, 0);
+    return totalAverage / data.length; // Return the average performance
+};
+
+
+module.exports={
+    getTotalStudentsByTeacher,
+    getAveragePerformanceByTeacher,
+    getClassesByTeacher,addClass, getSubjectsByClass, assignTeacher, getTeachers}
 
 

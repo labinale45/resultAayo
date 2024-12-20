@@ -75,4 +75,25 @@ router.post('/generate-ledger-sheet', authController.generateLedgerSheet);
 router.get('/teacher/:teacherId/classes', classController.getClassesByTeacher);
 router.get('/teacher/:teacherId/subjects', examController.getAssignedSubjects);
 
+// New route for fetching teacher dashboard data
+router.get('/teacher/dashboard/:teacherId', authMiddleware, async (req, res) => {
+    const { teacherId } = req.params;
+    try {
+        const totalStudents = await classController.getTotalStudentsByTeacher(teacherId);
+        const assignedClasses = await classController.getClassesByTeacher(teacherId);
+        const upcomingExams = await examController.getUpcomingExamsByTeacher(teacherId);
+        const averagePerformance = await classController.getAveragePerformanceByTeacher(teacherId);
+
+        res.status(200).json({
+            totalStudents,
+            assignedClasses: assignedClasses.length,
+            upcomingExams,
+            averagePerformance
+        });
+    } catch (error) {
+        console.error('Error fetching teacher dashboard data:', error);
+        res.status(500).json({ error: 'Failed to fetch dashboard data' });
+    }
+});
+
 module.exports = router;

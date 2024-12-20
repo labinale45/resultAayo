@@ -168,9 +168,7 @@ useEffect(() => {
                   <th scope="col" className="px-6 py-3">
                     Date of Birth
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Actions
-                  </th>
+                 
                 </tr>
               </thead>
               <tbody>
@@ -187,15 +185,7 @@ useEffect(() => {
                     <td className="px-6 py-4">{student.parentName}</td>
                     <td className="px-6 py-4">{student.address}</td>
                     <td className="px-6 py-4">{student.dateOfBirth}</td>
-                    <td className="px-6 py-4 flex gap-2">
-                      <button className="text-blue-600 hover:text-blue-800">
-                        <FaEdit />
-                      </button>
-                      <button className="text-red-600 hover:text-red-800">
-                        <FaTrash />
-                      </button>
-                    </td>
-                  </motion.tr>
+                    </motion.tr>
                 ))}
               </tbody>
             </table>
