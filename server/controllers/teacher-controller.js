@@ -6,12 +6,20 @@ const deleteTeacher = async (req, res) => {
     const { id } = req.params;
     const supabase = await connectdb();
 
-    const { error } = await supabase
-      .from('teachers')
-      .delete()
-      .eq('id', id);
 
-    if (error) throw error;
+    const {data: teacher, error: teacherError} = await supabase
+    .from('teachers')
+    .select("teacher_id")
+    .eq('id', id)
+    .single();
+    if (teacherError) throw teacherError;
+
+    const { error: userError } = await supabase
+    .from('users')
+    .delete()
+    .eq('id', teacher.teacher_id);
+
+    if (teacherError) throw error;
 
     res.status(200).json({ message: 'Teacher deleted successfully' });
   } catch (error) {

@@ -47,6 +47,27 @@ const register = async (req, res) => {
   try {
     const { class_id,last_name,first_name, email, gender, role,address,phone_number,parent_name,dob ,studentClass,image } = req.body;
     const supabaseClient = await connectdb();
+
+    if(role === 'students'){
+      // Check if rollNo exists
+      const { data: existingRollNo, error: rollNoError } = await supabaseClient
+        .from('students') // Assuming rollNo is stored in the students table
+        .select('rollNo')
+        .eq('rollNo', rollNo) // Check for the provided rollNo
+        .single();
+
+      if (existingRollNo) {
+        return res.status(400).json({
+          message: "Roll number already exists",
+        });
+      }
+
+      // Generate a unique rollNo if it doesn't exist
+      const generateUniqueRollNo = () => {
+        return Math.floor(1000 + Math.random() * 9000); // Example: Generate a 4-digit roll number
+      };
+      const rollNo = generateUniqueRollNo();
+    }
     
     // Check if user already exists
     if(role === 'teachers'){
@@ -92,7 +113,7 @@ const register = async (req, res) => {
 
 
     // Create new user
-   auth.createUser({ class_id,username, email, password, gender, role, first_name, last_name, address, phone_number, parent_name,dob,studentClass,image });
+   auth.createUser({ rollNo,class_id,username, email, password, gender, role, first_name, last_name, address, phone_number, parent_name,dob,studentClass,image });
    res.status(201).json({
       message : role + " added successfully",	
     });  

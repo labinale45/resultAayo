@@ -14,7 +14,7 @@ const createUser = async (userData) => {
     const createClient = await connectdb();
 
     // Destructure userData
-    const { image,studentClass,first_name, last_name, address, phone_number, parent_name, username, email, password, role, gender, dob } = userData;
+    const { rollNo,image,studentClass,first_name, last_name, address, phone_number, parent_name, username, email, password, role, gender, dob } = userData;
 
     // Debugging role and gender
     console.log('Creating user with role:', role, 'and gender:', gender);
@@ -164,7 +164,7 @@ const createUser = async (userData) => {
 
       const { data: studentRecord, error: studentError } = await createClient
         .from('students')
-        .insert([{ dob,student_id: userId, first_name, last_name, address, phone_number, parent_name, img_url: imageUrl, class: class_id, class_id: classRecord.id, created_at: new Date().toISOString() }]); // Include class_id in the insert
+        .insert([{rollNo, dob,student_id: userId, first_name, last_name, address, phone_number, parent_name, img_url: imageUrl, class: class_id, class_id: classRecord.id, created_at: new Date().toISOString() }]); // Include class_id in the insert
       
       if (studentError) throw studentError;
     }

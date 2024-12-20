@@ -27,12 +27,6 @@ export default function Studenttable() {
     setShowAddStudent(true); // Show the Addstudent form
   };
 
-  const handleEditStudent = (student) => {
-    setSelectedStudent(student); // Set the selected student for editing
-    setIsEditing(true); // Set mode to edit
-    setShowAddStudent(true); // Show the Addstudent form
-  };
-
   useEffect(() => {
     YearSelect();
     fetchClasses();
@@ -120,6 +114,7 @@ export default function Studenttable() {
   const handleEdit = async (studentId) => {
     try {
       setError(null);
+      setIsEditing(true);
       const response = await fetch(`http://localhost:4000/api/auth/student/${studentId}`, {
         method: 'GET',
         headers: {
@@ -179,11 +174,11 @@ export default function Studenttable() {
       }
     }
   };
-  // const filteredStudents = students.filter(
-  //   (student) =>
-  //     student.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     student.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  // );
+  const filteredStudents = students.filter(
+    (student) =>
+      student.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="relative mt-7 px-8">
@@ -232,21 +227,26 @@ export default function Studenttable() {
       </button>
       </div>
 
+     
       {showAddStudent && (
-        <Addstudent
-          onClose={() => setShowAddStudent(false)} // Close handler
-          student={selectedStudent} // Pass selected student (null for new)
-          onSave={() => {
-            // Logic to refresh student list or handle after save
-            fetchStudents();
-            setShowAddStudent(false);
-            setSelectedStudent(null);
-          }}
-          isEditing={isEditing} // Pass the editing state
-        />
-      )}
+  <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
+         
+  <Addstudent
+    onClose={() => setShowAddStudent(false)} // Close handler
+    student={selectedStudent} // Pass selected student (null for new)
+    onSave={() => {
+      // Logic to refresh student list or handle after save
+      fetchStudents();
+      setShowAddStudent(false);
+      setSelectedStudent(null);
+    }}
+    isEditing={isEditing} // Pass the editing state
+  />
+  </div>
 
-      {showAddStudent && (
+)}
+
+      {isEditing && (
                <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
                <div className="bg-white p-10 rounded-lg shadow-lg">
                  <div className="flex flex-wrap gap-5 items-center w-full max-md:max-w-full mb-10">
@@ -264,144 +264,166 @@ export default function Studenttable() {
                  </div>
      
                  <div className="grid grid-cols-2 gap-6 mb-10">
-                   <div id="input" className="relative">
-                     <input
-                       type="text"
-                       id="first_name"
-                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
-                       placeholder="First name"
-                       value={selectedStudent?.first_name || ''}
-                       onChange={(e) => setSelectedStudent({ ...selectedStudent, first_name: e.target.value })}
-                     />
-                     <label htmlFor="first_name" className="absolute text-[14px] leading-[150%] text-primary">First name</label>
-                   </div>
-     
-                   <div id="input" className="relative">
-                     <input
-                       type="text"
-                       id="last_name"
-                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
-                       placeholder="Last name"
-                       value={selectedStudent?.last_name || ''}
-                       onChange={(e) => setSelectedStudent({ ...selectedStudent, last_name: e.target.value })}
-                     />
-                     <label htmlFor="last_name" className="absolute text-[14px] leading-[150%] text-primary">Last name</label>
-                   </div>
-     
-                   <div id="input" className="relative">
-                     <input
-                       type="email"
-                       id="email"
-                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
-                       placeholder="E-mail"
-                       value={selectedStudent?.email || ''}
-                       onChange={(e) => setSelectedStudent({ ...selectedStudent, email: e.target.value })}
-                     />
-                     <label htmlFor="email" className="absolute text-[14px] leading-[150%] text-primary">E-mail</label>
-                   </div>
-     
-                   <div id="input" className="relative">
-                     <input
-                       type="tel"
-                       id="phone_number"
-                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
-                       placeholder="Phone"
-                       value={selectedStudent?.phone_number || ''}
-                       onChange={(e) => setSelectedStudent({ ...selectedStudent, phone_number: e.target.value })}
-                     />
-                     <label htmlFor="phone_number" className="absolute text-[14px] leading-[150%] text-primary">Phone</label>
-                   </div>
-     
-                   <div id="input" className="relative">
-                     <input
-                       type="text"
-                       id="address"
-                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
-                       placeholder="Address"
-                       value={selectedStudent?.address || ''}
-                       onChange={(e) => setSelectedStudent({ ...selectedStudent, address: e.target.value })}
-                     />
-                     <label htmlFor="address" className="absolute text-[14px] leading-[150%] text-primary">Address</label>
-                   </div>
-     
-                   <div id="input" className="relative">
-                     <input
-                       type="date"
-                       id="dob"
-                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
-                       value={selectedStudent?.dob || ''}
-                       onChange={(e) => setSelectedStudent({ ...selectedStudent, dob: e.target.value })}
-                     />
-                     <label htmlFor="dob" className="absolute text-[14px] leading-[150%] text-primary">Date of Birth</label>
-                   </div>
-     
-                   <div id="input" className="relative">
-                     <select
-                       id="gender"
-                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
-                       value={selectedStudent?.gender || 'Male'}
-                       onChange={(e) => setSelectedStudent({ ...selectedStudent, gender: e.target.value })}
-                     >
-                       <option value="Male">Male</option>
-                       <option value="Female">Female</option>
-                       <option value="Other">Other</option>
-                     </select>
-                     <label htmlFor="gender" className="absolute text-[14px] leading-[150%] text-primary">Gender</label>
-                   </div>
-     
-                   <div id="input" className="relative">
-                     <input
-                       type="text"
-                       id="username"
-                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
-                       placeholder="Username"
-                       value={selectedStudent?.username || ''}
-                       onChange={(e) => setSelectedStudent({ ...selectedStudent, username: e.target.value })}
-                     />
-                     <label htmlFor="username" className="absolute text-[14px] leading-[150%] text-primary">Username</label>
-                   </div>
-     
-                   <div id="input" className="relative">
-                     <input
-                       type="password"
-                       id="password"
-                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
-                       placeholder="Password"
-                       value={selectedStudent?.password || ''}
-                       onChange={(e) => setSelectedStudent({ ...selectedStudent, password: e.target.value })}
-                     />
-                     <label htmlFor="password" className="absolute text-[14px] leading-[150%] text-primary">Password</label>
-                   </div>
-     
-                   <div id="input" className="relative">
-                     <input
-                       type="file"
-                       id="img_url"
-                       className="block w-full text-sm h-[50px] px-4 text-slate-900 bg-white rounded-[8px] border border-violet-200"
-                       onChange={(e) => {
-                         const file = e.target.files[0];
-                         if (file) {
-                           const reader = new FileReader();
-                           reader.onloadend = () => {
-                             setSelectedStudent({ ...selectedStudent, img_url: reader.result });
-                           };
-                           reader.readAsDataURL(file);
-                         }
-                       }}
-                     />
-                     <label htmlFor="img_url" className="absolute text-[14px] leading-[150%] text-primary">Upload Image</label>
-                   </div>
+<div id="input" className="relative">
+  <input
+    type="text"
+    id="first_name"
+    className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+    placeholder=""
+    value={selectedStudent?.first_name || ''}
+    onChange={(e) => setSelectedStudent({ ...selectedStudent, first_name: e.target.value })}
+  />
+  <label
+    htmlFor="first_name"
+    className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm"
+  >
+    First name
+  </label>
+</div>
+
+<div id="input" className="relative">
+  <input
+    type="text"
+    id="last_name"
+    className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+    placeholder=""
+    value={selectedStudent?.last_name || ''}
+    onChange={(e) => setSelectedStudent({ ...selectedStudent, last_name: e.target.value })}
+  />
+  <label htmlFor="last_name" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
+    Last name
+  </label>
+</div>
+
+<div id="input" className="relative">
+  <input
+    type="email"
+    id="email"
+    className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+    placeholder=""
+    value={selectedStudent?.email || ''}
+    onChange={(e) => setSelectedStudent({ ...selectedStudent, email: e.target.value })}
+  />
+  <label htmlFor="email" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
+    E-mail
+  </label>
+</div>
+
+<div id="input" className="relative">
+  <input
+    type="tel"
+    id="phone_number"
+    className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+    placeholder=""
+    value={selectedStudent?.phone_number || ''}
+    onChange={(e) => setSelectedStudent({ ...selectedStudent, phone_number: e.target.value })}
+  />
+  <label htmlFor="phone_number" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
+    Phone
+  </label>
+</div>
+
+<div id="input" className="relative">
+  <input
+    type="text"
+    id="address"
+    className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+    placeholder=""
+    value={selectedStudent?.address || ''}
+    onChange={(e) => setSelectedStudent({ ...selectedStudent, address: e.target.value })}
+  />
+  <label htmlFor="address" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
+    Address
+  </label>
+</div>
+
+<div id="input" className="relative">
+  <input
+    type="date"
+    id="dob"
+    className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+    value={selectedStudent?.dob || ''}
+    onChange={(e) => setSelectedStudent({ ...selectedStudent, dob: e.target.value })}
+  />
+  <label htmlFor="dob" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
+    Date of Birth
+  </label>
+</div>
+
+<div id="input" className="relative">
+  <select
+    id="gender"
+    className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+    value={selectedStudent?.gender || 'Male'}
+    onChange={(e) => setSelectedStudent({ ...selectedStudent, gender: e.target.value })}
+  >
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+    <option value="Other">Other</option>
+  </select>
+  <label htmlFor="gender" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
+    Gender
+  </label>
+</div>
+      <div id="input" className="relative">
+        <input
+          type="text"
+          id="username"
+          className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+          placeholder=""
+          value={selectedStudent?.username || ''}
+          onChange={(e) => setSelectedStudent({ ...selectedStudent, username: e.target.value })}
+        />
+        <label htmlFor="username" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
+          Username
+        </label>
+      </div>
+
+      <div id="input" className="relative">
+        <input
+          type="password"
+          id="password"
+          className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+          placeholder=""
+          value={selectedStudent?.password || ''}
+          onChange={(e) => setSelectedStudent({ ...selectedStudent, password: e.target.value })}
+        />
+        <label htmlFor="password" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
+          Password
+        </label>
+      </div>
+<div id="input" className="relative">
+  <input
+    type="file"
+    id="img_url"
+    className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+    onChange={(e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setSelectedStudent({ ...selectedStudent, img_url: reader.result });
+        };
+        reader.readAsDataURL(file);
+      }
+    }}
+  />
+  <label htmlFor="img_url" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
+    Upload Image
+  </label>
+</div>
                  </div>
      
                  <div className="sm:flex sm:flex-row-reverse flex gap-4">
                    <button
-                     className="w-fit rounded-lg text-sm px-5 py-2 focus:outline-none h-[50px] border bg-violet-500 hover:bg-violet-600 focus:bg-violet-700 border-violet-500 text-white focus:ring-4 focus:ring-violet-200 hover:ring-4 hover:ring-violet-100 transition-all duration-300"
+                     className="w-fit rounded-lg text-sm px-5 py-2 focus:outline-none h-[50px] border bg-[#7ba0e4] hover:bg-blue-400 focus:bg-[#7ba0e4] border-[#7ba0e4] text-white focus:ring-4 focus:ring-violet-200 hover:ring-4 hover:ring-violet-100 transition-all duration-300"
                      type="button"
                      onClick={() => {
                        // Save changes logic here
                        fetchStudents();
-                       setShowAddStudent(false);
+                       setIsEditing(false);
                        setSelectedStudent(null);
+                       setShowAddStudent(false);
                      }}
                    >
                      <div className="flex gap-2 items-center">Save changes</div>
@@ -409,7 +431,7 @@ export default function Studenttable() {
                    <button
                      className="w-fit rounded-lg text-sm px-5 py-2 focus:outline-none h-[50px] border bg-transparent border-primary text-primary focus:ring-4 focus:ring-gray-100"
                      type="button"
-                     onClick={() => setShowAddStudent(false)}
+                     onClick={() => {setIsEditing(false);setShowAddStudent(false);}}
                    >
                      Cancel
                    </button>
@@ -480,7 +502,7 @@ export default function Studenttable() {
                     </td>
                   </tr>
                 ) : (
-                  students.map((student) => (
+                      filteredStudents.map((student) => (
                     <tr
                       key={student.id}
                       className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"

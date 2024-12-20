@@ -35,9 +35,9 @@ export default function Gradesheet({ onClose, studentsData = [], schoolName, sch
               <h1 className="text-2xl font-bold">{schoolName}</h1>
               <p>{schoolAddress}</p>
               <p>Estd: {establishmentYear}</p>
-              <div className="inline-block border-2 border-black px-4 py-2 mt-2">
-                <h2 className="text-xl font-semibold">GRADESHEET</h2>
-              </div>
+              <p className="mt-2 text-3xl">
+              {studentData.examType}-{studentData.year }
+            </p>
             </div>
 
             <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 dark:bg-[#253553] dark:text-white ">
