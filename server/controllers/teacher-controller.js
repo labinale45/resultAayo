@@ -52,17 +52,21 @@ const updateTeacher = async (req, res) => {
      .single();
      if (teacError) throw teacError;
 
-         // Check if the email already exists, excluding the current teacher's email
-   const { data: existingUser, error: emailCheckError } = await supabase
-   .from('users')
-   .select('id')
-   .eq('email', updateData.email)
-   .neq('id', teacher.teacher_id) // Exclude the current teacher's user ID
-   .single();
-  if (emailCheckError) throw emailCheckError;
- if (existingUser) {
-   return res.status(400).json({ error: 'Email already exists' });
- }
+     console.log("teacher.teacher_id", teacher);
+
+//          // Check if the email already exists, excluding the current teacher's email
+//    const { data: existingUser, error: emailCheckError } = await supabase
+//    .from('users')
+//    .select('id')
+//    .eq('email', updateData.email)
+//    .neq('id', teacher.teacher_id) // Exclude the current teacher's user ID
+//    .single();
+//   if (emailCheckError) throw emailCheckError;
+//  if (existingUser) {
+//    return res.status(400).json({ error: 'Email already exists' });
+//  }
+
+//  console.log("existingUser", existingUser);
 
     // Update user information
     if (updateData.email || updateData.username || updateData.password) {
@@ -77,6 +81,11 @@ const updateTeacher = async (req, res) => {
       if (userError) throw userError;
     }
 
+
+
+
+    if(updateData.img_url && updateData.image ){
+      // Delete the old image from storage
     const deletePath = updateData.img_url;
     console.log("deletePath", deletePath);
 
@@ -86,9 +95,9 @@ const updateTeacher = async (req, res) => {
     .from('users')
     .remove([desiredPath]);
    if (deleteError) throw deleteError;
+    }
 
-
-    let imageUrl = null;
+    let imageUrl = null || updateData.img_url;
       if(updateData.image){
         try {
           // Convert base64 to buffer

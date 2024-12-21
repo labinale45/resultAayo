@@ -49,7 +49,12 @@ export default function Login({ onClose }) {
             route.push("/admin");
             break;
           case "teachers":
-            route.push("/teacher");
+            if (data.stat === "active"){
+              route.push("/teacher");
+            }else{
+              setIsLoading(false);
+              setErrorMessage("Your account is not active yet. Please contact the admin.");
+            }
             break;
           case "students":
             route.push("/student");

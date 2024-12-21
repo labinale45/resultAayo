@@ -184,7 +184,7 @@ export default function Teachertable() {
     }
      // Refresh the teacher list after successful update
     setImage(null);
-    fetchTeachers();
+    //fetchTeachers();
     setIsEditing(false);
     setSelectedTeacher(null);
     // Show success message

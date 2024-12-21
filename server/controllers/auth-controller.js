@@ -148,7 +148,14 @@ const login = async(req,res) => {
             `)
             .eq('username', username)
             .single();
-        
+
+
+         const {data: status, error: statusError} = await supabaseClient
+         .from('teachers')
+         .select('status')
+         .eq('teacher_id', findUser.id)
+         .single();
+            
         if (userError || !findUser) {
             return res.status(404).json({ message: "User incorrect or not found" });
         }
@@ -165,12 +172,14 @@ const login = async(req,res) => {
             username: findUser.username,
             email: findUser.email,
             role: findUser.role,
+            status: status.status,
             created_at: findUser.created_at,
             ...(findUser.students?.[0] || findUser.teachers?.[0] || {})
         };
-
+        console.log("User data:", userData);
         return res.status(200).json({
             message: findUser.role,
+            stat: status.status,
             token,
             userData
         });
