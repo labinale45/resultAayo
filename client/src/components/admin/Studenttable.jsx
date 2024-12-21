@@ -146,7 +146,7 @@ export default function Studenttable() {
       });
       
       // Show the add student form for editing
-      setShowAddStudent(true); // Ensure the form pops up
+      
     } catch (error) {
       console.error('Error fetching student details:', error);
       setError(error.message);
@@ -486,9 +486,9 @@ export default function Studenttable() {
                   <th scope="col" className="px-6 py-3">
                     Username
                   </th>
-                  <th scope="col" className="px-6 py-3">
+                  {/* <th scope="col" className="px-6 py-3">
                     Password
-                  </th>
+                  </th> */}
                   <th scope="col" className="px-6 py-3">
                     Action
                   </th>
@@ -536,7 +536,7 @@ export default function Studenttable() {
                       <td className="px-6 py-4">{student.address}</td>
                       <td className="px-6 py-4">{student.dateOfBirth}</td>
                       <td className="px-6 py-4">{student.username}</td>
-                      <td className="px-6 py-4">{student.password}</td>
+                      {/* <td className="px-6 py-4">{student.password}</td> */}
                       <td className="px-6 py-4">
   <div className="flex-col  justify-around items-center py-3">
     <div  onClick={() => handleEdit(student.id)} className="flex gap-2 mb-3 text-gray-600 hover:scale-110 duration-200 hover:cursor-pointer">

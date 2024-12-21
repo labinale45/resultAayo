@@ -88,10 +88,28 @@ const getRecordsByYear = async (req, res) => {
     // Start building the query
     let query = supabaseClient
       .from(status)
-      .select("*")
+      .select(`*,student_id:users(
+        email,
+        username,
+        password
+        )`)
       .gte("created_at", `${year}-01-01`)
       .lte("created_at", `${year}-12-31`);
 
+      //teacher
+      if (status === "teachers") {
+        query = query
+        .select(`
+        *,
+        teacher_id:users (
+          email,
+          username,
+          password
+        )
+      `)
+        .gte("created_at", `${year}-01-01`)
+        .lte("created_at", `${year}-12-31`);
+      }
     // Add class filter only for students
     if (status === "students" && classId) {
       query = query.eq("class", classId);
@@ -165,6 +183,9 @@ const getRecordsByYear = async (req, res) => {
             fullName: `${record.first_name} ${record.last_name}`,
             subject: record.subject,
             img_url: imageUrl,
+            email: record.teacher_id.email,
+            password: record.teacher_id.password,
+            username: record.teacher_id.username,
              tstatus: record.status,
           };
         case "students":
@@ -175,6 +196,9 @@ const getRecordsByYear = async (req, res) => {
             parentName: record.parent_name,
             img_url: imageUrl,
             class: record.class,
+            email: record.student_id.email,
+            password: record.student_id.password,
+            username: record.student_id.username,
             rollNo: record.rollNo,
             
           };

@@ -12,7 +12,7 @@ function Addstudent({ onClose, student, onSave }) {
   const [phone_number, setContact] = useState("");
   const [address, setAddress] = useState("");
   const [dob, setDob] = useState("");
-  const [role, setRole] = useState("students");
+  const [role] = useState("students");
   const [gender, setGender] = useState("Male");
   const [joinedYear, setJoinedYear] = useState("2080");
   const [studentClass, setStudentClass] = useState("8");

@@ -48,26 +48,26 @@ const register = async (req, res) => {
     const { class_id,last_name,first_name, email, gender, role,address,phone_number,parent_name,dob ,studentClass,image } = req.body;
     const supabaseClient = await connectdb();
 
-    if(role === 'students'){
-      // Check if rollNo exists
-      const { data: existingRollNo, error: rollNoError } = await supabaseClient
-        .from('students') // Assuming rollNo is stored in the students table
-        .select('rollNo')
-        .eq('rollNo', rollNo) // Check for the provided rollNo
-        .single();
-
-      if (existingRollNo) {
-        return res.status(400).json({
-          message: "Roll number already exists",
-        });
-      }
-
-      // Generate a unique rollNo if it doesn't exist
-      const generateUniqueRollNo = () => {
-        return Math.floor(1000 + Math.random() * 9000); // Example: Generate a 4-digit roll number
-      };
-      const rollNo = generateUniqueRollNo();
-    }
+        // Generate a unique rollNo based on year, class, and a random number
+     const generateUniqueRollNo = async (supabaseClient, year, class_id) => {
+       let rollNo;
+       let isUnique = false;
+        while (!isUnique) {
+         const randomNum = Math.floor(Math.random() * 10); // Generate a random digit (0-9)
+         rollNo = `${year.toString().slice(-2)}${class_id}${randomNum}`; // Format: YYClassR
+          const { data: existingRollNo, error } = await supabaseClient
+           .from('users') // Assuming 'users' table contains roll numbers
+           .select('rollNo')
+           .eq('rollNo', rollNo)
+           .single();
+          if (!existingRollNo) {
+           isUnique = true; // Roll number is unique
+         }
+       }
+       return rollNo;
+     };
+      const rollNo = await generateUniqueRollNo(supabaseClient, new Date().getFullYear(), class_id);
+    
     
     // Check if user already exists
     if(role === 'teachers'){
