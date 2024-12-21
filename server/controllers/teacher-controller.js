@@ -1,5 +1,8 @@
 const connectdb = require('../utils/connectdb');
 const { decode } = require('base64-arraybuffer');
+const bcrypt = require('bcrypt');
+
+const salt = bcrypt.genSaltSync(10);
 
 const deleteTeacher = async (req, res) => {
   try {
@@ -34,20 +37,44 @@ const updateTeacher = async (req, res) => {
     const updateData = req.body;
     const supabase = await connectdb();
      console.log("updateData", updateData);
+
+     console.log("updateData.password", updateData.password);
+     
+     const hashedPassword = await bcrypt.hash(updateData.password, salt);
+
+     console.log("hashedPassword", hashedPassword);
+
+
+     const { data: teacher, error: teacError } = await supabase
+     .from('teachers')
+     .select("teacher_id")
+     .eq('id', id)
+     .single();
+     if (teacError) throw teacError;
+
+         // Check if the email already exists, excluding the current teacher's email
+   const { data: existingUser, error: emailCheckError } = await supabase
+   .from('users')
+   .select('id')
+   .eq('email', updateData.email)
+   .neq('id', teacher.teacher_id) // Exclude the current teacher's user ID
+   .single();
+  if (emailCheckError) throw emailCheckError;
+ if (existingUser) {
+   return res.status(400).json({ error: 'Email already exists' });
+ }
+
     // Update user information
     if (updateData.email || updateData.username || updateData.password) {
       const { error: userError } = await supabase
-        .from('teachers')
-        .update(`
-            teacher_id:users (
-              email: ${updateData.email},
-              username: ${updateData.username},
-              gender:   ${updateData.gender},
-              password: ${updateData.password}
-            )
-          `)
-        .eq('id', id);
-       if (userError) throw userError;
+        .from('users') // Corrected to update the 'users' table
+        .update({
+          email: updateData.email,
+          gender: updateData.gender,
+          password: hashedPassword
+        })
+        .eq('id', teacher.teacher_id); // Use teacher.teacher_id to match the user
+      if (userError) throw userError;
     }
 
     const deletePath = updateData.img_url;
@@ -111,22 +138,7 @@ const updateTeacher = async (req, res) => {
           });
       }
       }
-    //  // Handle image upload if new image is provided
-    // let img_url = updateData.image;
-    // if (typeof updateData.image === 'string' && updateData.image.startsWith('data:image')) {
-    //   // Extract base64 data from data URL
-    //   const base64Data = updateData.image.split(',')[1];
-      
-    //   const { data: uploadData, error: uploadError } = await supabase.storage
-    //     .from('teacher-images')
-    //     .upload(`${id}-${Date.now()}.jpg`, decode(base64Data), {
-    //       contentType: 'image/jpeg',
-    //       upsert: true // Ensure existing image is replaced
-    //     });
-    //    if (uploadError) throw uploadError;
-    //   img_url = uploadData.path; // Update img_url with the new image path
-    // }
-     // Update teacher information
+
     const { error: teacherError } = await supabase
       .from('teachers')
       .update({
@@ -158,7 +170,8 @@ const getTeacher = async (req, res) => {
         users:teacher_id (
           email,
           username,
-          password
+          password,
+          gender
         )
       `)
       .eq('id', id)
@@ -177,7 +190,7 @@ const getTeacher = async (req, res) => {
       phone_number: teacher.phone_number || '',
       address: teacher.address || '',
       dob: teacher.dob || '',
-      gender: teacher.gender || 'Male',
+      gender: teacher.users?.gender || 'Male',
       email: teacher.users?.email || '',
       username: teacher.users?.username || '',
       password: teacher.users?.password || '',

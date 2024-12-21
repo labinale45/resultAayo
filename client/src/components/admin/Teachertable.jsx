@@ -136,7 +136,7 @@ export default function Teachertable() {
          },
        });
        if (!response.ok) {
-         throw new Error('Failed to delete teacher');
+         alert('Failed to delete teacher. Please try again.');
        }
        fetchTeachers(); // Refresh the teacher list
      } catch (error) {
@@ -172,7 +172,7 @@ export default function Teachertable() {
         address: selectedTeacher.address,
         dob: selectedTeacher.dob,
         gender: selectedTeacher.gender,
-        username: selectedTeacher.username,
+       // username: selectedTeacher.username,
         password: selectedTeacher.password,
         img_url: selectedTeacher.img_url,
         image: imageBase64// Ensure to send the image URL if updated
@@ -180,7 +180,7 @@ export default function Teachertable() {
 
     });
      if (!response.ok) {
-      throw new Error('Failed to update teacher');
+      alert('Failed to update teacher. Please try again.');
     }
      // Refresh the teacher list after successful update
     setImage(null);
@@ -315,6 +315,11 @@ export default function Teachertable() {
          +Add Teacher 
        </button>
      </div>
+
+     <div className="overflow-x-auto">
+      {error && <div className="text-red-500 text-center py-4">Error: {error}</div>} 
+    </div>
+      
      {showAddTeacher && (
   <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
          
@@ -429,18 +434,18 @@ export default function Teachertable() {
                <select
                  id="gender"
                  className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
-                 value={selectedTeacher?.gender || 'Male'}
+                 value={selectedTeacher?.gender || ''}
                  onChange={(e) => setSelectedTeacher({ ...selectedTeacher, gender: e.target.value })}
                >
-                 <option value="Male">Male</option>
-                 <option value="Female">Female</option>
-                 <option value="Other">Other</option>
+                 <option value='Male'>Male</option>
+                 <option value='Female'>Female</option>
+                 <option value='Other'>Other</option>
                </select>
                <label htmlFor="gender" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
                  Gender
                </label>
              </div>
-             <div id="input" className="relative">
+             {/* <div id="input" className="relative">
                <input
                  type="text"
                  id="username"
@@ -452,7 +457,7 @@ export default function Teachertable() {
                <label htmlFor="username" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
                  Username
                </label>
-             </div>
+             </div> */}
              <div id="input" className="relative">
                <input
                  type="password"

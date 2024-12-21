@@ -104,7 +104,8 @@ const getRecordsByYear = async (req, res) => {
         teacher_id:users (
           email,
           username,
-          password
+          password,
+          gender
         )
       `)
         .gte("created_at", `${year}-01-01`)
@@ -187,6 +188,7 @@ const getRecordsByYear = async (req, res) => {
             password: record.teacher_id.password,
             username: record.teacher_id.username,
              tstatus: record.status,
+             gender: record.teacher_id.gender,
           };
         case "students":
           return {
@@ -200,6 +202,7 @@ const getRecordsByYear = async (req, res) => {
             password: record.student_id.password,
             username: record.student_id.username,
             rollNo: record.rollNo,
+            gender: record.student_id.gender,
             
           };
         case "notices":

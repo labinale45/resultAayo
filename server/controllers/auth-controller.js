@@ -150,7 +150,7 @@ const login = async(req,res) => {
             .single();
         
         if (userError || !findUser) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: "User incorrect or not found" });
         }
 
         const isPasswordValid = await auth.comparePassword(password, findUser.password);
