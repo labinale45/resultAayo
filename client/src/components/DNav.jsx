@@ -7,6 +7,7 @@ import Darklightmode from "./Mini Component/Darklightmode";
 //import Search from "./Mini Component/Search";
 import Viewprofile from "./Viewprofile";
 import Editprofile from "./Editprofile";
+import Setting from "./admin/setting";
 import {
   FaUser,
   FaEdit,
@@ -20,6 +21,7 @@ export default function Dnav({ currentPath }) {
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const [showViewProfile, setShowViewProfile] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showSetting, setShowSetting] = useState(false);
   const router = useRouter();
   const menuRef = useRef(null);
   const [userData, setUserData] = useState(null);
@@ -87,9 +89,6 @@ export default function Dnav({ currentPath }) {
     setShowLogoutConfirmation(false);
   };
 
-  const handleSettingClick = () => {
-    router.push("/admin/setting"); // Navigate to the settings page
-  };
   
 
   const handleMenuItemClick = (path) => {
@@ -142,7 +141,10 @@ export default function Dnav({ currentPath }) {
                 </button>
                 
                   <button
-                    onClick={handleSettingClick}
+                    onClick={()=>{
+                      setShowSetting(true);
+                      setShowProfileMenu(false);
+                    }}
                     className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FaUserCog className="mr-2" /> Setting
@@ -195,6 +197,11 @@ export default function Dnav({ currentPath }) {
       {showEditProfile && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
           <Editprofile onClose={() => setShowEditProfile(false)} />
+        </div>
+      )}
+      {showSetting && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
+          <Setting onClose={() => setShowSetting(false)} role={userData?.role} />
         </div>
       )}
     </div>

@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { FaTimes, FaCamera } from "react-icons/fa";
 
-const Setting = () => {
+
+const Setting = ({onClose,role}) => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -32,13 +34,17 @@ const Setting = () => {
     
 
     return (
-        <div className="settings-container px-9 py-7">
-            <h1 className="text-2xl font-bold mb-6">Settings</h1>
-
+        <div className="w-96  dark:bg-[#253553]  dark:text-white bg-white rounded-lg shadow-md p-6 max-w-md mx-auto settings-container px-9 py-7">
+            <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold">Settings</h1>
+        <button onClick={onClose} className="text-red-500 hover:text-red-700">
+          <FaTimes size={20} />
+        </button>
+      </div>
             <div className="card mb-6">
                 <form onSubmit={handleChangePassword}>
                     <h2 className="text-xl font-semibold">Change Password</h2>
-                    <div className="flex items-center justify-center my-4">
+                    <div className="flex items-start justify-start my-4">
                         <div className="relative">
                             <input
                                 id="currentPassword"
@@ -58,7 +64,7 @@ const Setting = () => {
                             </label>
                         </div>
                     </div>
-                    <div className="flex items-center justify-center my-4">
+                    <div className="flex items-start justify-start my-4">
                         <div className="relative">
                             <input
                                 id="newPassword"
@@ -78,7 +84,7 @@ const Setting = () => {
                             </label>
                         </div>
                     </div>
-                    <div className="flex items-center justify-center my-4">
+                    <div className="flex items-start justify-start my-4">
                         <div className="relative">
                             <input
                                 id="confirmPassword"
@@ -99,15 +105,16 @@ const Setting = () => {
                         </div>
                     </div>
                     {error && <p className="error-text">{error}</p>}
+                    <div className=" flex justify-start my-4">
                     <button
-                        className="cursor-pointer px-2 max-w-l h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all group active:w-11 active:h-11 active:rounded-full active:duration-300 ease-in-out"
+                        className=" cursor-pointer px-2 w-15 h-8 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all group active:w-11 active:h-11 active:rounded-full active:duration-300 ease-in-out"
                         type="submit"
                     >
                         <svg
                             className="animate-spin hidden group-active:block mx-auto"
-                            width="15"
-                            height="15"
-                            viewBox="0 0 33 32"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 30 30"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
                         >
@@ -122,13 +129,14 @@ const Setting = () => {
                         </svg>
                         <span className="group-active:hidden">change Password</span>
                     </button>
+                    </div>
                                     </form>
             </div>
-
+            {role === 'Admin' && (
             <div className="card">
                 <form onSubmit={handleSaveDetails}>
                     <h2 className="text-xl font-semibold">School Details</h2>
-                    <div className="flex items-center justify-center my-4">
+                    <div className="flex items-start justify-startr my-4">
                         <div className="relative">
                             <input
                                 id="schoolName"
@@ -148,7 +156,7 @@ const Setting = () => {
                             </label>
                         </div>
                     </div>
-                    <div className="flex items-center justify-center my-4">
+                    <div className="flex items-start justify-start my-4">
                         <div className="relative">
                             <input
                                 id="schoolLocation"
@@ -168,14 +176,15 @@ const Setting = () => {
                             </label>
                         </div>
                     </div>
+                    <div className=" flex justify-start my-4">
                     <button
-                        className="cursor-pointer px-2 max-w-l h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all group active:w-11 active:h-11 active:rounded-full active:duration-300 ease-in-out"
+                        className="cursor-pointer px-2 w-13 h-8 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all group active:w-11 active:h-11 active:rounded-full active:duration-300 ease-in-out"
                         type="submit"
                     >
                         <svg
                             className="animate-spin hidden group-active:block mx-auto"
-                            width="15"
-                            height="15"
+                            width="12"
+                            height="12"
                             viewBox="0 0 33 32"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
@@ -191,8 +200,10 @@ const Setting = () => {
                         </svg>
                         <span className="group-active:hidden"> Save Details </span>
                     </button>
+                    </div>
                 </form>
             </div>
+        )}
         </div>
     );
 };
