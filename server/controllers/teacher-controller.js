@@ -1,6 +1,7 @@
 const connectdb = require('../utils/connectdb');
 const { decode } = require('base64-arraybuffer');
 const bcrypt = require('bcrypt');
+const e = require('express');
 
 const salt = bcrypt.genSaltSync(10);
 
@@ -40,8 +41,10 @@ const updateTeacher = async (req, res) => {
 
      console.log("updateData.password", updateData.password);
      
-     const hashedPassword = await bcrypt.hash(updateData.password, salt);
-
+     console.log("updateData.change_password", updateData.change_password);
+   
+     let hashedPassword = updateData.change_password ? await bcrypt.hash(updateData.change_password, salt) : updateData.password;
+  
      console.log("hashedPassword", hashedPassword);
 
 

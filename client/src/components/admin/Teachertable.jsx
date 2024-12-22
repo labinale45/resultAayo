@@ -18,7 +18,7 @@ export default function Teachertable() {
  const [selectedTeacher, setSelectedTeacher] = useState(null); // Stores the currently selected teacher for editing
  const [isEditing, setIsEditing] = useState(false);
  const [image, setImage] = useState(""); // Stores the selected image for teacher profile
- 
+ const [changePassword, setChangePassword] = useState(""); // Controls visibility of the change password modal
   // Effect hook to fetch years and teachers when the selected year changes
  useEffect(() => {
    YearSelect(); // Fetch available years
@@ -116,7 +116,6 @@ export default function Teachertable() {
        dob: teacherData.dob || '',
        gender: teacherData.gender || 'Male',
        username: teacherData.username || '',
-       password: teacherData.password || '',
        img_url: teacherData.img_url || ''
      });
       
@@ -174,6 +173,7 @@ export default function Teachertable() {
         gender: selectedTeacher.gender,
        // username: selectedTeacher.username,
         password: selectedTeacher.password,
+        change_password: changePassword,
         img_url: selectedTeacher.img_url,
         image: imageBase64// Ensure to send the image URL if updated
       }),
@@ -184,6 +184,7 @@ export default function Teachertable() {
     }
      // Refresh the teacher list after successful update
     setImage(null);
+    setChangePassword(null);
     fetchTeachers();
     setIsEditing(false);
     setSelectedTeacher(null);
@@ -316,10 +317,7 @@ export default function Teachertable() {
        </button>
      </div>
 
-     <div className="overflow-x-auto">
-      {error && <div className="text-red-500 text-center py-4">Error: {error}</div>} 
-    </div>
-      
+   
      {showAddTeacher && (
   <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
          
@@ -464,11 +462,11 @@ export default function Teachertable() {
                  id="password"
                  className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
                  placeholder=""
-                 value={selectedTeacher?.password || ''}
-                 onChange={(e) => setSelectedTeacher({ ...selectedTeacher, password: e.target.value })}
+                 value={changePassword|| ''}
+                 onChange={(e) => setChangePassword(e.target.value)}
                />
                <label htmlFor="password" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
-                 Password
+                Change Password
                </label>
              </div>
              <div id="input" className="relative">
@@ -504,6 +502,10 @@ export default function Teachertable() {
        </div>
      )}
      
+     {error && (
+        <div className="text-red-500 text-center py-4">Error: {error}</div>
+      )}
+      
       {selectedYear && (
        <div className="overflow-x-auto relative">
          <div className="max-h-[440px] overflow-y-auto">

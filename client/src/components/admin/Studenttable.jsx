@@ -20,6 +20,7 @@ export default function Studenttable() {
   const [classes, setClasses] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [image, setImage] = useState("");
+  const [changePassword, setChangePassword] = useState("");
 
   
   const handleAddStudent = () => {
@@ -142,7 +143,6 @@ export default function Studenttable() {
         dob: studentData.dob || '',
         gender: studentData.gender || 'Male',
         username: studentData.username || '',
-        password: studentData.password || '',
         img_url: studentData.img_url || ''
       });
       
@@ -183,6 +183,7 @@ export default function Studenttable() {
         gender: selectedStudent.gender,
        // username: selectedStudent.username,
         password: selectedStudent.password,
+        change_password: changePassword,
         img_url: selectedStudent.img_url,
         image: imageBase64// Ensure to send the image URL if updated
       }),
@@ -194,7 +195,8 @@ export default function Studenttable() {
     }
      // Refresh the student list after successful update
     setImage(null);
-    fetchStudents();
+    setChangePassword(null);
+    //fetchStudents();
     setIsEditing(false);
     setSelectedStudent(null);
     // Show success message
@@ -438,11 +440,11 @@ export default function Studenttable() {
           id="password"
           className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
           placeholder=""
-          value={selectedStudent?.password || ''}
-          onChange={(e) => setSelectedStudent({ ...selectedStudent, password: e.target.value })}
+          value={changePassword || ''}
+          onChange={(e) => setChangePassword(e.target.value)}
         />
         <label htmlFor="password" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
-          Password
+         Change Password
         </label>
       </div>
 <div id="input" className="relative">

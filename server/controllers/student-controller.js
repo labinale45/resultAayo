@@ -43,9 +43,14 @@ const updateStudent = async (req, res) => {
     console.log(" req id: ", id);
 
     console.log("updateData", updateData);
-     // Check if password exists before hashing
-    let hashedPassword = updateData.password ? await bcrypt.hash(updateData.password, salt) : null;
+    console.log("updateData.password", updateData.password);
+    console.log("updateData.change_password", updateData.change_password);
 
+     // Check if password exists before hashing
+    let hashedPassword = updateData.change_password ? await bcrypt.hash(updateData.change_password, salt) : updateData.password;
+
+    console.log("hashedPassword", hashedPassword);
+    
     const { data: student, error: studError } = await supabase
     .from('students')
     .select("student_id")
