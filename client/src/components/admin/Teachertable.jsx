@@ -184,7 +184,7 @@ export default function Teachertable() {
     }
      // Refresh the teacher list after successful update
     setImage(null);
-    //fetchTeachers();
+    fetchTeachers();
     setIsEditing(false);
     setSelectedTeacher(null);
     // Show success message
@@ -506,7 +506,7 @@ export default function Teachertable() {
      
       {selectedYear && (
        <div className="overflow-x-auto relative">
-         <div className="max-h-[400px] overflow-y-auto">
+         <div className="max-h-[440px] overflow-y-auto">
            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
              <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
                <tr>

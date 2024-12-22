@@ -54,20 +54,6 @@ const updateTeacher = async (req, res) => {
 
      console.log("teacher.teacher_id", teacher);
 
-//          // Check if the email already exists, excluding the current teacher's email
-//    const { data: existingUser, error: emailCheckError } = await supabase
-//    .from('users')
-//    .select('id')
-//    .eq('email', updateData.email)
-//    .neq('id', teacher.teacher_id) // Exclude the current teacher's user ID
-//    .single();
-//   if (emailCheckError) throw emailCheckError;
-//  if (existingUser) {
-//    return res.status(400).json({ error: 'Email already exists' });
-//  }
-
-//  console.log("existingUser", existingUser);
-
     // Update user information
     if (updateData.email || updateData.username || updateData.password) {
       const { error: userError } = await supabase

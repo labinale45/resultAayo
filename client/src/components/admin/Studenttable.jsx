@@ -19,6 +19,7 @@ export default function Studenttable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [classes, setClasses] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [image, setImage] = useState("");
 
   
   const handleAddStudent = () => {
@@ -152,6 +153,59 @@ export default function Studenttable() {
       setError(error.message);
     }
   };
+
+  //update Student
+ const handleSaveChanges = async () => {
+  try {
+    let imageBase64 = '';
+    if (image) {
+      const reader = new FileReader();
+      imageBase64 = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(image);
+      });
+    }
+
+    const response = await fetch(`http://localhost:4000/api/auth/student/${selectedStudent.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: selectedStudent.id,
+        first_name: selectedStudent.first_name,
+        last_name: selectedStudent.last_name,
+        email: selectedStudent.email,
+        phone_number: selectedStudent.phone_number,
+        address: selectedStudent.address,
+        dob: selectedStudent.dob,
+        gender: selectedStudent.gender,
+       // username: selectedStudent.username,
+        password: selectedStudent.password,
+        img_url: selectedStudent.img_url,
+        image: imageBase64// Ensure to send the image URL if updated
+      }),
+
+    });
+
+     if (!response.ok) {
+      alert('Failed to update student. Please try again.');
+    }
+     // Refresh the student list after successful update
+    setImage(null);
+    fetchStudents();
+    setIsEditing(false);
+    setSelectedStudent(null);
+    // Show success message
+  } catch (error) {
+    console.error('Error saving changes:', error);
+    setError('Failed to save changes. Please try again.'); // Set error message
+  }
+
+};
+
+
   // Handle Delete
   const handleDelete = async(studentId) => {
     if (window.confirm('Are you sure you want to delete this Student?')) {
@@ -252,9 +306,8 @@ export default function Studenttable() {
                  <div className="flex flex-wrap gap-5 items-center w-full max-md:max-w-full mb-10">
                    <div className="flex flex-wrap flex-1 shrink gap-5 items-center self-stretch my-auto basis-0 min-w-[240px] max-md:max-w-full">
                      <div className="flex relative flex-col justify-center self-stretch bg-gray-100 h-[70px] min-h-[70px] rounded-[16px] overflow-hidden w-[70px]">
-                       <div className="w-[100px] h-[100px] aspect-auto">
-                         <img src={selectedStudent?.img_url || "/assets/profile.png"} alt="Student" className="w-full h-full object-cover" />
-                       </div>
+                     <div className="w-[100px] h-[100px] aspect-auto">
+                 <img src={image ? URL.createObjectURL(image) : selectedStudent?.img_url || "/assets/profile.png"} alt="Teacher" className="w-full h-full object-cover" />                 </div>
                      </div>
                      <div className="flex flex-col self-stretch my-auto min-w-[240px]">
                        <div className="text-base text-gray-800">{selectedStudent?.first_name} {selectedStudent?.last_name}</div>
@@ -365,7 +418,7 @@ export default function Studenttable() {
     Gender
   </label>
 </div>
-      <div id="input" className="relative">
+      {/* <div id="input" className="relative">
         <input
           type="text"
           id="username"
@@ -377,7 +430,7 @@ export default function Studenttable() {
         <label htmlFor="username" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
           Username
         </label>
-      </div>
+      </div> */}
 
       <div id="input" className="relative">
         <input
@@ -393,21 +446,13 @@ export default function Studenttable() {
         </label>
       </div>
 <div id="input" className="relative">
-  <input
-    type="file"
-    id="img_url"
-    className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
-    onChange={(e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setSelectedStudent({ ...selectedStudent, img_url: reader.result });
-        };
-        reader.readAsDataURL(file);
-      }
-    }}
-  />
+<input
+                 type="file"
+                 id="img_url"
+                 className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+                 accept="image/*"
+                 onChange={(e) => setImage(e.target.files[0])}
+               />
   <label htmlFor="img_url" className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm">
     Upload Image
   </label>
@@ -419,11 +464,7 @@ export default function Studenttable() {
                      className="w-fit rounded-lg text-sm px-5 py-2 focus:outline-none h-[50px] border bg-[#7ba0e4] hover:bg-blue-400 focus:bg-[#7ba0e4] border-[#7ba0e4] text-white focus:ring-4 focus:ring-violet-200 hover:ring-4 hover:ring-violet-100 transition-all duration-300"
                      type="button"
                      onClick={() => {
-                       // Save changes logic here
-                       fetchStudents();
-                       setIsEditing(false);
-                       setSelectedStudent(null);
-                       setShowAddStudent(false);
+                     handleSaveChanges();
                      }}
                    >
                      <div className="flex gap-2 items-center">Save changes</div>
@@ -431,7 +472,7 @@ export default function Studenttable() {
                    <button
                      className="w-fit rounded-lg text-sm px-5 py-2 focus:outline-none h-[50px] border bg-transparent border-primary text-primary focus:ring-4 focus:ring-gray-100"
                      type="button"
-                     onClick={() => {setIsEditing(false);setShowAddStudent(false);}}
+                     onClick={() => {setIsEditing(false); setSelectedStudent(null);}}
                    >
                      Cancel
                    </button>
@@ -452,7 +493,7 @@ export default function Studenttable() {
 
       {selectedYear && selectedClass && (
         <div className="overflow-x-auto relative">
-          <div className="max-h-[400px] overflow-y-auto">
+          <div className="max-h-[440px] overflow-y-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
                 <tr>
