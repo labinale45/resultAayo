@@ -216,66 +216,142 @@ const publishResult = async (req, res) => {
         error: 'Missing required fields: year, class, examType, and students are required' 
       });
     }
-    // Check if a record already exists
-    const { data: existingRecord, error: fetchError } = await supabaseClient
-      .from('ledgers')
-      .select('*')
-      .eq('year', year)
-      .eq('class', className)
-      .eq('exam_type', examType)
-      .single();
 
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found" error
-      throw fetchError;
+    const {data: examData, error: examError} = await supabaseClient
+    .from('exams')
+    .select('id')
+    .eq('exam_type', examType)
+    .gte('created_at', `${year}-01-01`)
+    .lte('created_at', `${year}-12-31`)
+    .single();
+    if (examError) {
+      throw examError;
+    }
+    if (!examData) {
+      return res.status(404).json({ error: 'Exam not found' });
     }
 
-    let result;
-    
-    if (existingRecord) {
-      // Update existing record
-      const { data, error } = await supabaseClient
-        .from('ledgers')
-        .update({
-          schoolName,
-          schoolAddress,
-          estdYear: establishmentYear,
-          students: students,
-          isPublished: isPublished,
-          updated_at: new Date().toISOString()
-        })
-        .eq('year', year)
-        .eq('class', className)
-        .eq('exam_type', examType)
-        .select();
+    const {data: classData, error: classError} = await supabaseClient
+    .from('class')
+    .select('id')
+    .eq('class', className)
+    .gte('updated_at', `${year}-01-01`)
+    .lte('updated_at', `${year}-12-31`)
+    .single();
 
-      if (error) throw error;
-      result = data;
-    } else {
-      // Insert new record
-      const { data, error } = await supabaseClient
-        .from('ledgers')
-        .insert([
-          {
-            year,
-            class: className,
-            exam_type: examType,
+    if (classError) {
+      throw classError;
+    }
+    if (!classData) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    const subjectsArray = []; // Initialize an array to hold all subjects
+
+    students.forEach(student => {
+        const studentSubjects = student.subjects.split(', ').map(subject => subject.trim());
+        subjectsArray.push(...studentSubjects); // Add subjects to the array
+        console.log(`Subjects for ${student.students}:`, studentSubjects);
+    });
+    
+    // Query the database for subjects based on the first subject in the array
+    const { data: subjects, error: subjectsError } = await supabaseClient
+        .from('subjects')
+        .select('id, subject_name')
+        .in('subject_name', subjectsArray) // Use .in() to match any subject in the array
+        .eq('class_id', classData.id);
+
+    if (subjectsError) {
+      throw subjectsError;
+    }
+    if (!subjects || subjects.length === 0) {
+      return res.status(404).json({ error: 'Subject not found' });
+    }
+
+    console.log('Subjects id and Name:', subjects);
+
+
+    const marksheetid = []; // Holds all marksheet IDs
+
+    students.forEach(student => {
+      console.log('This is marksheet Id', student.id);
+      marksheetid.push(student.id); // Collecting marksheet IDs
+    });
+            // Check if a record already exists for each student
+    const results = []; // Array to hold results for each student
+
+    for (const student of students) {
+      const { data: existingRecord, error: fetchError } = await supabaseClient
+        .from('marksheets')
+        .select('*')
+        .in('id',marksheetid)  
+        .gte('updated_at', `${year}-01-01`)
+        .lte('updated_at', `${year}-12-31`);
+
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found" error
+        throw fetchError;
+      }
+
+      console.log('Existing Record for student:', existingRecord);
+      let result;
+
+      // Convert TH and PR arrays to a format suitable for the database
+      const thValue = Array.isArray(student.TH) ? student.TH[0] : student.TH; // Use the first element or the value directly
+      const prValue = Array.isArray(student.PR) ? student.PR[0] : student.PR; // Use the first element or the value directly
+
+      if (existingRecord && existingRecord.length > 0) {
+        // Update existing record for the current student
+        const { data, error } = await supabaseClient
+          .from('marksheets')
+          .update({
             schoolName,
             schoolAddress,
             estdYear: establishmentYear,
-            students,
-            isPublished,
-            created_at: new Date().toISOString()
-          }
-        ])
-        .select();
+            TH: thValue, // Use the converted value
+            PR: prValue, // Use the converted value
+            isPublished: isPublished,
+            updated_at: new Date().toISOString()
+          })
+          .gte('updated_at', `${year}-01-01`)
+          .lte('updated_at', `${year}-12-31`)
+          .in('id', marksheetid)
+          .select();  
 
-      if (error) throw error;
-      result = data;
+        if (error) throw error;
+        result = data;
+      } else {
+        // Insert new record for the current student
+        const { data, error } = await supabaseClient
+          .from('marksheets')
+          .insert([{
+            student_id: student.id, // Use current student's ID
+            subject_id: subjects[0].id,
+            class: className,
+            exam_id: examData.id,
+            schoolName,
+            schoolAddress,
+            estdYear: establishmentYear,
+            TH: thValue, // Use the converted value
+            PR: prValue, // Use the converted value
+            isPublished: isPublished,
+            updated_at: new Date().toISOString()
+          }])
+          .select();
+
+        if (error) throw error;
+        result = data;
+      }
+
+      if (!result) {
+        console.warn(`No result returned for student: ${student.id}`);
+      } else {
+        results.push(result); // Store the result for the current student
+      }
     }
 
     res.status(200).json({
-      message: 'Result published successfully',
-      data: result
+      message: 'Results published successfully',
+      data: results // Return all results
     });
 
   } catch (error) {

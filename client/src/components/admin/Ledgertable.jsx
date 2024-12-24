@@ -102,6 +102,7 @@ export default function Ledgertable() {
             const key = `${record.students}-${record.rollNo}-${record.exam_type}-${record.class}`;
             if (!groupedStudents[key]) {
                 groupedStudents[key] = {
+                    id: [],
                     rollNo: record.rollNo,
                     students: record.students,
                     exam_type: record.exam_type,
@@ -114,6 +115,8 @@ export default function Ledgertable() {
             groupedStudents[key].subjects.push(record.subjects);
             groupedStudents[key].TH.push(record.TH); 
            groupedStudents[key].PR.push(record.PR);
+           groupedStudents[key].id.push(record.id);
+
         });
 
         // Convert the grouped object back to an array
@@ -222,7 +225,19 @@ export default function Ledgertable() {
           schoolName: schoolName,
           schoolAddress: schoolAddress,
           establishmentYear: establishmentYear,
-          students: students,
+          students,
+          // students: students.map(student => ({
+          //   id: student.id,
+          //   students: student.students,
+          //   dateOfBirth: student.dateOfBirth,
+          //   rollNo: student.rollNo,
+          //   subjects: student.subjects,
+          //   TH: student.TH,
+          //   PR: student.PR,
+          //   totalScores: student.totalScores,
+          //   total: student.total,
+          //   gpa: student.gpa
+          // })),
           isPublished: true
         })
       });
