@@ -9,6 +9,7 @@ import {
   FaCalendar,
   FaTimes,
   FaGraduationCap,
+  FaSchool,
 } from "react-icons/fa";
 
 export default function Viewprofile({ onClose }) {
@@ -64,17 +65,17 @@ export default function Viewprofile({ onClose }) {
       </button>
       <h1 className="text-2xl font-bold mb-6 text-center">Profile</h1>
       <div className="flex flex-col md:flex-row items-center md:items-start">
-        <div className="mb-6 md:mr-8">
+      <div className="mb-6 md:mr-8">
           <Image
-            src={profile.img_url || "/assets/profile.png"}
+            src={profile.role === 'Admin' ? "/assets/Admin.png" : (profile.img_url || "/assets/profile.png")}
             width={150}
             height={150}
-            alt={profile.first_name + " " + profile.last_name}
+            alt={profile.role==='Admin'?"Admin":profile.first_name + " " + profile.last_name}
             className="rounded-full"
           />
         </div>
         <div className="flex-grow">
-          <ProfileItem icon={<FaUser />} label="Name" value={`${profile.first_name} ${profile.last_name}`} />
+          <ProfileItem icon={<FaUser />} label="Name" value={profile.role==='Admin'?" Admin ":`${profile.first_name} ${profile.last_name}`} />
           <ProfileItem icon={<FaEnvelope />} label="Email" value={profile.email} />
           <ProfileItem icon={<FaPhone />} label="Phone" value={profile.phone_number} />
           <ProfileItem icon={<FaCalendar />} label="Join Date" value={new Date(profile.created_at).toLocaleDateString()} />

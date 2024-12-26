@@ -439,7 +439,7 @@ const enterMarks = async (req, res)=>{
         const {year, examType , className, subject,marks} = req.body;
         const createClient = await connectdb();
 
-        console.log(year, examType, className, subject,marks);
+        console.log("requested Data: ",year, examType, className, subject,marks);
 
 
 

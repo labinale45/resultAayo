@@ -7,7 +7,7 @@ const TLedger = () => {
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedExamType, setSelectedExamType] = useState("");
   const [isPublished, setIsPublished] = useState(false) ;
-  const [state, setState] = useState("ledgers");
+  const [state, setState] = useState("marksheets");
   const [years, setYears] = useState([]);
   const [error, setError] = useState(null);
   const [students, setStudents] = useState([]);
@@ -118,11 +118,12 @@ useEffect(() => {
       }
   
       const data = await response.json();
+
       console.log("Full ledger data:", data);
-      console.log("isPublished:", data.data.isPublished);
-      setIsPublished(data.data.isPublished);
+      console.log("isPublished:", data.isPublished);
+      setIsPublished(data.isPublished);
   
-      if (data.data.isPublished) {
+      if (isPublished === true) {
         // Fetch and display student records
         const ledgerResponse = await fetch(
           `http://localhost:4000/api/auth/records/${year}?status=${state}&class=${selectedClass}&examType=${selectedExamType}`
@@ -241,7 +242,7 @@ useEffect(() => {
         </th>
       ))
     ) : (
-      <th className="border border-gray-300 p-2">No Subjects Available</th>
+      <th className="border text-red-500 border-gray-300 p-2">No Subjects Available</th>
     )}
     <th className="border border-gray-300 p-2" rowSpan="2">Total Marks</th>
     <th className="border border-gray-300 p-2" rowSpan="2">GPA</th>
@@ -300,8 +301,6 @@ useEffect(() => {
         </div>
         </motion.div>
       )}
-
-      {}
     </div>
   );
 };

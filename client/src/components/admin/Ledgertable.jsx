@@ -107,6 +107,9 @@ export default function Ledgertable() {
                     students: record.students,
                     exam_type: record.exam_type,
                     class: record.class,
+                    schoolName: record.schoolName,
+                    schoolAddress: record.schoolAddress,
+                    estdYear: record.estdYear,
                     TH:[],
                     PR:[],
                     subjects: []
@@ -115,7 +118,7 @@ export default function Ledgertable() {
             groupedStudents[key].subjects.push(record.subjects);
             groupedStudents[key].TH.push(record.TH); 
            groupedStudents[key].PR.push(record.PR);
-           groupedStudents[key].id.push(record.id);
+           groupedStudents[key].id.push(record.id); 
 
         });
 
@@ -410,7 +413,7 @@ export default function Ledgertable() {
                 </th>
                 
                 {students[0] && students[0].subjects.split(', ').map((subject, subjectIndex) => (
-                  <th key={subjectIndex} className=" border border-gray-300 p-2">
+                  <th key={subjectIndex} className=" border border-gray-300 border-r-slate-400  p-2">
                     {subject}
                     <hr className="border border-slate-200"></hr>
                     <tr className="flex justify-between ">
@@ -436,7 +439,7 @@ export default function Ledgertable() {
       <td className="border border-gray-300 p-2">{student.students}</td>
       
       {students[0] && students[0].subjects.split(', ').map((subject, subjectIndex) => (
-        <td className="w-72 " key={subjectIndex}>
+        <td className="w-72 border border-r-slate-400 " key={subjectIndex}>
           <td className="w-24 border border-gray-300 p-2">
             <input
               type="number"

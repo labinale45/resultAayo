@@ -111,7 +111,7 @@ export default function Dnav({ currentPath }) {
               className="flex items-center space-x-2"
             >
               <Image
-                src={userData?.img_url || "/assets/profile.png"}
+                src={ userData?.role === "Admin" ? "/assets/Admin.png" :  userData?.img_url || "/assets/profile.png"}
                 width={40}
                 height={50}
                 alt={userData?.first_name + " " + userData?.last_name}

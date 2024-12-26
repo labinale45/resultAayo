@@ -207,7 +207,7 @@ const login = async(req,res) => {
 const publishResult = async (req, res) => {
   try {
     const supabaseClient = await connectdb();
-    const { year, class: className, examType,schoolName, schoolAddress, establishmentYear, students, isPublished } = req.body;
+    const { year, class: className, examType, schoolName, schoolAddress, establishmentYear, students, isPublished } = req.body;
 
     console.log("Received request to publish results", req.body);
     // Validate required fields
@@ -217,13 +217,13 @@ const publishResult = async (req, res) => {
       });
     }
 
-    const {data: examData, error: examError} = await supabaseClient
-    .from('exams')
-    .select('id')
-    .eq('exam_type', examType)
-    .gte('created_at', `${year}-01-01`)
-    .lte('created_at', `${year}-12-31`)
-    .single();
+    const { data: examData, error: examError } = await supabaseClient
+      .from('exams')
+      .select('id')
+      .eq('exam_type', examType)
+      .gte('created_at', `${year}-01-01`)
+      .lte('created_at', `${year}-12-31`)
+      .single();
     if (examError) {
       throw examError;
     }
@@ -231,13 +231,13 @@ const publishResult = async (req, res) => {
       return res.status(404).json({ error: 'Exam not found' });
     }
 
-    const {data: classData, error: classError} = await supabaseClient
-    .from('class')
-    .select('id')
-    .eq('class', className)
-    .gte('updated_at', `${year}-01-01`)
-    .lte('updated_at', `${year}-12-31`)
-    .single();
+    const { data: classData, error: classError } = await supabaseClient
+      .from('class')
+      .select('id')
+      .eq('class', className)
+      .gte('updated_at', `${year}-01-01`)
+      .lte('updated_at', `${year}-12-31`)
+      .single();
 
     if (classError) {
       throw classError;
@@ -249,17 +249,17 @@ const publishResult = async (req, res) => {
     const subjectsArray = []; // Initialize an array to hold all subjects
 
     students.forEach(student => {
-        const studentSubjects = student.subjects.split(', ').map(subject => subject.trim());
-        subjectsArray.push(...studentSubjects); // Add subjects to the array
-        console.log(`Subjects for ${student.students}:`, studentSubjects);
+      const studentSubjects = student.subjects.split(', ').map(subject => subject.trim());
+      subjectsArray.push(...studentSubjects); // Add subjects to the array
+      console.log(`Subjects for ${student.students}:`, studentSubjects);
     });
-    
+
     // Query the database for subjects based on the first subject in the array
     const { data: subjects, error: subjectsError } = await supabaseClient
-        .from('subjects')
-        .select('id, subject_name')
-        .in('subject_name', subjectsArray) // Use .in() to match any subject in the array
-        .eq('class_id', classData.id);
+      .from('subjects')
+      .select('id, subject_name')
+      .in('subject_name', subjectsArray) // Use .in() to match any subject in the array
+      .eq('class_id', classData.id);
 
     if (subjectsError) {
       throw subjectsError;
@@ -270,82 +270,117 @@ const publishResult = async (req, res) => {
 
     console.log('Subjects id and Name:', subjects);
 
+    const {data: studentData, error: studentError } = await supabaseClient
+    .from('students')
+    .select('id')
+    .eq('class', className)
+    .gte('updated_at', `${year}-01-01`)
+    .lte('updated_at', `${year}-12-31`);
+    if (studentError) {
+      throw studentError;
+    }
+    if (!studentData) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
 
-    const marksheetid = []; // Holds all marksheet IDs
+    console.log('Student Data:', studentData);
 
+    console.log("students : ", students);
+
+    // Loop through each student
+    const markSheetsData = []; // Initialize an array to hold mark sheets data
+
+    // Loop through each student
     students.forEach(student => {
-      console.log('This is marksheet Id', student.id);
-      marksheetid.push(student.id); // Collecting marksheet IDs
+      const studentSubjects = student.subjects.split(', ').map(subject => subject.trim());
+      
+      // Loop through student's specific subjects and their marks
+      studentSubjects.forEach((subjectName, index) => {
+        // Find the matching subject from our subjects array
+        const subjectData = subjects.find(s => s.subject_name === subjectName);
+        if (subjectData) {
+          markSheetsData.push({
+            class: className,
+            id: student.id[index],
+            exam_id: examData.id,
+            subject_id: subjectData.id,
+            TH: student.TH[index], // Get TH mark for this specific subject
+            PR: student.PR[index], // Get PR mark for this specific subject
+            updated_at: new Date().toISOString()
+          });
+        }
+      });
     });
-            // Check if a record already exists for each student
+
+  // Log the markSetupData to check for undefined values
+  console.log("Mark Sheets Data:", markSheetsData);
+
+
     const results = []; // Array to hold results for each student
 
-    for (const student of students) {
+    for (const mark of markSheetsData) {
+
+      const {class:className,id, exam_id, subject_id, TH, PR} = mark;
+
+      console.log("Mark Data:", mark);
+      // Check if a record already exists for the current student
       const { data: existingRecord, error: fetchError } = await supabaseClient
         .from('marksheets')
         .select('*')
-        .in('id',marksheetid)  
-        .gte('updated_at', `${year}-01-01`)
-        .lte('updated_at', `${year}-12-31`);
+        .eq("class", className)
+        .eq('id',id) // Check for existing record by student_id
+        .eq('exam_id', exam_id) // Check for existing record by exam_id
+        .eq('subject_id', subject_id) // Check for existing record by subject_id
+        .limit(1) // Get a single record
+        .single(); // Get a single record
 
       if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found" error
         throw fetchError;
       }
 
-      console.log('Existing Record for student:', existingRecord);
-      let result;
+      console.log("Existing Record:", existingRecord);
 
-      // Convert TH and PR arrays to a format suitable for the database
-      const thValue = Array.isArray(student.TH) ? student.TH[0] : student.TH; // Use the first element or the value directly
-      const prValue = Array.isArray(student.PR) ? student.PR[0] : student.PR; // Use the first element or the value directly
-
-      if (existingRecord && existingRecord.length > 0) {
+      if (existingRecord) {
         // Update existing record for the current student
-        const { data, error } = await supabaseClient
+        const { error } = await supabaseClient
           .from('marksheets')
           .update({
             schoolName,
             schoolAddress,
             estdYear: establishmentYear,
-            TH: thValue, // Use the converted value
-            PR: prValue, // Use the converted value
+            TH: TH, // Use the specific TH value for the student
+            PR: PR, // Use the specific PR value for the student
             isPublished: isPublished,
             updated_at: new Date().toISOString()
           })
-          .gte('updated_at', `${year}-01-01`)
-          .lte('updated_at', `${year}-12-31`)
-          .in('id', marksheetid)
-          .select();  
+          .eq("class", className)
+          .eq('id',id) // Check for existing record by student_id
+          .eq('exam_id', exam_id) // Check for existing record by exam_id
+          .eq('subject_id', subject_id)// Update the specific record
 
         if (error) throw error;
-        result = data;
+        results.push(existingRecord); // Store the updated result
+        console.log(`Updated result for subject ${subject_id} for student ${id}`);
       } else {
         // Insert new record for the current student
-        const { data, error } = await supabaseClient
+        const { error } = await supabaseClient
           .from('marksheets')
           .insert([{
-            student_id: student.id, // Use current student's ID
-            subject_id: subjects[0].id,
+            id:id, // Use current student's ID
+            subject_id: subject_id,
             class: className,
-            exam_id: examData.id,
+            exam_id: exam_id,
             schoolName,
             schoolAddress,
             estdYear: establishmentYear,
-            TH: thValue, // Use the converted value
-            PR: prValue, // Use the converted value
+            TH: TH, // Use the specific TH value for the student
+            PR: PR, // Use the specific PR value for the student
             isPublished: isPublished,
             updated_at: new Date().toISOString()
-          }])
-          .select();
+          }]);
 
         if (error) throw error;
-        result = data;
-      }
-
-      if (!result) {
-        console.warn(`No result returned for student: ${student.id}`);
-      } else {
-        results.push(result); // Store the result for the current student
+        results.push(data); // Store the newly created result
       }
     }
 
@@ -366,18 +401,39 @@ const publishResult = async (req, res) => {
 const getLedgerStatus = async (req, res) => {
   const supabaseClient = await connectdb();
   const { year, class: className, examType } = req.body;
-  const { data: ledgerData, error: ledgerError } = await supabaseClient
-    .from('ledgers')
-    .select('*')
-    .eq('class', className)
+
+  console.log('Request Body:', req.body);
+
+const { data: examData, error: examError } = await supabaseClient
+    .from('exams')
+    .select('id')
     .eq('exam_type', examType)
-    .eq('year', year)
+    .gte('created_at', `${year}-01-01`)
+    .lte('created_at', `${year}-12-31`)
     .single();
 
+    if (examError) throw examError;
+    if (!examData) {
+      return res.status(404).json({ error: 'Exam not found' });
+    }
+
+    console.log('Exam Data:', examData);
+
+  const { data: ledgerData, error: ledgerError } = await supabaseClient
+    .from('marksheets')
+    .select('*')
+    .eq('class', className)
+    .eq('exam_id', examData.id)
+    .gte('updated_at', `${year}-01-01`)
+    .lte('updated_at', `${year}-12-31`)
+    .eq('isPublished', true)
+
     console.log("ledgerData",ledgerData);
+
     res.status(200).json({
-      message: 'Ledger status fetched successfully',
-      data: ledgerData
+      message: ledgerData.length >0 ? 'Ledger status retrieved successfully for ' + ledgerData[0]?.class : "Class "+ className + " Ledger Not Published yet or not found",
+      data: ledgerData,
+      isPublished: ledgerData[0]?.isPublished || false,
     });
  
 };

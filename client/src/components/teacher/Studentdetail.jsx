@@ -86,6 +86,8 @@ useEffect(() => {
   useEffect(() => {
     if (selectedYear && selectedClass) {
       fetchStudents();
+    }else {
+      setStudents([]);
     }
   }, [selectedYear, selectedClass]);
 
@@ -172,7 +174,13 @@ useEffect(() => {
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.map((student) => (
+                {filteredStudents.length === 0 ?(
+                  <tr>
+                  <td colSpan="10" className="text-center py-4 text-red-500">
+                   Student Not Found.
+                  </td>
+                </tr>
+                ) : filteredStudents.map((student) => (
                   <motion.tr
                     key={student.id}
                     initial={{ opacity: 0 }}

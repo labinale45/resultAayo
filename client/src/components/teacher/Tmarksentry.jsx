@@ -55,13 +55,18 @@ useEffect(() => {
   }
 }, [teacherId, selectedClass]); // Add selectedClass as a dependency
 
+useEffect(() => {
+  if (selectedYear && selectedExamType && selectedClass || selectedSubject) {
+    fetchStudents();
+  }
+  },[selectedYear, selectedExamType, selectedClass, selectedSubject]);
+
     useEffect(() => {
+      
       if (selectedYear && selectedExamType && selectedClass && selectedSubject) {
-        fetchStudents();
         fetchExistingMarks();
       }
     }, [selectedYear, selectedExamType, selectedClass, selectedSubject]);
-
 
     
     const YearSelect = async () => {
@@ -238,6 +243,8 @@ useEffect(() => {
           }
         );
 
+        console.log("response.data", response.data);
+        console.log("Student Data", students);
         if (response.data.length > 0) {
           // Update students state with existing marks
           const updatedStudents = students.map(student => {
@@ -297,7 +304,7 @@ useEffect(() => {
 
           <select
   value={selectedClass}
-  onChange={(e) => setSelectedClass(e.target.value)}
+  onChange={(e) => setSelectedClass(e.target.value) }
   className="bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
 >
   <option value="">Select Class</option>
