@@ -253,5 +253,62 @@ const getClassesByTeacher = async (teacherId) => {
     }
 };
 
+const getClassesByStudent = async (studentId) => {
+    try {
+        console.log("Model student Id:", studentId);
+        const createClient = await connectdb();
 
-module.exports ={ getClassesByTeacher ,createClass, getClass, createSubject, getSubjects, getSubjectsByClass, assignTeacher, getTeachers};
+        const { data: studentData, error: studentError } = await createClient
+        .from('students')
+        .select('id')
+        .eq('student_id', studentId)
+
+        if (studentError) {
+            console.error("Teacher Query Error: ", studentError);
+            throw studentError;
+        }
+        if (!studentData || studentData.length === 0) {
+            console.warn("No teacher data found.");
+            return [];
+        }
+
+        const { data: enrolledClass, error: enrolledClassError } = await createClient
+            .from('students')
+            .select(`class_id:class(class)`)
+            .eq('id', studentData[0].id);
+
+        if (enrolledClassError) {
+            console.error("Query Error: ", enrolledClassError);
+            throw enrolledClassError;
+        }
+
+        console.log("Model Data: ", enrolledClass);
+        
+        if (enrolledClass.length === 0) {
+            console.warn("No enrolled classes for this Student.");
+        }
+
+         // Use a Set to track unique classes
+    const uniqueClasses = new Set();
+
+    // Map the assignedClass data and add unique classes to the Set
+    const classes = (enrolledClass || []).map(item => {
+      const className = item.class_id?.class || '';
+      if (className) {
+        uniqueClasses.add(className); // Add to Set for uniqueness
+      }
+
+      return className; // Return the class name
+    });
+
+    // Convert the Set back to an array
+    return Array.from(uniqueClasses); // Return unique class names
+
+    } catch (error) {
+        console.error("Error in getClassesByStudent: ", error);
+        return [];
+    }
+};
+
+
+module.exports ={ getClassesByStudent , getClassesByTeacher ,createClass, getClass, createSubject, getSubjects, getSubjectsByClass, assignTeacher, getTeachers};

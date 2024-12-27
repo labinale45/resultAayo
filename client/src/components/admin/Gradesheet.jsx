@@ -43,27 +43,27 @@ export default function Gradesheet({ onClose, studentsData = [], schoolName, sch
             <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 dark:bg-[#253553] dark:text-white ">
               <p className="mb-4">
                 THE GRADE OBTAINED BY:{" "}
-                <span className="text-black inline-block border-b border-black dark:border-white pb-1 w-48">
+                <span className="text-black text-center font-semibold  inline-block border-b border-black dark:border-white pb-1 w-48">
                   {studentData.students || "N/A"}
                 </span>
                 {" "}DATE OF BIRTH:{"  "}
-                <span className="inline-block border-b border-black pb-1 w-32 dark:border-white">
+                <span className="inline-block text-center font-semibold  border-b border-black pb-1 w-32 dark:border-white">
                   {studentData.dateOfBirth || "N/A"}
                 </span>{"  "}
                 B.S (
-                <span className="inline-block border-b border-black pb-1 w-32 dark:border-white">
+                <span className="inline-block text-center font-semibold  border-b border-black pb-1 w-32 dark:border-white">
                   {studentData.dateOfBirthAD || "N/A"}
                 </span>{" "}
                 A.D) ROLL NO:{" "}
-                <span className="inline-block border-b border-black pb-1 w-16 dark:border-white">
+                <span className="inline-block text-center font-semibold  border-b border-black pb-1 w-16 dark:border-white">
                   {studentData.rollNo || "N/A"}
                 </span>
                 {" "}IN THE{" "}
-                <span className="inline-block border-b border-black pb-1 w-48 dark:border-white">
+                <span className="inline-block text-center font-semibold  border-b border-black pb-1 w-48 dark:border-white">
                   {studentData.examType || "N/A"}
                 </span>
                 {" "}CONDUCTED BY THE SCHOOL IN THE ACADEMIC YEAR{"  "}
-                <span className="inline-block border-b border-black pb-1 w-12 dark:border-white">
+                <span className="inline-block text-center font-semibold  border-b border-black pb-1 w-12 dark:border-white">
                   {studentData.year || "N/A"}
                 </span>{" "}
                 ARE GIVEN BELOW:

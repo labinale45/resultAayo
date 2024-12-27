@@ -248,13 +248,14 @@ export default function Ledgertable() {
 
   const handleGenerateGradesheet = () => {
     setShowGradesheet(true);
+    console.log('Gradesheet Data:', gradesheetData);
   }
   
   // Update the function to pass the required props
   const gradesheetData = {
-    schoolName,
-    schoolAddress,
-    establishmentYear,
+    schoolName: schoolName,
+    schoolAddress: schoolAddress,
+    establishmentYear: establishmentYear,
     studentsData: students.map(student => ({
         students: student.students,
         dateOfBirth: student.dateOfBirth, // Assuming you have this data
@@ -347,9 +348,9 @@ export default function Ledgertable() {
       {isFormComplete && (
         <div ref={gradesheetRef} className="border border-gray-300 rounded-lg p-4 ">
           <div className="mb-8 text-center">
-          <h2 className="text-4xl font-semibold">{schoolName}</h2>
-      <p>{schoolAddress}</p>
-      <p>Estd: {establishmentYear}</p>
+          <h2 className="text-4xl font-semibold">{schoolName || students.schoolName}</h2>
+      <p>{schoolAddress|| students.schoolAddress}</p>
+      <p>Estd: {establishmentYear||students.estdYear}</p>
             <p className="text-3xl">
               {selectedExamType}-{selectedYear}
             </p>
@@ -481,7 +482,7 @@ export default function Ledgertable() {
             <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
                 <Gradesheet 
                     onClose={() => setShowGradesheet(false)} 
-                    {...gradesheetData} // Pass the data as props
+                    {...gradesheetData}  // Pass the data as props
                 />
             </div>
         )}

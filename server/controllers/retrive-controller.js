@@ -368,7 +368,118 @@ const getRecordsByYearAndClass = async (req, res) => {
   }
 };
 
+const getGradesheet = async (req, res) => {
+  try {
+    const supabaseClient = await connectdb();
+    const { year } = req.params;
+    const { status, class: classId, examType, studentId } = req.query;
+
+    console.log(`Fetching gradesheet for status: ${status}, year: ${year}, class: ${classId}, examType: ${examType}, studentId: ${studentId}`);
+
+   
+    // First get exam data
+    const { data: examData, error: examError } = await supabaseClient
+      .from("exams")
+      .select("id")
+      .eq("exam_type", examType)
+      .gte("created_at", `${year}-01-01`)
+      .lte("created_at", `${year}-12-31`)
+      .single();
+
+    if (examError) throw examError;
+
+    console.log("Exam Data:", examData);
+
+    const { data: studentData, error: studentError } = await supabaseClient
+    .from('students')
+    .select('id')
+    .eq('student_id', studentId)
+    .single();
+
+    if (studentError) {
+        console.error("Student Query Error: ", studentError);
+        throw studentError;
+    }
+    if (!studentData || studentData.length === 0) {
+        console.warn("No Student data found.");
+        return [];
+    }
+
+    console.log("Student Data:", studentData);
+
+    // Then get the marksheet data with all related information
+    const { data, error } = await supabaseClient
+      .from('marksheets')
+      .select(`
+        *,
+        student_id:students(
+          first_name, 
+          last_name, 
+          rollNo, 
+          dob
+        ),
+        subject_id:subjects(
+          subject_name
+        ),
+        exam_id:exams(
+          exam_type
+        )
+      `)
+      .eq('class', classId)
+      .eq('student_id', studentData.id)
+      .eq('exam_id', examData.id)
+      .gte('created_at', `${year}-01-01`)
+      .lte('created_at', `${year}-12-31`);
+
+    if (error) throw error;
+
+    console.log("Marksheet Data:", data);
+    // Get school information
+    // const { data: schoolData, error: schoolError } = await supabaseClient
+    //   .from('school_info')
+    //   .select('*')
+    //   .single();
+
+    // if (schoolError) throw schoolError;
+
+    // Format the response
+    const formattedData = {
+      schoolName: data[0]?.schoolName || "School Name",
+      schoolAddress: data[0]?.schoolAddress || "School Address",
+      estdYear: data[0]?.estdYear || "Established Year",
+      students: data[0]?.student_id.first_name + " " + data[0]?.student_id.last_name,
+      dateOfBirth: data[0]?.student_id.dob,
+      dateOfBirthAD: data[0]?.student_id.dateOfBirthAD,
+      rollNo: data[0]?.student_id.rollNo,
+      subjects: data.map(mark => ({
+        name: mark.subject_id.subject_name,
+        th: {
+          creditHour: mark.TH_credit_hour,
+          gpa: mark.TH_gpa,
+          grade: mark.TH_grade
+        },
+        pr: {
+          creditHour: mark.PR_credit_hour,
+          gpa: mark.PR_gpa,
+          grade: mark.PR_grade
+        },
+        finalGrade: mark.final_grade,
+        remarks: mark.remarks
+      }))
+    };
+
+    res.status(200).json(formattedData);
+    
+    console.log("Formatted Data:", formattedData);
+  } catch (error) {
+    console.error('Error fetching gradesheet:', error);
+    res.status(500).json({ error: 'Failed to fetch gradesheet' });
+  }
+};
+
+
 module.exports = {
+  getGradesheet,
   getRecordsByYearAndClass,
   getYears,
   getRecordsByYear,

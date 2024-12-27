@@ -101,6 +101,20 @@ const getClassesByTeacher = async (req, res) => {
   }
 };
 
+const getClassesByStudent = async (req, res) => {
+    const { studentId } = req.params;
+    
+    try {
+      const enrolledClass = await classmodel.getClassesByStudent(studentId);
+      res.json(enrolledClass);
+      console.log("Teacher class :",enrolledClass);
+  }catch (error) {
+      console.error("Error in getClassesByStudent:", error);
+      res.status(500).json({ error: "Failed to fetch classes" });
+  }
+};
+
+
 const getTotalStudentsByTeacher = async (teacherId) => {
     const supabase = await connectdb();
     const { data, error } = await supabase
@@ -126,6 +140,7 @@ const getAveragePerformanceByTeacher = async (teacherId) => {
 
 
 module.exports={
+    getClassesByStudent,
     getTotalStudentsByTeacher,
     getAveragePerformanceByTeacher,
     getClassesByTeacher,addClass, getSubjectsByClass, assignTeacher, getTeachers}

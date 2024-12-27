@@ -48,6 +48,7 @@ router.route('/records/:year').get(retrive.getRecordsByYear);
 router.route('/studentRecords/:year').get(retrive.getRecordsByYearAndClass);   
 router.route('/exam-types').get(retrive.getExamTypes); // Updated to handle exam types by year
 router.route('/classes').get(retrive.getClasses);
+router.route('/gradesheet/:year').get(retrive.getGradesheet);
 
 // Marks routes
 router.route('/setup-marks').post(examController.setupMarks);
@@ -74,6 +75,10 @@ router.post('/generate-ledger-sheet', authController.generateLedgerSheet);
 // Add this route to fetch classes assigned to a specific teacher
 router.get('/teacher/:teacherId/classes', classController.getClassesByTeacher);
 router.get('/teacher/:teacherId/subjects', examController.getAssignedSubjects);
+
+// Add this route to fetch classes enrolled to a specific student
+router.get('/student/:studentId/classes', classController.getClassesByStudent);
+
 
 // New route for fetching teacher dashboard data
 router.get('/teacher/dashboard/:teacherId', authMiddleware, async (req, res) => {
