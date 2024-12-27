@@ -86,8 +86,8 @@ const StudentDashboard = () => {
               a 15.9155 15.9155 0 0 1 0 31.831
               a 15.9155 15.9155 0 0 1 0 -31.831"
             fill="none"
-            stroke="#4F46E5"
-            strokeWidth="3"
+            stroke="#6391c9"
+            strokeWidth="4"
             strokeDasharray={`${percentage}, 100`}
           />
         </svg>
@@ -109,7 +109,7 @@ const StudentDashboard = () => {
         label: 'Student Record',
         data: [250, 280, 300, 330, 290, 330],
         fill: true,
-        borderColor: '#4F46E5',
+        borderColor: '#6391c9',
         backgroundColor: 'rgba(79, 70, 229, 0.1)',
         tension: 0.4,
       },
