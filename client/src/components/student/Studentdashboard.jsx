@@ -1,14 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import {
-  FaUsers,
-  FaChalkboardTeacher,
-  FaGraduationCap,
-  FaBook,
-} from "react-icons/fa";
-import { Line } from "react-chartjs-2";
+import React, { useState, useEffect } from 'react';
+import { Line } from 'react-chartjs-2';
+import Viewprofile from "@/components/Viewprofile";
+import Image from "next/image";
+
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -18,9 +15,9 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js";
-import Viewprofile from "../Viewprofile";
+} from 'chart.js';
 
+// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -31,136 +28,195 @@ ChartJS.register(
   Legend
 );
 
-export default function Studentdashboard() {
-  const [chartData, setChartData] = useState({
-    labels: [],
-    datasets: [
-      {
-        label: "Students",
-        data: [],
-        borderColor: "rgb(255, 99, 132)",
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
-      },
-      {
-        label: "Teachers",
-        data: [],
-        borderColor: "rgb(53, 162, 235)",
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
-      },
-    ],
+const StudentDashboard = () => {
+  const [studentData, setStudentData] = useState({
+    analytics: { percentage: 90, count: 1298 },
+    history: [],
+    studentRecord: 330
   });
+  const [showViewProfile, setShowViewProfile] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [error, setError] = useState(null);
 
-  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
-    const fetchData = () => {
-      const labels = [];
-      const studentData = [];
-      const teacherData = [];
+  
+    const fetchUserProfile = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData'));
 
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        labels.push(date.toLocaleDateString());
-        studentData.push(Math.floor(Math.random() * 50) + 100);
-        teacherData.push(Math.floor(Math.random() * 10) + 20);
-      }
+        if (!userData?.username) {
+          throw new Error('No user data found');
+        }
 
-      setChartData({
-        labels,
-        datasets: [
-          {
-            ...chartData.datasets[0],
-            data: studentData,
-          },
-          {
-            ...chartData.datasets[1],
-            data: teacherData,
-          },
-        ],
-      });
+        const response = await fetch(`http://localhost:4000/api/auth/profile/${userData.username}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+
+        const data = await response.json();
+        setUserData(data);
+      } catch (err) {
+        setError(err.message);
+      } 
     };
-
-    fetchData();
+    fetchUserProfile();
   }, []);
 
-  const options = {
+  // Analytics circle progress component
+  const AnalyticsCard = ({ percentage, count }) => (
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="relative w-32 h-32">
+        <svg className="w-full h-full" viewBox="0 0 36 36">
+          <path
+            d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"
+            fill="none"
+            stroke="#eee"
+            strokeWidth="3"
+          />
+          <path
+            d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"
+            fill="none"
+            stroke="#4F46E5"
+            strokeWidth="3"
+            strokeDasharray={`${percentage}, 100`}
+          />
+        </svg>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <span className="text-2xl font-bold">{percentage}%</span>
+        </div>
+      </div>
+      <div className="mt-4">
+        <span className="text-lg font-semibold">{count}</span>
+      </div>
+    </div>
+  );
+
+  // Chart configuration
+  const chartData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [
+      {
+        label: 'Student Record',
+        data: [250, 280, 300, 330, 290, 330],
+        fill: true,
+        borderColor: '#4F46E5',
+        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const chartOptions = {
     responsive: true,
     plugins: {
       legend: {
-        position: "top",
+        display: false,
       },
-      title: {
-        display: true,
-        text: "Student and Teacher Count Over Last 7 Days",
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
       },
     },
   };
-
+ 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-[#B3B4BE] dark:text-white">
-      <header className="bg-white shadow dark:bg-[#B3B4BE]">
-        <div className="max-w-7xl mx-auto py-7 px-4 bg-white dark:bg-[#B3B4BE] dark:text-white">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            School Student Dashboard
-          </h1>
-        </div>
-      </header>
-      <main className="flex-grow container mx-auto px-4 py-6">
-        <div className="mt-3 flex flex-col lg:flex-row gap-8 py-3 ">
-          <div className="lg:w-2/3 bg-gray-100 p-6 rounded-lg shadow">
-            <div className="h-[400px]">
-              <Line options={options} data={chartData} />
-            </div>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">Welcome back, {userData?.first_name + " " + userData?.last_name}! 👋</h1>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Analytics Cards */}
+        <AnalyticsCard 
+          percentage={studentData.analytics.percentage}
+          count={studentData.analytics.count}
+        />
+        <AnalyticsCard 
+          percentage={studentData.analytics.percentage}
+          count={studentData.analytics.count}
+        />
+        
+        {/* Profile Card */}
+        <div className="dark:bg-[#1F2937] bg-[#6391c9] text-white p-6 rounded-lg">
+          <div className="flex flex-col items-center">
+             <Image
+                src={ userData?.role === "Admin" ? "/assets/Admin.png" :  userData?.img_url || "/assets/profile.png"}
+                width={40}
+                height={50}
+                alt={userData?.first_name + " " + userData?.last_name}
+                className="w-20 h-20 rounded-full mb-4"
+              />
+            <h3 className="text-xl font-semibold">Student</h3>
+            <button
+                  onClick={() => {
+                    setShowViewProfile(true);
+                  }}
+                  className="mt-4 px-4 py-2 border hover:bg-slate-600 border-white rounded-lg"
+                >
+                  View Profile
+                </button>
           </div>
-          <div className="lg:w-1/3">
-            <QuickActions onViewProfile={() => setShowProfile(true)} />
-          </div>
         </div>
-      </main>
-      {showProfile && (
-        <div className="fixed inset-0 bg-black bg-opacity-65 backdrop-blur-sm flex items-center justify-center z-[101]">
-          <Viewprofile onClose={() => setShowProfile(false)} />
+      </div>
+
+      {/* Student Record Chart */}
+      <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold mb-4">Student Record</h2>
+        <Line data={chartData} options={chartOptions} />
+      </div>
+
+      {/* History Section */}
+      <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold mb-4">History</h2>
+        <div className="space-y-4">
+          {/* Sample history items */}
+          <HistoryItem 
+            title="Senior UI/UX Designer"
+            date="February 2024"
+            status="Applied"
+          />
+          <HistoryItem 
+            title="Frontend Developer"
+            date="January 2024"
+            status="Completed"
+          />
+        </div>
+      </div>
+    
+      {showViewProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
+          <Viewprofile onClose={() => setShowViewProfile(false)} />
         </div>
       )}
     </div>
   );
-}
-
-function StatCard({ icon, title, value }) {
-  return (
-    <div className="bg-gray-100 overflow-hidden shadow rounded-lg p-5">
-      <div className="flex items-center">
-        <div className="flex-shrink-0">{icon}</div>
-        <div className="ml-5 w-0 flex-1">
-          <dt className="text-sm font-medium text-gray-500 truncate">
-            {title}
-          </dt>
-          <dd className="text-lg font-semibold text-gray-900">{value}</dd>
-        </div>
-      </div>
+};
+// History item component
+const HistoryItem = ({ title, date, status }) => (
+  <div className="flex items-center justify-between p-4 border rounded-lg">
+    <div>
+      <h3 className="font-semibold">{title}</h3>
+      <p className="text-gray-500">{date}</p>
     </div>
-  );
-}
+    <span className={`px-3 py-1 rounded-full ${
+      status === 'Applied' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
+    }`}>
+      {status}
+    </span>
+  </div>
+ 
 
-function QuickActions({ onViewProfile }) {
-  return (
-    <div className="bg-gray-100 shadow rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
-      <div className="mt-4 grid grid-cols-2 gap-4">
-        <Link
-          href="/student/Sgradesheet"
-          className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white text-gray-700 font-semibold py-2 px-4 rounded text-center"
-        >
-          Gradesheet
-        </Link>
-        <button
-          onClick={onViewProfile}
-          className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white text-gray-700 font-semibold py-2 px-4 rounded text-center"
-        >
-          Profile
-        </button>
-      </div>
-    </div>
-  );
-}
+);
+
+export default StudentDashboard;
