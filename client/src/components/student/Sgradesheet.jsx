@@ -168,8 +168,164 @@ const YearSelect = async () => {
   
 
   const handlePrint = () => {
-    window.print();
+    // Create a new window for printing
+    const printWindow = window.open('', '', 'width=800,height=600');
+    
+    // Generate the print content
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Gradesheet</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            margin: 0;
+          }
+          .container {
+            border: 2px solid black;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .school-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+          }
+          .exam-title {
+            font-size: 20px;
+            margin: 15px 0;
+          }
+          .student-info {
+            margin: 20px 0;
+            line-height: 2;
+          }
+          .underline {
+            border-bottom: 1px solid black;
+            padding: 0 10px;
+            display: inline-block;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+          }
+          th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+          }
+          th {
+            background-color: #f0f0f0;
+          }
+          .signatures {
+            margin-top: 100px;
+            display: flex;
+            justify-content: space-between;
+          }
+          .signature-line {
+            border-top: 1px solid black;
+            width: 200px;
+            text-align: center;
+            padding-top: 5px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <p class="school-name">${students.schoolName || "ABC"}</p>
+            <p>${students.schoolAddress || "XYZ"}</p>
+            <p>Estd: ${students.estdYear || "1665"}</p>
+            <p class="exam-title">${selectedExamType}-${selectedYear}</p>
+          </div>
+  
+          <div class="student-info">
+            THE GRADE OBTAINED BY: <span class="underline">${students?.students || "Manita Thapa"}</span>
+            DATE OF BIRTH: <span class="underline">${students?.dateOfBirth || "2000-12-18"}</span>
+            B.S ( <span class="underline">${students?.dateOfBirthAD || "N/A"}</span> A.D)
+            ROLL NO: <span class="underline">${students?.rollNo || "3"}</span>
+            IN THE <span class="underline">${selectedExamType}</span>
+            CONDUCTED BY THE SCHOOL IN THE ACADEMIC YEAR <span class="underline">${selectedYear}</span>
+            ARE GIVEN BELOW:
+          </div>
+  
+          <table>
+            <thead>
+              <tr>
+                <th>S.N</th>
+                <th>SUBJECT</th>
+                <th>CREDIT HOUR</th>
+                <th>GPA</th>
+                <th>GRADE</th>
+                <th>FINAL GRADE</th>
+                <th>REMARKS</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${students?.subjects?.map((subject, index) => `
+                <tr>
+                  <td>${index + 1}</td>
+                  <td>${subject.name} (TH)</td>
+                  <td>${subject.th?.creditHour || ''}</td>
+                  <td>${subject.th?.gpa || ''}</td>
+                  <td>${subject.th?.grade || ''}</td>
+                  <td>${subject.finalGrade || ''}</td>
+                  <td>${subject.remarks || ''}</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>${subject.name} (PR)</td>
+                  <td>${subject.pr?.creditHour || ''}</td>
+                  <td>${subject.pr?.gpa || ''}</td>
+                  <td>${subject.pr?.grade || ''}</td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              `).join('') || `
+                <tr>
+                  <td colspan="7" style="text-align: center; color: red;">
+                    No subjects available
+                  </td>
+                </tr>
+              `}
+            </tbody>
+          </table>
+  
+          <div class="signatures">
+            <div>
+              <p>Date: ................................</p>
+            </div>
+            <div>
+              <div class="signature-line">Class Teacher's Signature</div>
+            </div>
+            <div>
+              <div class="signature-line">Principal's Signature</div>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  
+    // Write the content to the new window and print it
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    
+    // Wait for content to load before printing
+    printWindow.onload = function() {
+      printWindow.print();
+      printWindow.close();
+    };
   };
+  
 
   const showTable =
   selectedYear && selectedExamType && selectedClass && isPublished;

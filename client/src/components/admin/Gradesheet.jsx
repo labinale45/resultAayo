@@ -29,8 +29,12 @@ export default function Gradesheet({ onClose, studentsData = [], schoolName, sch
           <Print targetRef={gradesheetRef} />
         </div>
 
-        {studentsData.map((studentData, studentIndex) => (
-          <div key={studentIndex} ref={gradesheetRef} className="border-8 border-black p-8 mb-4">
+        <div ref={gradesheetRef} className="print:m-0">
+          {studentsData.map((studentData, studentIndex) => (
+            <div 
+              key={studentIndex} 
+              className="border-8 border-black p-8 mb-4 print:mb-0 print:page-break-after-always"
+            >           
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold">{schoolName}</h1>
               <p>{schoolAddress}</p>
@@ -138,5 +142,6 @@ export default function Gradesheet({ onClose, studentsData = [], schoolName, sch
         ))}
       </div>
     </div>
+  </div>
   );
 }

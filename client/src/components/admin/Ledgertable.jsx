@@ -205,7 +205,113 @@ export default function Ledgertable() {
   const gradesheetRef = useRef(null);
 
   const handlePrint = () => {
+    const printWindow = window.open('', '', 'width=800,height=600');
     
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Ledger Table</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .class-info {
+            text-align: left;
+            margin-bottom: 15px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+          }
+          .subject-header {
+            text-align: center;
+            border-bottom: 1px solid black;
+          }
+          .subject-subheader {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px;
+            font-size: 0.9em;
+          }
+          .edit-button {
+            display: none;
+          }
+          @media print {
+            .no-print {
+              display: none;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <p>Estd: ${establishmentYear || students[0]?.estdYear || ''}</p>
+          <h2>${selectedExamType}-${selectedYear}</h2>
+        </div>
+        <div class="class-info">
+          <p>Class: ${selectedClass}</p>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th rowspan="2">Roll No</th>
+              <th rowspan="2">Name</th>
+              ${students[0]?.subjects.split(', ').map(subject => `
+                <th colspan="3" class="subject-column">
+                  <div class="subject-header">${subject}</div>
+                  <div class="subject-subheader">
+                    <span>Theory</span>
+                    <span>Practical</span>
+                    <span>Total</span>
+                  </div>
+                </th>
+              `).join('')}
+              <th rowspan="2">Total Marks</th>
+              <th rowspan="2">GPA</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${students.map(student => `
+              <tr>
+                <td>${student.rollNo}</td>
+                <td>${student.students}</td>
+                ${student.subjects.split(', ').map((_, index) => `
+                  <td>${student.TH[index] || ''}</td>
+                  <td>${student.PR[index] || ''}</td>
+                  <td>${student.totalScores[index] || ''}</td>
+                `).join('')}
+                <td>${student.total || ''}</td>
+                <td>${student.gpa || ''}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+  
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    
+    // Wait for content to load before printing
+    printWindow.onload = function() {
+      printWindow.print();
+      printWindow.close();
+    };
   };
 
   const handlePublishResult = async () => {
@@ -323,13 +429,13 @@ export default function Ledgertable() {
         </select>
 
         <div className="flex space-x-2 absolute right-4">
-          {/* <button
+          <button
             onClick={handlePrint}
             className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs"
           >
             Print Ledger
-          </button> */}
-          <Print targetRef={gradesheetRef} />
+          </button>
+          {/* <Print targetRef={gradesheetRef} /> */}
           <button
             onClick={handlePublishResult}
             className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs"
