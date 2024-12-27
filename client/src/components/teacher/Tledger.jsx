@@ -122,8 +122,9 @@ useEffect(() => {
       console.log("Full ledger data:", data);
       console.log("isPublished:", data.isPublished);
       setIsPublished(data.isPublished);
-  
-      if (isPublished === true) {
+      
+      if (data.isPublished) {
+        console.log("Result is published");
         // Fetch and display student records
         const ledgerResponse = await fetch(
           `http://localhost:4000/api/auth/records/${year}?status=${state}&class=${selectedClass}&examType=${selectedExamType}`
@@ -213,9 +214,9 @@ useEffect(() => {
         >
           <div id="ledger" className="overflow-x-auto">
           <div className="mb-8 text-center">
-  <h2 className="text-4xl font-semibold">{students.length > 0 ? students[0].schoolName : "School Name"}</h2>
-  <p>{students.length > 0 ? students[0].schoolAddress : "School Address"}</p>
-  <p>Estd: {students.length > 0 ? students[0].estdYear : "Year Established"}</p>
+  <h2 className="text-4xl font-semibold">{students.length > 0 ? students.schoolName : "School Name"}</h2>
+  <p>{students.length > 0 ? students.schoolAddress : "School Address"}</p>
+  <p>Estd: {students.length > 0 ? students.estdYear : "Year Established"}</p>
 
             <p className="text-3xl"></p>
               <p className="text-3xl mt-4">
@@ -229,56 +230,71 @@ useEffect(() => {
   <tr>
     <th className="border border-gray-300 p-2" rowSpan="2">Roll No</th>
     <th className="border border-gray-300 p-2" rowSpan="2">Name</th>
-    {students[0] && students[0].students[0].subjects ? (
-      students[0].students[0].subjects.split(', ').map((subject, subjectIndex) => (
-        <th key={subjectIndex} className="border border-gray-300 p-2">
-          {subject}
-          <hr className="border border-slate-200" />
-          <div className="flex justify-between">
-            <span className="text-gray-700">Theory</span>
-            <span className="text-gray-700">Practical</span>
-            <span className="text-gray-700">Total</span>
-          </div>
-        </th>
-      ))
-    ) : (
-      <th className="border text-red-500 border-gray-300 p-2">No Subjects Available</th>
-    )}
+    {Array.from(new Set(students.map(student => student.subjects))).map((subject, subjectIndex) => (
+      <th key={subjectIndex} className="border border-gray-300 border-r-slate-400 p-2">
+        {subject}
+        <hr className="border border-slate-200" />
+        <tr className="flex justify-between">
+          <td className="text-gray-700 px-2">Theory</td>
+          <td className="text-gray-700 px-2">Practical</td>
+          <td className="text-gray-700 px-2">Total</td>
+        </tr>
+      </th>
+    ))}
     <th className="border border-gray-300 p-2" rowSpan="2">Total Marks</th>
     <th className="border border-gray-300 p-2" rowSpan="2">GPA</th>
   </tr>
 </thead>
 
-  <tbody>
-  {students.map((student, index) => (
-      console.log("tablestudent", student),
-      <tr key={index}> 
-        <td className="border border-gray-300 p-2">{student.students[0].rollNo}</td>
-        <td className="border border-gray-300 p-2">{student.students[0].students}</td>
-        {students[0].students[0].subjects.split(', ').map((subject, subjectIndex) => (
-          <td className="w-72" key={subjectIndex}>
-             <td className="w-20  border border-gray-300 p-2">
-            <label className="w-full text-center ">
-              {students[0].students[0].TH[subjectIndex] || ""}</label>
-          </td>
-          <td className="w-20  border border-gray-300 p-2">
-            <label className="w-full text-center ">
-              {students[0].students[0].PR[subjectIndex] || ""}</label>
-          </td>
+<tbody>
+  {students.length === 0 ? (
+    <tr>
+      <td colSpan="10" className="text-center text-red-600">
+        No students found.
+      </td>
+    </tr>
+  ) : (
+    // Group students by roll number to avoid duplicates
+    Array.from(new Set(students.map(s => s.rollNo))).map(rollNo => {
+      const studentData = students.find(s => s.rollNo === rollNo);
+      return (
+        <tr key={rollNo}>
+          <td className="border border-gray-300 p-2">{studentData.rollNo}</td>
+
+          <td className="border border-gray-300 p-2">{studentData.students}</td>
           
-            <td className="w-20 border border-gray-300 p-2 text-center">
-              {students[0].students[0].totalScores[subjectIndex] || students[0].students[0].totalScores }
-            </td>
-          </td>
-        ))}
-        <td className="border border-gray-300 p-2 text-center">{students[0].students[0].total}</td>
-        <td className="border border-gray-300 p-2 text-center">{students[0].students[0].gpa}</td>
-      </tr>
-    ))}
-  </tbody>
+          {/* Map through unique subjects */}
+          {Array.from(new Set(students.map(s => s.subjects))).map((subject, index) => (
+  <td key={index} className="w-72 border border-r-slate-400">
+    <td className="w-24 border border-gray-300 p-2">
+      <div className="w-full p-1 text-center">
+        {studentData.TH || ""}
+
+      </div>
+    </td>
+    <td className="w-24 border border-gray-300 p-2">
+      <div className="w-full p-1 text-center">
+        {studentData.PR || ""}
+      </div>
+    </td>
+    <td className="w-24 border border-gray-300 p-2 text-center">
+      {(studentData.TH || 0) + (studentData.PR || 0) || ""}
+    </td>
+  </td>
+))}
+
+          
+          <td className="border border-gray-300 p-2 text-center">{studentData.total}</td>
+          <td className="border border-gray-300 p-2 text-center">{studentData.gpa}</td>
+        </tr>
+      );
+    })
+  )}
+</tbody>
+
 </table>
 
-            <div className="mt-6 flex justify-end gap-4">
+            <div className="mt-6 flex justify-start">
               <button
                 onClick={handlePrint}
                 className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"

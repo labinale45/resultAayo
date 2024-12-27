@@ -130,7 +130,7 @@ export default function Dnav({ currentPath }) {
                 >
                   <FaUser className="mr-2" /> View Profile
                 </button>
-                <button
+                { userData?.role=== "Admin" && ( <button
                   onClick={() => {
                     setShowEditProfile(true);
                     setShowProfileMenu(false);
@@ -138,7 +138,8 @@ export default function Dnav({ currentPath }) {
                   className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <FaEdit className="mr-2" /> Edit Profile
-                </button>
+                </button>)
+                }
                 
                   <button
                     onClick={()=>{

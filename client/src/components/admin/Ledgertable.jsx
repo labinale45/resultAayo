@@ -229,18 +229,6 @@ export default function Ledgertable() {
           schoolAddress: schoolAddress,
           establishmentYear: establishmentYear,
           students,
-          // students: students.map(student => ({
-          //   id: student.id,
-          //   students: student.students,
-          //   dateOfBirth: student.dateOfBirth,
-          //   rollNo: student.rollNo,
-          //   subjects: student.subjects,
-          //   TH: student.TH,
-          //   PR: student.PR,
-          //   totalScores: student.totalScores,
-          //   total: student.total,
-          //   gpa: student.gpa
-          // })),
           isPublished: true
         })
       });
@@ -417,8 +405,8 @@ export default function Ledgertable() {
                     {subject}
                     <hr className="border border-slate-200"></hr>
                     <tr className="flex justify-between ">
-                <td className=" text-gray-700 ">Theory</td>
-                <td className=" text-gray-700 ">Practical</td>
+                <td className=" text-gray-700  ">Theory</td>
+                <td className=" text-gray-700  ">Practical</td>
                 <td className=" text-gray-700 ">Total</td>
               </tr>
                   </th>
@@ -433,7 +421,13 @@ export default function Ledgertable() {
               </tr>
             </thead>
             <tbody>
-            {students.map((student, index) => (
+            {students.length === 0 ?(
+              <tr>
+                <td colSpan="10" className="text-center text-red-600">
+                  No students found.
+                </td>
+              </tr>
+            ) :students.map((student, index) => (
     <tr key={student.rollNo}>
       <td className="border border-gray-300 p-2">{student.rollNo}</td>
       <td className="border border-gray-300 p-2">{student.students}</td>

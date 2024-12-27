@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { FaTimes, FaCamera } from "react-icons/fa";
 
-export default function EditProfile({ onClose }) {
+export default function EditProfile({ onClose}) {
   const fileInputRef = useRef(null);
   const [profile, setProfile] = useState({
     name: "",
