@@ -195,12 +195,7 @@ export default function Classtable() {
           >
             +Create Class
           </button>
-          <button className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs ">
-            Edit
-          </button>
-          <button className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs">
-            Delete
-          </button>
+         
         </div>
       </div>
 

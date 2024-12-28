@@ -71,8 +71,7 @@ function Notice() {
       <div className="absolute inset-x-0 top-0 z-0">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="w-full">
           <motion.path
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
+            initial={{ y: 0, opacity: 1 }}
             transition={{ duration: 1 }}
             className="dark:fill-[#253553]"
             fill="#437FC7"
@@ -96,6 +95,7 @@ function Notice() {
             ))}
           </select>
 
+        
           <div className="relative w-full md:w-96">
             <input
               type="text"
@@ -106,6 +106,7 @@ function Notice() {
             />
             <FaSearch className="absolute left-3 top-3 text-gray-400" />
           </div>
+        
           
           <div className="flex gap-2">
             <button
