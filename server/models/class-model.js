@@ -88,11 +88,12 @@ const getSubjects = async ()=>{
 const getSubjectsByClass = async (classId, section, year) => {
     try {
         const createClient = await connectdb();
+        console.log("class model: ",classId,section,year);
         
         // Get the class ID using class, section, and year from updated_at
         const { data: classData, error: classError } = await createClient
             .from('class')
-            .select('id')
+            .select( 'id')
             .eq('class', classId)
             .eq('sec', section)
             .gte('updated_at', `${year}-01-01`)
@@ -113,6 +114,12 @@ const getSubjectsByClass = async (classId, section, year) => {
                     id,
                     first_name,
                     last_name
+                ),
+                class_id:class(
+                  classTeacher:teachers(
+                  id,
+                  teacher_id
+                  )                  
                 )
             `)
             .eq('class_id', classData[0].id);
@@ -122,6 +129,8 @@ const getSubjectsByClass = async (classId, section, year) => {
         return (subjectsData || []).map(item => ({
             id: item.id,
             name: item.subject_name,
+            ctId: item.class_id.classTeacher.id,
+            classTeacher: item.class_id.classTeacher.teacher_id,
             teacher: item.teacher_id ? `${item.teacher_id.first_name} ${item.teacher_id.last_name}`||`${item.teacher.first_name} ${item.teacher.last_name}` : ''
         }));
     } catch (error) {
@@ -130,21 +139,10 @@ const getSubjectsByClass = async (classId, section, year) => {
     }
 };
 
-const assignTeacher = async (subjectId, teacherId, classId, section) => {
+const assignTeacher = async (subjectId, teacherId, classId, section, classTeacher) => {
     try {
-        const createClient = await connectdb();
-        
-        // First verify the teacher exists and is active
-        const { data: teacherData, error: teacherError } = await createClient
-            .from('teachers')
-            .select('id')
-            .eq('id', teacherId)
-            .eq('status', 'active')
-            .single();
+        const createClient = await connectdb();       
 
-        if (teacherError || !teacherData) {
-            throw new Error('Teacher not found or inactive');
-        }
 
         // Update the subject with the teacher ID
         const { data: subjectData, error: subjectError } = await createClient
@@ -159,16 +157,16 @@ const assignTeacher = async (subjectId, teacherId, classId, section) => {
         if (subjectError) throw subjectError;
 
         const { data: classData, error: classError } = await createClient
-            .from('class')
-            .update({
-                teacher_id: teacherId,
-                updated_at: new Date().toISOString()
-            })
-            .eq('class', classId)
-            .eq('sec', section)
-            .select();
+        .from('class')
+        .update({
+            classTeacher: classTeacher,
+            updated_at: new Date().toISOString()
+        })
+        .eq('class', classId)
+        .eq('sec', section)
+        .select();
 
-        if (classError) throw classError;
+    if (classError) throw classError;
 
         return { subjectData, classData }; // Return both subject and class data
     } catch (error) {
@@ -217,8 +215,9 @@ const getClassesByTeacher = async (teacherId) => {
 
         const { data: assignedClass, error: assignedClassError } = await createClient
             .from('subjects')
-            .select(`class_id:class(class)`)
+            .select(`class_id:class(class, sec)`)
             .eq('teacher_id', teacherData[0].id);
+
 
         if (assignedClassError) {
             console.error("Query Error: ", assignedClassError);
@@ -232,21 +231,20 @@ const getClassesByTeacher = async (teacherId) => {
         }
 
          // Use a Set to track unique classes
-    const uniqueClasses = new Set();
+         const uniqueClassesWithSections = new Set();
 
-    // Map the assignedClass data and add unique classes to the Set
-    const classes = (assignedClass || []).map(item => {
-      const className = item.class_id?.class || '';
-      if (className) {
-        uniqueClasses.add(className); // Add to Set for uniqueness
-      }
-
-      return className; // Return the class name
-    });
-
-    // Convert the Set back to an array
-    return Array.from(uniqueClasses); // Return unique class names
-
+         // Map the assignedClass data and add unique class+section combinations
+         const classes = (assignedClass || []).map(item => {
+             const className = item.class_id?.class || '';
+             const section = item.class_id?.sec || '';
+             if (className && section) {
+                 uniqueClassesWithSections.add(JSON.stringify({ class: className, section: section }));
+             }
+             return { class: className, section: section };
+         });
+         
+         // Convert the Set back to an array of objects
+         return Array.from(uniqueClassesWithSections).map(item => JSON.parse(item));
     } catch (error) {
         console.error("Error in getClassesByTeacher: ", error);
         return [];

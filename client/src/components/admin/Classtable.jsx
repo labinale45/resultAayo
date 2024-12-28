@@ -13,17 +13,10 @@ export default function Classtable() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [state, setState] = useState("class");
-  const [subjects, setSubjects] = useState([
-    // { name: "Computer Science", teacher: "" },
-    // { name: "Mathematics", teacher: "" },
-    // { name: "Science", teacher: "" },
-    // { name: "English", teacher: "" },
-    // { name: "Social Studies", teacher: "" },
-    // { name: "O.Maths", teacher: "" },
-    // { name: "Nepali", teacher: "" },
-  ]);
+  const [subjects, setSubjects] = useState([ ]);
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [classTeacher, setClassTeacher] = useState("");
 
   console.log("ss",subjects);
 
@@ -125,15 +118,17 @@ export default function Classtable() {
           },
           body: JSON.stringify({
             subjectId: subject.id,
-            teacherId: subject.teacherId,
+            teacherId: subject.teacherId ,
             classId: selectedClass,
-            section: selectedSection
+            section: selectedSection,
+            classTeacher: classTeacher || subjects[0].classTeacher
           })
         })
       );
 
       await Promise.all(promises);
-      
+      alert('Teacher assignments saved successfully');    
+      setClassTeacher(null);  
       fetchClassData();
     } catch (error) {
       console.error('Error saving teacher assignments:', error);
@@ -213,6 +208,7 @@ export default function Classtable() {
                     No subjects found for the selected class, section and year.
                 </div>
             ) : (
+              
                 <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-30">
                         <tr>
@@ -220,10 +216,29 @@ export default function Classtable() {
                                 Subject
                             </th>
                             <th scope="col" className="px-6 py-3">
-                                Teacher
-                            </th>
-                        </tr>
-                    </thead>
+                                <div className="flex justify-between items-center gap-2">
+                                    Teacher
+                        
+                                    <span className="text-xs font-bold pr-4">
+                                        <label className="mr-2">Class Teacher:</label>
+                                        <select
+                                            value={classTeacher? classTeacher: subjects[0].ctId}
+                                            onChange={(e) => setClassTeacher(e.target.value)}
+                                            className="bg-transparent border text-sky-700 text-sm font-bold rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                                        >
+                                            <option value="">Select Teacher</option>
+                                            {teachers.map((teacher) => (
+                                                <option key={teacher.id} value={teacher.id}>
+                                                    {teacher.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </span>
+                  
+                                </div>
+                            </th>                       
+                        </tr>                        
+                    </thead>                 
                     <tbody>
                         {subjects.map((subject, index) => (
                             <tr

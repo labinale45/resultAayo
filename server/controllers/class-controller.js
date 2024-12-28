@@ -50,10 +50,10 @@ const getSubjectsByClass = async (req, res) => {
 
 const assignTeacher = async (req, res) => {
     try {
-        const { subjectId, teacherId, classId, section } = req.body;
-        console.log(subjectId,teacherId,classId,section);
+        const { subjectId, teacherId, classId, section,classTeacher } = req.body;
+        console.log(subjectId,teacherId,classId,section,classTeacher);
 
-        if (!subjectId || !teacherId || !classId || !section) {
+        if (!subjectId || !teacherId || !classId || !section|| !classTeacher) {
             return res.status(400).json({ 
                 message: "Subject ID, teacher ID, class ID, and section are required" 
             });
@@ -63,7 +63,8 @@ const assignTeacher = async (req, res) => {
             subjectId, 
             teacherId, 
             classId, 
-            section
+            section,
+            classTeacher
         );
 
         console.log( result);
@@ -138,8 +139,24 @@ const getAveragePerformanceByTeacher = async (teacherId) => {
     return totalAverage / data.length; // Return the average performance
 };
 
+const getClassTeacherInfo = async (req, res) => {
+    try {
+        const { classId, sec, year } = req.params;
+
+        console.log("Class ID:", classId,sec,year);
+        const subjects = await classmodel.getSubjectsByClass(classId, sec, year);
+        res.status(200).json(subjects);
+        console.log("returned data:",subjects);
+    } catch (error) {
+        console.error("Error getting class teacher info:", error);
+        res.status(500).json({ error: "Failed to get class teacher information" });
+    }
+};
+
+
 
 module.exports={
+    getClassTeacherInfo,
     getClassesByStudent,
     getTotalStudentsByTeacher,
     getAveragePerformanceByTeacher,

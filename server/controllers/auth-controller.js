@@ -545,7 +545,43 @@ const updateTeacherStatus = async (req, res) => {
   }
 };
 
+const upgradeStudents = async (req, res) => {
+  try {
+    const { studentIds, targetClass } = req.body;
+    console.log("studentIds",studentIds,targetClass);
+    const supabase = await connectdb();
+
+    const{data:classData, error: classError} = await supabase
+    .from('class')
+    .select('id')
+    .eq('class', targetClass)
+    .single();
+
+    if (classError) throw classError;
+    if (!classData) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+
+
+    // Update students' class in both students and users tables
+    const { error } = await supabase
+      .from('students')
+      .update({ class: targetClass, class_id: classData.id })
+      .in('id', studentIds);
+
+    if (error) throw error;
+
+    res.status(200).json({ message: 'Students upgraded successfully' });
+  } catch (error) {
+    console.error('Error upgrading students:', error);
+    res.status(500).json({ error: 'Failed to upgrade students' });
+  }
+};
+
+
 module.exports = {
+  upgradeStudents,
   login,
   register,
   publishResult,

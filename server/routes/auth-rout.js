@@ -21,6 +21,8 @@ router.put('/teacher/status/:id', authController.updateTeacherStatus);
 router.delete('/student/:id', deleteStudent);
 router.put('/student/:id', updateStudent);
 router.get('/student/:id', getStudent);
+router.post('/upgrade-students', authController.upgradeStudents);
+
 
 // Auth routes
 router.route('/login').post(authController.login);
@@ -75,6 +77,10 @@ router.post('/generate-ledger-sheet', authController.generateLedgerSheet);
 // Add this route to fetch classes assigned to a specific teacher
 router.get('/teacher/:teacherId/classes', classController.getClassesByTeacher);
 router.get('/teacher/:teacherId/subjects', examController.getAssignedSubjects);
+
+router.get('/class/:classId/:sec/:year', classController.getClassTeacherInfo);
+
+
 
 // Add this route to fetch classes enrolled to a specific student
 router.get('/student/:studentId/classes', classController.getClassesByStudent);
