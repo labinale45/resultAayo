@@ -271,9 +271,11 @@ const getClassesByStudent = async (studentId) => {
         }
 
         const { data: enrolledClass, error: enrolledClassError } = await createClient
-            .from('students')
-            .select(`class_id:class(class)`)
-            .eq('id', studentData[0].id);
+            .from('marksheets')
+            .select(`class,
+                student_id:students(
+                class)`)
+            .eq('student_id', studentData[0].id);
 
         if (enrolledClassError) {
             console.error("Query Error: ", enrolledClassError);
@@ -286,21 +288,22 @@ const getClassesByStudent = async (studentId) => {
             console.warn("No enrolled classes for this Student.");
         }
 
-         // Use a Set to track unique classes
-    const uniqueClasses = new Set();
+        const uniqueClasses = new Set();
 
-    // Map the assignedClass data and add unique classes to the Set
-    const classes = (enrolledClass || []).map(item => {
-      const className = item.class_id?.class || '';
-      if (className) {
-        uniqueClasses.add(className); // Add to Set for uniqueness
-      }
-
-      return className; // Return the class name
-    });
-
-    // Convert the Set back to an array
-    return Array.from(uniqueClasses); // Return unique class names
+        // Map both class values from the data structure
+        const classes = (enrolledClass || []).map(item => {
+          const marksheetClass = item.class || '';
+          const studentClass = item.student_id?.class || '';
+          
+          if (marksheetClass) uniqueClasses.add(marksheetClass);
+          if (studentClass) uniqueClasses.add(studentClass);
+          
+          return { marksheetClass, studentClass };
+        });
+        
+        // Convert the Set back to an array with all unique classes
+        return Array.from(uniqueClasses);
+        
 
     } catch (error) {
         console.error("Error in getClassesByStudent: ", error);

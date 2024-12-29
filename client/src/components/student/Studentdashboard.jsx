@@ -157,7 +157,7 @@ const StudentDashboard = () => {
                 alt={userData?.first_name + " " + userData?.last_name}
                 className="w-20 h-20 rounded-full mb-4"
               />
-            <h3 className="text-xl font-semibold">Student</h3>
+            <h3 className="text-xl font-semibold"> Class : {userData?.class}</h3>
             <button
                   onClick={() => {
                     setShowViewProfile(true);

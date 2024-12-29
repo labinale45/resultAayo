@@ -82,8 +82,8 @@ const getRecordsByYear = async (req, res) => {
     .gte("created_at", `${year}-01-01`)
     .lte("created_at", `${year}-12-31`);
 
-    const studentIds = studentData.map(student => student.id);
-
+    const studentIds = (studentData || []).map(student => student.id);
+    
     console.log("Student Data:", studentData);
     // Start building the query
     let query = supabaseClient

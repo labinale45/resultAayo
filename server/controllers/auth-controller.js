@@ -192,6 +192,20 @@ const login = async(req,res) => {
                 userData,
                 stat: status.status
             });
+        }
+        if (findUser.role === 'students') {
+          const {data: status, error: statusError} = await supabaseClient
+            .from('sttudents')
+            .select('class')
+            .eq('student_id', findUser.id)
+            .single();
+
+            return res.status(200).json({
+                message: findUser.role,
+                token,
+                userData,
+                class: status?.class
+            });
         } 
         return res.status(200).json({
             message: findUser.role,
