@@ -1,4 +1,5 @@
 const classmodel =require('../models/class-model');
+const { get } = require('../routes/auth-rout');
 
 const addClass =  async (req, res) => {
     try {
@@ -102,6 +103,19 @@ const getClassesByTeacher = async (req, res) => {
   }
 };
 
+const getClassByTeacher = async (req, res) => {
+    const { teacherId } = req.params;
+    
+    try {
+      const assignedClass = await classmodel.getClassByTeacher(teacherId);
+      res.json(assignedClass);
+      console.log("classTeacher class :",assignedClass);
+  }catch (error) {
+      console.error("Error in getClassesByTeacher:", error);
+      res.status(500).json({ error: "Failed to fetch classes" });
+  }
+};
+
 const getClassesByStudent = async (req, res) => {
     const { studentId } = req.params;
     
@@ -156,6 +170,7 @@ const getClassTeacherInfo = async (req, res) => {
 
 
 module.exports={
+    getClassByTeacher,
     getClassTeacherInfo,
     getClassesByStudent,
     getTotalStudentsByTeacher,

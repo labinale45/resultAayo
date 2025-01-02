@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 function Otp() {
   // Array to generate four OTP input fields

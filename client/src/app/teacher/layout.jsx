@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
           </div>
           <div
             className={`flex flex-col flex-1 ${
-              menuOpen ? "ml-72" : "ml-20"
+              menuOpen ? "ml-60" : "ml-20"
             } transition-all duration-300 overflow-hidden`}
           >
             <main className="flex-1 overflow-x-auto overflow-y-auto pb-16">

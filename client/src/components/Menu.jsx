@@ -38,20 +38,20 @@ const Menu = ({ setMenuOpen }) => {
   return (
     <div>
       <div
-        className={`bg-[#437FC7] dark:bg-[#253553] h-screen p-5 pt-8 ${
-          open ? "w-72" : "w-20"
+        className={`bg-[rgb(67,127,199)] dark:bg-[#253553] h-screen ${
+          open ? "w-56" : "w-14"
         } duration-300 relative`}
       >
         <BsArrowLeftShort
-          className={`bg-white text-[#437FC7] dark:text-[#253553] text-3xl rounded-full absolute -right-3 top-9 border border-[#437FC7] dark:border-[#253553] cursor-pointer 
-          ${!open && "rotate-180"}`}
+          className={`bg-white dark:bg-[#B3B4BE] text-[#437FC7] dark:text-white text-3xl rounded-full outline outline-2 outline-white  absolute -right-3 top-9 dark:border-[#B3B4BE] cursor-pointer 
+          ${!open && "rotate-180 translate-x-2"}`}
           onClick={() => setOpen(!open)}
         />
 
-        <div className="inline-flex">
+        <div className="inline-flex pt-8 px-4">
           <AiFillEnvironment
-            className={` bg-[#4c94ec] dark:bg-[#8AA4D6]  ml-3 text-4xl rounded cursor-pointer block float-left mr-2 duration-500 ${
-              open && "rotate-[360deg]"
+            className={`bg-transparent ml-0 text-4xl rounded cursor-pointer block float-left duration-500 ${
+              open && "rotate-[360deg] "
             }`}
           />
           <h1
@@ -62,8 +62,8 @@ const Menu = ({ setMenuOpen }) => {
             Result Aayo
           </h1>
         </div>
-
-        <ul className="pt-2 ">
+        
+        <ul className="">
           {Menus.map((menu, index) => (
             <li
               key={index}
@@ -74,7 +74,7 @@ const Menu = ({ setMenuOpen }) => {
               } relative group`}
               onClick={() => router.push(menu.path)}
             >
-              <span className="text-2xl">
+              <span className="text-xl">
                 {menu.icon ? menu.icon : <RiDashboardFill />}
               </span>
               <span

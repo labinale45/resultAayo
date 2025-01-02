@@ -37,25 +37,164 @@ ChartJS.register(
 export default function Teacherdashboard() {
   const route = useRouter();
   const [chartData, setChartData] = useState({
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-    datasets: [
-      {
-        label: "Students Performance",
-        data: [65, 70, 68, 75, 72, 80, 78, 85, 82, 88, 85, 90],
-        borderColor: "rgb(99, 179, 237)",
-        backgroundColor: "rgba(99, 179, 237, 0.1)",
-        tension: 0.4,
-        fill: true,
-      },
-    ],
+    labels: [],
+    datasets: [{
+      label: "Subject Performance",
+      data: [],
+      borderColor: "rgb(99, 179, 237)",
+      backgroundColor: "rgba(99, 179, 237, 0.1)",
+      tension: 0.4,
+      fill: true,
+    }]
   });
-
+  const [userData, setUserData] = useState(null);
+  const [error, setError] = useState(null);
+  const [teacherId, setTeacherId] = useState(null);
+  const [classes, setClasses] = useState([]);
+  const [studentCount, setStudentCount] = useState(0);
+  const [subjects, setSubjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [subjectPerformance, setSubjectPerformance] = useState({});
   const [stats, setStats] = useState({
-    totalStudents: 1298,
+    totalStudents: 0,
     totalClasses: 12,
     averagePerformance: 90,
     upcomingTests: 5,
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decodedToken = JSON.parse(atob(token.split('.')[1]));
+      if (decodedToken.role === "teachers") {
+        setTeacherId(decodedToken.id);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (teacherId) {
+      fetchClass(teacherId);
+    }
+  }, [teacherId]);
+
+  const fetchClass = async (teacherId) => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/class-teacher`);
+      if (!response.ok) throw new Error("Failed to fetch classes");
+      const classData = await response.json();
+      const classes = classData.map(item => ({
+        id: item.class,
+        name: `${item.class}`,
+        section: item.section,
+        year: new Date(item.updated_at).getFullYear(),
+        totalStudent: item.studentCount
+      }));
+      setClasses(classes);
+      console.log("Classes :",classes);
+    } catch (error) {
+      console.error("Error fetching classes:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (!userData?.username) {
+          throw new Error('No user data found');
+        }
+        const response = await fetch(`http://localhost:4000/api/auth/profile/${userData.username}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+        const data = await response.json();
+        setUserData(data);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+    fetchUserProfile();
+  }, []);
+
+  const fetchSubjects = async () => {
+    setIsLoading(true);
+    setError(null);
+  
+    try {
+      const subjectsPromises = classes.map(async (classItem) => {
+        const response = await fetch(
+          `http://localhost:4000/api/auth/subjects/${classItem.id}?section=${classItem.section}&year=${classItem.year}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch subjects');
+        }
+  
+        return await response.json();
+      });
+  
+      const allSubjects = await Promise.all(subjectsPromises);
+      const flatSubjects = allSubjects.flat();
+      console.log("Flat Subjects:", flatSubjects);
+      setSubjects(flatSubjects);
+    } catch (error) {
+      console.error('Error:', error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+
+  useEffect(() => {
+    if (classes.length > 0) {
+      fetchSubjects();
+    }
+  }, [classes]);
+
+  useEffect(() => {
+    if (subjects.length > 0) {
+      updateChartData();
+    }
+  }, [subjects]);
+
+  const updateChartData = () => {
+    setChartData({
+      labels: subjects.map(subject => subject.name), // Use subject.name instead of subject_name
+      datasets: [{
+        label: "Subject Performance",
+        data: subjects.map(subject => {
+          // Generate random marks between 60 and 95 for demonstration
+          return Math.floor(Math.random() * 35) + 60;
+        }),
+        borderColor: "rgb(99, 179, 237)",
+        backgroundColor: "rgba(99, 179, 237, 0.1)",
+        tension: 0.4,
+        fill: true,
+      }]
+    });
+  };
+  
+
+  useEffect(() => {
+    const totalStudents = classes.reduce((sum, classItem) => sum + classItem.totalStudent, 0);
+    setStats(prevStats => ({
+      ...prevStats,
+      totalStudents: totalStudents
+    }));
+  }, [classes]);
 
   const options = {
     responsive: true,
@@ -63,6 +202,17 @@ export default function Teacherdashboard() {
       legend: {
         display: false,
       },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const subject = subjects[context.dataIndex];
+            return [
+              `Score: ${context.formattedValue}%`,
+              `Teacher: ${subject.teacher}`
+            ];
+          }
+        }
+      }
     },
     scales: {
       y: {
@@ -89,78 +239,52 @@ export default function Teacherdashboard() {
       },
     },
   };
-
+  
   const activities = [
     {
       status: "Active",
-      title: "Chinese Translator",
-      company: "with Training (Jurong East, Singapore)",
-      type: "Remote",
-      date: "Contract",
+      title: "Class 10 Mathematics",
+      company: "Chapter 3 - Trigonometry",
+      type: "In Progress",
+      date: "Today",
     },
     {
       status: "Pending",
-      title: "Frontend Developer",
-      company: "Nirvana Digital Indonesia (Bandung, South Jakarta)",
-      type: "Freelance",
-      date: "3 months ago",
+      title: "Class 9 Science",
+      company: "Chapter 4 - Forces and Motion",
+      type: "Upcoming",
+      date: "Tomorrow",
     },
     {
-      status: "Interview",
-      title: "Website Designer",
-      company: "Argona Studio (Sydney, Australia)",
-      type: "Full-time",
-      date: "2 weeks ago",
+      status: "Complete",
+      title: "Class 8 English",
+      company: "Chapter 2 - Grammar",
+      type: "Completed",
+      date: "Yesterday",
     },
   ];
 
-
-  const [userData, setUserData] = useState(null);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-  
-    const fetchUserProfile = async () => {
-      try {
-        const userData = JSON.parse(localStorage.getItem('userData'));
-
-        if (!userData?.username) {
-          throw new Error('No user data found');
-        }
-
-        const response = await fetch(`http://localhost:4000/api/auth/profile/${userData.username}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch profile');
-        }
-
-        const data = await response.json();
-        setUserData(data);
-      } catch (err) {
-        setError(err.message);
-      } 
-    };
-    fetchUserProfile();
-  }, []);
-
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
-      <header className="bg-white border-b">
+      <header className="px-4 flex flex-col bg-white border-b">
         <div className="max-w-7xl mx-auto py-4 px-6 flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-slate-800">
-            Welcome back, {userData?.first_name + " " + userData?.last_name}! 👋
+            Welcome back, {userData?.first_name + " " + userData?.last_name} ! 👋
           </h1>
+        </div>
+        <div className="px-2 text-xl font-semibold text-slate-800 flex items-center gap-4">
+          CLASS : {classes.map(classItem => (
+            <div key={classItem.id}>
+              {classItem.name} {"'"+ classItem.section + "'"}
+            </div>
+          ))}
         </div>
       </header>
 
-      <main className="flex-grow container mx-auto px-6 py-8">
+      <main className="flex-grow container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">Analytics</h3>
+            <h3 className="text-lg font-semibold mb-4">Progress Rate</h3>
             <div className="relative w-48 h-48 mx-auto">
               <svg className="w-full h-full" viewBox="0 0 100 100">
                 <circle
@@ -200,7 +324,13 @@ export default function Teacherdashboard() {
               </div>
               <div>
                 <p>Total Students</p>
-                <p className="font-semibold text-slate-900">1,298</p>
+                <p className="font-semibold text-slate-900">
+                  {classes.map(classItem => (
+                    <div key={classItem.id}>
+                      {classItem.totalStudent}
+                    </div>
+                  ))}
+                </p>
               </div>
             </div>
           </div>
@@ -208,8 +338,14 @@ export default function Teacherdashboard() {
           <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="text-lg font-semibold">Student Record</h3>
-                <p className="text-sm text-slate-500">Total Student in 2024: 330</p>
+                <h3 className="text-lg font-semibold">Subject Performance</h3>
+                <p className="text-sm text-slate-500">Average Score by Subject</p>
+              </div>
+              <div className="flex gap-2">
+                <select className="text-sm border rounded-lg px-3 py-1">
+                  <option>This Term</option>
+                  <option>Last Term</option>
+                </select>
               </div>
             </div>
             <div className="h-[300px]">
@@ -242,7 +378,7 @@ export default function Teacherdashboard() {
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">History</h3>
+          <h3 className="text-lg font-semibold mb-4">Recent Activities</h3>
           <div className="space-y-4">
             {activities.map((activity, index) => (
               <ActivityItem key={index} {...activity} />
@@ -275,7 +411,7 @@ function ActivityItem({ status, title, company, type, date }) {
         return 'bg-green-100 text-green-600';
       case 'pending':
         return 'bg-yellow-100 text-yellow-600';
-      case 'interview':
+      case 'complete':
         return 'bg-blue-100 text-blue-600';
       default:
         return 'bg-slate-100 text-slate-600';

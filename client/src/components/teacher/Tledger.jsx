@@ -60,6 +60,8 @@ useEffect(() => {
       setYears(data);
       if (data && data.length > 0) {
         setYear(data[0]);
+      }else{
+        setYears([]);
       }
     } catch (error) {
       setError("Failed to fetch years");

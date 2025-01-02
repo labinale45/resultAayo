@@ -309,7 +309,14 @@ export default function Studenttable() {
                    <div className="flex flex-wrap flex-1 shrink gap-5 items-center self-stretch my-auto basis-0 min-w-[240px] max-md:max-w-full">
                      <div className="flex relative flex-col justify-center self-stretch bg-gray-100 h-[70px] min-h-[70px] rounded-[16px] overflow-hidden w-[70px]">
                      <div className="w-[100px] h-[100px] aspect-auto">
-                 <img src={image ? URL.createObjectURL(image) : selectedStudent?.img_url || "/assets/profile.png"} alt="Teacher" className="w-full h-full object-cover" />                 </div>
+                     <Image 
+  src={image ? URL.createObjectURL(image) : selectedStudent?.img_url || "/assets/profile.png"}
+  alt="Student"
+  width={100}
+  height={100}
+  className="w-full h-full object-cover"
+/>
+</div>
                      </div>
                      <div className="flex flex-col self-stretch my-auto min-w-[240px]">
                        <div className="text-base text-gray-800">{selectedStudent?.first_name} {selectedStudent?.last_name}</div>

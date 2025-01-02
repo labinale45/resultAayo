@@ -251,6 +251,71 @@ const getClassesByTeacher = async (teacherId) => {
     }
 };
 
+const getClassByTeacher = async (teacherId) => {
+    try {
+        console.log("Model teacher Id:", teacherId);
+        const createClient = await connectdb();
+
+        const { data: teacherData, error: teacherError } = await createClient
+        .from('teachers')
+        .select('id')
+        .eq('teacher_id', teacherId)
+
+        if (teacherError) {
+            console.error("Teacher Query Error: ", teacherError);
+            throw teacherError;
+        }
+        if (!teacherData || teacherData.length === 0) {
+            console.warn("No teacher data found.");
+            return [];
+        }
+
+        // First get classes with their IDs
+        const { data: assignedClass, error: assignedClassError } = await createClient
+            .from('class')
+            .select(`
+                id,
+                class, 
+                sec,
+                updated_at
+            `)
+            .eq('classTeacher', teacherData[0].id);
+
+        if (assignedClassError) {
+            console.error("Query Error: ", assignedClassError);
+            throw assignedClassError;
+        }
+
+        // Get student counts for each class
+        const classesWithCounts = await Promise.all(
+            assignedClass.map(async (cls) => {
+                const { count, error: countError } = await createClient
+                    .from('students')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('class_id', cls.id);
+
+                return {
+                    class: cls.class,
+                    section: cls.sec,
+                    updated_at: cls.updated_at,
+                    studentCount: count || 0
+                };
+            })
+        );
+
+        // Use Set to ensure unique combinations
+        const uniqueClassesWithSections = new Set(
+            classesWithCounts.map(item => JSON.stringify(item))
+        );
+
+        return Array.from(uniqueClassesWithSections).map(item => JSON.parse(item));
+    } catch (error) {
+        console.error("Error in getClassesByTeacher: ", error);
+        return [];
+    }
+};
+
+
 const getClassesByStudent = async (studentId) => {
     try {
         console.log("Model student Id:", studentId);
@@ -312,4 +377,4 @@ const getClassesByStudent = async (studentId) => {
 };
 
 
-module.exports ={ getClassesByStudent , getClassesByTeacher ,createClass, getClass, createSubject, getSubjects, getSubjectsByClass, assignTeacher, getTeachers};
+module.exports ={  getClassByTeacher,getClassesByStudent , getClassesByTeacher ,createClass, getClass, createSubject, getSubjects, getSubjectsByClass, assignTeacher, getTeachers};

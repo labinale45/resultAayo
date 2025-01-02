@@ -26,6 +26,8 @@ function Notice() {
       // Set the latest year by default (first year in the sorted array)
       if (data && data.length > 0) {
         setSelectedYear(data[0]);
+      }else{
+        setYears([]);
       }
     } catch (error) {
       setError('Failed to fetch years');
