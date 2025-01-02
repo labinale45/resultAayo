@@ -88,12 +88,11 @@ const getSubjects = async ()=>{
 const getSubjectsByClass = async (classId, section, year) => {
     try {
         const createClient = await connectdb();
-        console.log("class model: ",classId,section,year);
-        
-        // Get the class ID using class, section, and year from updated_at
+        console.log("class model: ", classId, section, year);
+
         const { data: classData, error: classError } = await createClient
             .from('class')
-            .select( 'id')
+            .select('id')
             .eq('class', classId)
             .eq('sec', section)
             .gte('updated_at', `${year}-01-01`)
@@ -101,10 +100,9 @@ const getSubjectsByClass = async (classId, section, year) => {
 
         if (classError) throw classError;
         if (!classData || classData.length === 0) {
-            return []; // Return empty array if no class found
+            return [];
         }
 
-        // Get subjects with teacher information for this class
         const { data: subjectsData, error: subjectsError } = await createClient
             .from('subjects')
             .select(`
@@ -116,28 +114,50 @@ const getSubjectsByClass = async (classId, section, year) => {
                     last_name
                 ),
                 class_id:class(
-                  classTeacher:teachers(
-                  id,
-                  teacher_id
-                  )                  
+                    classTeacher:teachers(
+                        id,
+                        teacher_id
+                    )
                 )
             `)
             .eq('class_id', classData[0].id);
 
         if (subjectsError) throw subjectsError;
-        
-        return (subjectsData || []).map(item => ({
-            id: item.id,
-            name: item.subject_name,
-            ctId: item.class_id.classTeacher.id,
-            classTeacher: item.class_id.classTeacher.teacher_id,
-            teacher: item.teacher_id ? `${item.teacher_id.first_name} ${item.teacher_id.last_name}`||`${item.teacher.first_name} ${item.teacher.last_name}` : ''
+
+        // Get marks data for each subject
+        const subjectsWithMarks = await Promise.all(subjectsData.map(async (subject) => {
+            const { data: marksData, error: marksError } = await createClient
+                .from('marksheets')
+                .select('TH,PR')
+                .eq('subject_id', subject.id);
+
+            if (marksError) throw marksError;
+
+            const theoryTotal = marksData.reduce((sum, mark) => sum + (Number(mark.TH) || 0), 0);
+            const practicalTotal = marksData.reduce((sum, mark) => sum + (Number(mark.PR) || 0), 0);
+            
+            const theoryAverage = marksData.length ? Math.round((theoryTotal / marksData.length) * 100) / 100 : 0;
+            const practicalAverage = marksData.length ? Math.round((practicalTotal / marksData.length) * 100) / 100 : 0;
+
+            return {
+                id: subject.id,
+                name: subject.subject_name,
+                ctId: subject.class_id.classTeacher.id,
+                classTeacher: subject.class_id.classTeacher.teacher_id,
+                teacher: subject.teacher_id ? `${subject.teacher_id.first_name} ${subject.teacher_id.last_name}` : '',
+                theoryAverage,
+                practicalAverage
+            };
         }));
+
+        return subjectsWithMarks;
+
     } catch (error) {
         console.error("Error fetching subjects:", error);
-        return []; // Return empty array on error
+        return [];
     }
 };
+
 
 const assignTeacher = async (subjectId, teacherId, classId, section, classTeacher) => {
     try {
@@ -210,14 +230,13 @@ const getClassesByTeacher = async (teacherId) => {
         }
         if (!teacherData || teacherData.length === 0) {
             console.warn("No teacher data found.");
-            return [];
+            return { classes: [], count: 0 };
         }
 
         const { data: assignedClass, error: assignedClassError } = await createClient
             .from('subjects')
             .select(`class_id:class(class, sec)`)
             .eq('teacher_id', teacherData[0].id);
-
 
         if (assignedClassError) {
             console.error("Query Error: ", assignedClassError);
@@ -230,10 +249,8 @@ const getClassesByTeacher = async (teacherId) => {
             console.warn("No classes assigned for this teacher.");
         }
 
-         // Use a Set to track unique classes
          const uniqueClassesWithSections = new Set();
 
-         // Map the assignedClass data and add unique class+section combinations
          const classes = (assignedClass || []).map(item => {
              const className = item.class_id?.class || '';
              const section = item.class_id?.sec || '';
@@ -243,13 +260,18 @@ const getClassesByTeacher = async (teacherId) => {
              return { class: className, section: section };
          });
          
-         // Convert the Set back to an array of objects
-         return Array.from(uniqueClassesWithSections).map(item => JSON.parse(item));
+         const uniqueClasses = Array.from(uniqueClassesWithSections).map(item => JSON.parse(item));
+         
+         return {
+             classes: uniqueClasses,
+             count: uniqueClasses.length
+         };
     } catch (error) {
         console.error("Error in getClassesByTeacher: ", error);
-        return [];
+        return { classes: [], count: 0 };
     }
 };
+
 
 const getClassByTeacher = async (teacherId) => {
     try {

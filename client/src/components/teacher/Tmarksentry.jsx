@@ -44,7 +44,6 @@ import axios from "axios";
 
   // Update the useEffect to pass classId when fetching subjects
 useEffect(() => {
-  
   fetchClasses(teacherId);
   if (teacherId && selectedClass) {
       fetchSubjects(teacherId, selectedClass); // Pass selectedClass as classId
@@ -115,21 +114,28 @@ useEffect(() => {
 
     const fetchClasses = async (teacherId) => {
       try {
-          const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/classes`);
-          if (!response.ok) throw new Error("Failed to fetch classes");
-  
-          const classData = await response.json();
-          const classes = classData.map(item => ({
-              id: item.class,
-              name: `${item.class}`,
-              section: item.section
-          }));
-  
-          setClasses(classes);
+        const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/classes`);
+        if (!response.ok) throw new Error("Failed to fetch classes");
+
+        const { classes, count } = await response.json();
+        console.log("Class Data:", classes);
+
+        const formattedClasses = classes.map(item => ({
+            id: `${item.class}`,
+            name: item.class,
+            section: item.section,
+            studentCount: item.studentCount || 0
+        }));
+        
+        console.log("tmClass:", formattedClasses);
+        setClasses(formattedClasses);
       } catch (error) {
-          console.error("Error fetching classes:", error);
+        console.error("Error fetching classes:", error);
+        setClasses([]);
       }
-  };
+    };
+    
+    
 
     const fetchSubjects = async (teacherId, classId) => { // Add classId as a parameter
       try {

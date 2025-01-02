@@ -130,21 +130,26 @@ useEffect(() => {
 
   const fetchClasses = async (teacherId) => {
     try {
-        const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/classes`);
-        if (!response.ok) throw new Error("Failed to fetch classes");
+      const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/classes`);
+      if (!response.ok) throw new Error("Failed to fetch classes");
 
-        const classData = await response.json();
-        const classes = classData.map(item => ({
-            id: item.class,
-            name: `${item.class}`,
-            section: item.section
-        }));
+      const { classes, count } = await response.json();
+      console.log("Class Data:", classes);
 
-        setClasses(classes);
+      const formattedClasses = classes.map(item => ({
+          id: `${item.class}`,
+          name: item.class,
+          section: item.section,
+          studentCount: item.studentCount || 0
+      }));
+      
+      console.log("tmClass:", formattedClasses);
+      setClasses(formattedClasses);
     } catch (error) {
-        console.error("Error fetching classes:", error);
+      console.error("Error fetching classes:", error);
+      setClasses([]);
     }
-};
+  };
 
 
   const fetchStudents = async () => {

@@ -52,6 +52,8 @@ router.route('/exam-types').get(retrive.getExamTypes); // Updated to handle exam
 router.route('/classes').get(retrive.getClasses);
 router.route('/gradesheet/:year').get(retrive.getGradesheet);
 
+router.route('/exam-count/:year').get(dashboardController.dashboard);
+
 // Marks routes
 router.route('/setup-marks').post(examController.setupMarks);
 router.route('/marks').get(examController.getMarksData);

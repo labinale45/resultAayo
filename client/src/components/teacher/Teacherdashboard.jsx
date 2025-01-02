@@ -51,15 +51,19 @@ export default function Teacherdashboard() {
   const [error, setError] = useState(null);
   const [teacherId, setTeacherId] = useState(null);
   const [classes, setClasses] = useState([]);
+  const [cls, setCls] = useState([]);
+  const [totalClasses, setTotalClasses] = useState(0);
   const [studentCount, setStudentCount] = useState(0);
+  const [averageperformance, setAveragePerformance] = useState(0);
   const [subjects, setSubjects] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [subjectPerformance, setSubjectPerformance] = useState({});
+  const [progressRate, setProgressRate] = useState(0);
+  const [examTypes, setExamTypes] = useState([]);
   const [stats, setStats] = useState({
     totalStudents: 0,
-    totalClasses: 12,
-    averagePerformance: 90,
-    upcomingTests: 5,
+    totalClasses: 0,
+    upcomingTests: 0,
   });
 
   useEffect(() => {
@@ -73,10 +77,45 @@ export default function Teacherdashboard() {
   }, []);
 
   useEffect(() => {
-    if (teacherId) {
-      fetchClass(teacherId);
-    }
+    const loadData = async () => {
+      if (teacherId) {
+        await Promise.all([
+          fetchClass(teacherId),
+          fetchClasses(teacherId)
+        ]);
+      }
+    };
+  
+    loadData();
   }, [teacherId]);
+
+ 
+  const fetchClasses = async (teacherId) => {
+    try {
+        const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/classes`);
+        if (!response.ok) throw new Error("Failed to fetch classes");
+
+        const { classes, count } = await response.json();
+        console.log("Class Data:", classes);
+
+        const formattedClasses = classes.map(item => ({
+            id: `${item.class}-${item.section}`,
+            name: item.class,
+            section: item.section,
+            studentCount: item.studentCount || 0
+        }));
+
+        console.log("Classes Assigned:", formattedClasses);
+        setCls(formattedClasses);
+        setTotalClasses(count);
+
+    } catch (error) {
+        console.error("Error fetching classes:", error);
+        setCls([]);
+        setTotalClasses(0);
+    }
+};
+
 
   const fetchClass = async (teacherId) => {
     try {
@@ -121,6 +160,31 @@ export default function Teacherdashboard() {
     fetchUserProfile();
   }, []);
 
+ useEffect(() => {
+    if (subjects.length > 0) {
+      const totalScores = subjects.reduce((acc, subject) => {
+        const theory = subject.theoryAverage || 0;
+        const practical = subject.practicalAverage || 0;
+        const count = subject.practicalAverage !== null ? 2 : 1; // Count based on data
+        acc.sum += theory + practical;
+        acc.count += count;
+        return acc;
+      }, { sum: 0, count: 0 });
+
+      const avg = totalScores.count > 0 ? (totalScores.sum / totalScores.count) : 0;
+      setAveragePerformance(avg.toFixed(2)); // Rounded to 2 decimals
+    }
+  }, [subjects]);
+
+  const fetchExamTypes = async () => {
+    try {
+
+    } catch (error) {
+      console.error("Error fetching exam types:", error);
+    }
+  };
+
+
   const fetchSubjects = async () => {
     setIsLoading(true);
     setError(null);
@@ -159,6 +223,7 @@ export default function Teacherdashboard() {
   
 
   useEffect(() => {
+    fetchExamTypes();
     if (classes.length > 0) {
       fetchSubjects();
     }
@@ -167,32 +232,57 @@ export default function Teacherdashboard() {
   useEffect(() => {
     if (subjects.length > 0) {
       updateChartData();
+      updateProgressRate();
     }
   }, [subjects]);
 
   const updateChartData = () => {
     setChartData({
-      labels: subjects.map(subject => subject.name), // Use subject.name instead of subject_name
-      datasets: [{
-        label: "Subject Performance",
-        data: subjects.map(subject => {
-          // Generate random marks between 60 and 95 for demonstration
-          return Math.floor(Math.random() * 35) + 60;
-        }),
-        borderColor: "rgb(99, 179, 237)",
-        backgroundColor: "rgba(99, 179, 237, 0.1)",
-        tension: 0.4,
-        fill: true,
-      }]
+      labels: subjects.map(subject => subject.name),
+      datasets: [
+        {
+          label: "Theory Average",
+          data: subjects.map(subject => subject.theoryAverage),
+          borderColor: "rgb(99, 179, 237)",
+          backgroundColor: "rgba(99, 179, 237, 0.1)",
+          tension: 0.4,
+          fill: true,
+        },
+        {
+          label: "Practical Average",
+          data: subjects.map(subject => subject.practicalAverage),
+          borderColor: "rgb(237, 99, 99)",
+          backgroundColor: "rgba(237, 99, 99, 0.1)", 
+          tension: 0.4,
+          fill: true,
+        }
+      ]
     });
+  };
+  
+  const updateProgressRate = () => {
+    const totalTheory = subjects.reduce((sum, subject) => sum + subject.theoryAverage, 0);
+    const totalPractical = subjects.reduce((sum, subject) => sum + subject.practicalAverage, 0);
+    const totalSubjects = subjects.length;
+
+    if (totalSubjects > 0) {
+      const overallAverage = (totalTheory + totalPractical) / (2 * totalSubjects);
+      setProgressRate(Math.round(overallAverage));
+    } else {
+      setProgressRate(0);
+    }
   };
   
 
   useEffect(() => {
     const totalStudents = classes.reduce((sum, classItem) => sum + classItem.totalStudent, 0);
+    const totalClasses = cls.length;
+    const upcomingTests = examTypes.upcomingExams;
     setStats(prevStats => ({
       ...prevStats,
-      totalStudents: totalStudents
+      totalStudents: totalStudents,
+      totalClasses: totalClasses,
+      upcomingTests: upcomingTests
     }));
   }, [classes]);
 
@@ -200,14 +290,15 @@ export default function Teacherdashboard() {
     responsive: true,
     plugins: {
       legend: {
-        display: false,
+        display: true, // Changed to true to show both datasets
+        position: 'top',
       },
       tooltip: {
         callbacks: {
           label: function(context) {
             const subject = subjects[context.dataIndex];
             return [
-              `Score: ${context.formattedValue}%`,
+              `${context.dataset.label}: ${context.formattedValue}%`,
               `Teacher: ${subject.teacher}`
             ];
           }
@@ -239,6 +330,7 @@ export default function Teacherdashboard() {
       },
     },
   };
+  
   
   const activities = [
     {
@@ -286,7 +378,7 @@ export default function Teacherdashboard() {
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="text-lg font-semibold mb-4">Progress Rate</h3>
             <div className="relative w-48 h-48 mx-auto">
-              <svg className="w-full h-full" viewBox="0 0 100 100">
+            <svg className="w-full h-full" viewBox="0 0 100 100">
                 <circle
                   cx="50"
                   cy="50"
@@ -302,7 +394,7 @@ export default function Teacherdashboard() {
                   fill="none"
                   stroke="#60A5FA"
                   strokeWidth="10"
-                  strokeDasharray={`${90 * 2.83} ${100 * 2.83}`}
+                  strokeDasharray={`${progressRate * 2.83} ${100 * 2.83}`}
                   strokeLinecap="round"
                   transform="rotate(-90 50 50)"
                 />
@@ -313,14 +405,14 @@ export default function Teacherdashboard() {
                   dy="0.3em"
                   className="text-3xl font-bold"
                 >
-                  90%
+                  {progressRate}%
                 </text>
               </svg>
             </div>
             <div className="mt-4 flex justify-between text-sm text-slate-600">
               <div>
                 <p>Percentage</p>
-                <p className="font-semibold text-slate-900">90%</p>
+                <p className="font-semibold text-slate-900">{progressRate} %</p>
               </div>
               <div>
                 <p>Total Students</p>
@@ -341,12 +433,12 @@ export default function Teacherdashboard() {
                 <h3 className="text-lg font-semibold">Subject Performance</h3>
                 <p className="text-sm text-slate-500">Average Score by Subject</p>
               </div>
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
                 <select className="text-sm border rounded-lg px-3 py-1">
                   <option>This Term</option>
                   <option>Last Term</option>
                 </select>
-              </div>
+              </div> */}
             </div>
             <div className="h-[300px]">
               <Line options={options} data={chartData} />
@@ -360,21 +452,42 @@ export default function Teacherdashboard() {
             title="Total Students"
             value={stats.totalStudents}
           />
-          <StatCard
-            icon={<FaChalkboardTeacher className="text-green-500 text-xl" />}
-            title="Classes Assigned"
-            value={stats.totalClasses}
-          />
+         <StatCard
+  icon={<FaChalkboardTeacher className="text-green-500 text-xl" />}
+  title="Classes Assigned"
+  value={stats.totalClasses}
+  classes={cls}
+>
+  <div className="hidden group-hover:block absolute z-10 bg-white p-3 rounded-lg shadow-lg left-0 mt-2 min-w-[200px] border border-gray-100">
+    {cls.map((classItem) => (
+      <div key={classItem.id} className="text-sm py-1">
+        Class {classItem.name} '{classItem.section}'
+      </div>
+    ))}
+  </div>
+</StatCard>
+
+          
           <StatCard
             icon={<FaChartLine className="text-purple-500 text-xl" />}
             title="Average Performance"
-            value={`${stats.averagePerformance}%`}
+            value={`${averageperformance}%`}
           />
-          <StatCard
-            icon={<FaCalendarAlt className="text-red-500 text-xl" />}
-            title="Upcoming Tests"
-            value={stats.upcomingTests}
-          />
+
+<StatCard
+  icon={<FaCalendarAlt className="text-red-500 text-xl" />} 
+  title="Upcoming Tests"
+  value={stats.upcomingTests}
+>
+  <div className="hidden group-hover:block absolute z-10 bg-white p-3 rounded-lg shadow-lg left-0 mt-2 min-w-[200px] border border-gray-100">
+    {examTypes.map((exam) => (
+      <div key={exam.id} className="text-sm py-1">
+        {exam.name}
+      </div>
+    ))}
+  </div>
+</StatCard>
+
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-sm">
@@ -388,21 +501,26 @@ export default function Teacherdashboard() {
       </main>
     </div>
   );
+
+  function StatCard({ icon, title, value, children }) {
+    return (
+      <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow group relative">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-slate-100 rounded-xl">{icon}</div>
+          <div>
+            <p className="text-sm text-slate-600">{title}</p>
+            <p className="text-xl font-semibold mt-1">{value}</p>
+          </div>
+        </div>
+        {children}
+      </div>
+    );
+  }
+  
 }
 
-function StatCard({ icon, title, value }) {
-  return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-center gap-4">
-        <div className="p-3 bg-slate-100 rounded-xl">{icon}</div>
-        <div>
-          <p className="text-sm text-slate-600">{title}</p>
-          <p className="text-xl font-semibold mt-1">{value}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
+
+
 
 function ActivityItem({ status, title, company, type, date }) {
   const getStatusColor = (status) => {
