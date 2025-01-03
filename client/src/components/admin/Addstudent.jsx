@@ -198,7 +198,7 @@ useEffect(() => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Parent's Name
+                Parent&apos;s Name
               </label>
               <input
                 className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"

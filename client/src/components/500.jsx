@@ -52,9 +52,7 @@ const Custom500 = () => {
             </h2>
             
             <p className="text-gray-300 mb-8">
-              We're experiencing some technical difficulties. 
-              Our team has been notified and we're working to fix it.
-              The page will automatically retry in 10 seconds.
+              We&apos;re experiencing some technical difficulties. Our team has been notified and we&apos;re working to fix it. The page will automatically retry in 10 seconds.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
