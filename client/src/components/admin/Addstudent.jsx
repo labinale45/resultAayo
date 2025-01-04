@@ -161,6 +161,7 @@ useEffect(() => {
           value={selectedClassId}
           onChange={(e) => setSelectedClassId(e.target.value)}
           className="txt p-2 mt-6  w-full rounded-xl border shadow-xl"
+          required
         >
           <option value="">Select Class</option>
           {classes.map((cls) => (
@@ -176,7 +177,9 @@ useEffect(() => {
               <select
                 className="txt p-2 mt-6 w-full rounded-xl border shadow-xl"
                 value={gender}
-                onChange={(e) => setGender(e.target.value)}
+                onChange={(e) => setGender(e.target.value)
+                }
+                required
               >
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
