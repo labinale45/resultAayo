@@ -60,11 +60,13 @@ export default function Teacherdashboard() {
   const [subjectPerformance, setSubjectPerformance] = useState({});
   const [progressRate, setProgressRate] = useState(0);
   const [examTypes, setExamTypes] = useState([]);
+  const [pastExams, setPastExams] = useState([]);
   
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalClasses: 0,
     upcomingTests: 0,
+    completedExams: 0,
   });
 
   useEffect(() => {
@@ -131,7 +133,7 @@ export default function Teacherdashboard() {
   const fetchClass = async (teacherId) => {
     try {
       const currentYear = getCurrentYear();
-      const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/class-teacher`);
+      const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/class-teacher?year=${currentYear}`);
       if (!response.ok) throw new Error("Failed to fetch classes");
       const classData = await response.json();
       const classes = classData.map(item => ({
@@ -196,9 +198,11 @@ export default function Teacherdashboard() {
         
         const data = await response.json();
         setExamTypes(data.upcomingExams || []);
+        setPastExams(data.pastExams || []);
         setStats(prevStats => ({
           ...prevStats,
-          upcomingTests: data.upcomingCount || 0
+          upcomingTests: data.upcomingCount || 0,
+          completedExams: data.pastExams?.length || 0
         }));
       } catch (error) {
         console.error("Error fetching exam types:", error);
@@ -389,11 +393,16 @@ export default function Teacherdashboard() {
           </h1>
         </div>
         <div className="px-2 text-xl font-semibold text-slate-800 flex items-center gap-4">
-          CLASS : {classes.map(classItem => (
-            <div key={classItem.id}>
-              {classItem.name} {"'"+ classItem.section + "'"}
-            </div>
-          ))}
+          CLASS : {classes.length > 0 ? (
+  classes.map(classItem => (
+    <div key={classItem.id}>
+      {classItem.name} {"'"+ classItem.section + "'"}
+    </div>
+  ))
+) : (
+  <div className="text-gray-500">No class assigned</div>
+)}
+
         </div>
       </header>
 
@@ -499,29 +508,38 @@ export default function Teacherdashboard() {
           />
 
 <StatCard
-  icon={<FaCalendarAlt className="text-red-500 text-xl" />} 
+  icon={<FaCalendarAlt className="text-red-500 text-xl" />}
   title="Upcoming Tests"
   value={stats.upcomingTests}
 >
   <div className="hidden group-hover:block absolute z-10 bg-white p-3 rounded-lg shadow-lg left-0 mt-2 min-w-[200px] border border-gray-100">
     {examTypes.map((exam) => (
-      <div key={exam.id} className="text-sm py-1">
-        {exam.name}
+      <div key={exam.id} className="flex justify-between items-center text-sm py-1">
+        <span>{exam.exam_type}</span>
+        <span className="text-gray-500 text-xs">{exam.deadline_date}</span>
       </div>
     ))}
   </div>
 </StatCard>
 
+
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">Recent Activities</h3>
-          <div className="space-y-4">
-            {activities.map((activity, index) => (
-              <ActivityItem key={index} {...activity} />
-            ))}
-          </div>
-        </div>
+  <h3 className="text-lg font-semibold mb-4">Past Examinations</h3>
+  <div className="space-y-4">
+    {pastExams.map((exam, index) => (
+      <ActivityItem 
+        key={exam.id}
+        status="Complete"
+        title={exam.exam_type}
+        company={`Started on ${exam.deadline_date}`}
+        type="Completed"
+        date={new Date(exam.resultDate).toLocaleDateString()}
+      />
+    ))}
+  </div>
+</div>
       </main>
     </div>
   );

@@ -106,17 +106,18 @@ const getClassesByTeacher = async (req, res) => {
 };
 
 const getClassByTeacher = async (req, res) => {
-    const { teacherId } = req.params;
+    const { teacherId, year } = req.params;
     
     try {
-      const assignedClass = await classmodel.getClassByTeacher(teacherId);
+      const assignedClass = await classmodel.getClassByTeacher(teacherId, year);
       res.json(assignedClass);
-      console.log("classTeacher class :",assignedClass);
-  }catch (error) {
+      console.log("classTeacher class :", assignedClass);
+    } catch (error) {
       console.error("Error in getClassesByTeacher:", error);
       res.status(500).json({ error: "Failed to fetch classes" });
-  }
+    }
 };
+
 
 const getClassesByStudent = async (req, res) => {
     const { studentId } = req.params;

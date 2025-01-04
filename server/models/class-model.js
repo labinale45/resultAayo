@@ -275,9 +275,9 @@ const getClassesByTeacher = async (teacherId,year) => {
 };
 
 
-const getClassByTeacher = async (teacherId) => {
+const getClassByTeacher = async (teacherId, year) => {
     try {
-        console.log("Model teacher Id:", teacherId);
+        console.log("Model teacher Id and year:", teacherId, year);
         const createClient = await connectdb();
 
         const { data: teacherData, error: teacherError } = await createClient
@@ -294,7 +294,6 @@ const getClassByTeacher = async (teacherId) => {
             return [];
         }
 
-        // First get classes with their IDs
         const { data: assignedClass, error: assignedClassError } = await createClient
             .from('class')
             .select(`
@@ -303,14 +302,15 @@ const getClassByTeacher = async (teacherId) => {
                 sec,
                 updated_at
             `)
-            .eq('classTeacher', teacherData[0].id);
+            .eq('classTeacher', teacherData[0].id)
+            .gte('updated_at', `${year}-01-01`)
+            .lte('updated_at', `${year}-12-31`);
 
         if (assignedClassError) {
             console.error("Query Error: ", assignedClassError);
             throw assignedClassError;
         }
 
-        // Get student counts for each class
         const classesWithCounts = await Promise.all(
             assignedClass.map(async (cls) => {
                 const { count, error: countError } = await createClient
@@ -327,7 +327,6 @@ const getClassByTeacher = async (teacherId) => {
             })
         );
 
-        // Use Set to ensure unique combinations
         const uniqueClassesWithSections = new Set(
             classesWithCounts.map(item => JSON.stringify(item))
         );
@@ -338,6 +337,7 @@ const getClassByTeacher = async (teacherId) => {
         return [];
     }
 };
+
 
 
 const getClassesByStudent = async (studentId) => {

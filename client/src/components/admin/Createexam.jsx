@@ -85,7 +85,7 @@ const handleSubmit = async (e) => {
 
               <div>
                 <label htmlFor="deadlineDate" className="block mb-2">
-                  Deadline date for Teacher:
+                  Starting date:
                 </label>
                 <input
                   className="txt p-2 rounded-xl w-full h-10 border shadow-xl text-black"
@@ -99,7 +99,7 @@ const handleSubmit = async (e) => {
 
               <div>
                 <label htmlFor="deadlineTime" className="block mb-2">
-                  Deadline time for Teacher:
+                  Starting time :
                 </label>
                 <input
                   className="txt p-2 rounded-xl w-full h-10 border shadow-xl text-black"
