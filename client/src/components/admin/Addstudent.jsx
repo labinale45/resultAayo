@@ -90,9 +90,23 @@ function Addstudent({ onClose, student, onSave }) {
         setErrorMessage(error.message);
     }
 };
+const getCurrentYear = () => {
+  // Convert AD to BS year
+  const currentDate = new Date();
+  const adYear = currentDate.getFullYear();
+  const bsYear = adYear + 56; // Converting AD to BS (approximate conversion)
+  return adYear.toString();
+};
+
 const fetchClasses = async () => {
   try {
-    const response = await fetch("http://localhost:4000/api/auth/classes");
+    const currentYear = getCurrentYear();
+    const response = await fetch(`http://localhost:4000/api/auth/classes/${currentYear}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     if (!response.ok) throw new Error("Failed to fetch classes");
     const data = await response.json();
     setClasses(data);
@@ -100,6 +114,7 @@ const fetchClasses = async () => {
     console.error("Error fetching classes:", error);
   }
 };
+
 useEffect(() => {
   fetchClasses();
 }, []);
@@ -177,8 +192,7 @@ useEffect(() => {
               <select
                 className="txt p-2 mt-6 w-full rounded-xl border shadow-xl"
                 value={gender}
-                onChange={(e) => setGender(e.target.value)
-                }
+                onChange={(e) => setGender(e.target.value)}
                 required
               >
                 <option value="Male">Male</option>

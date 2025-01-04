@@ -294,10 +294,16 @@ const getExamTypes = async (req, res) => {
 
 const getClasses = async (req, res) => {
   try {
+    const {year} = req.params;
+    
+    console.log("Fetching classes for year:", year);
+
     const supabaseClient = await connectdb();
     const { data, error } = await supabaseClient
       .from("class")
-      .select("class,sec");
+      .select("class,sec")
+      .gte("created_at", `${year}-01-01`)
+      .lte("created_at", `${year}-12-31`);
 
     if (error) throw error;
 

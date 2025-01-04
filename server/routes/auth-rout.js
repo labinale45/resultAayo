@@ -49,7 +49,7 @@ router.route('/year').get(retrive.getYears);
 router.route('/records/:year').get(retrive.getRecordsByYear);
 router.route('/studentRecords/:year').get(retrive.getRecordsByYearAndClass);   
 router.route('/exam-types').get(retrive.getExamTypes); // Updated to handle exam types by year
-router.route('/classes').get(retrive.getClasses);
+router.route('/classes/:year').get(retrive.getClasses);
 router.route('/gradesheet/:year').get(retrive.getGradesheet);
 
 router.route('/exam-count/:year').get(dashboardController.dashboard);

@@ -60,6 +60,7 @@ export default function Teacherdashboard() {
   const [subjectPerformance, setSubjectPerformance] = useState({});
   const [progressRate, setProgressRate] = useState(0);
   const [examTypes, setExamTypes] = useState([]);
+  
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalClasses: 0,

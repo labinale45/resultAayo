@@ -29,7 +29,9 @@ export default function Ledgertable() {
 
   useEffect(() => {
     YearSelect();
-    fetchClasses();
+    if (selectedYear) {
+      fetchClasses();
+    }
     if (selectedYear && selectedClass && selectedExamType) {
       fetchLedgerData();
     }
@@ -159,12 +161,17 @@ export default function Ledgertable() {
 
   const fetchClasses = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/auth/classes');
-      if (!response.ok) throw new Error('Failed to fetch classes');
+      const response = await fetch(`http://localhost:4000/api/auth/classes/${selectedYear}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch classes");
       const data = await response.json();
       setClasses(data);
     } catch (error) {
-      console.error('Error fetching classes:', error);
+      console.error("Error fetching classes:", error);
     }
   };
 
