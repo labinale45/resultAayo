@@ -91,10 +91,12 @@ const getTeachers = async (req, res) => {
 };
 
 const getClassesByTeacher = async (req, res) => {
-    const { teacherId } = req.params;
+    const { teacherId,year } = req.params;
+
+    console.log("class for teacher of year:",teacherId,year);
     
     try {
-      const assignedClass = await classmodel.getClassesByTeacher(teacherId);
+      const assignedClass = await classmodel.getClassesByTeacher(teacherId,year);
       res.json(assignedClass);
       console.log("Teacher class :",assignedClass);
   }catch (error) {

@@ -77,7 +77,7 @@ router.get('/ledger-configuration/:schoolName', authController.getLedgerConfigur
 router.post('/generate-ledger-sheet', authController.generateLedgerSheet);
 
 // Add this route to fetch classes assigned to a specific teacher
-router.get('/teacher/:teacherId/classes', classController.getClassesByTeacher);
+router.get('/assigned-class/:teacherId/:year', classController.getClassesByTeacher);
 router.get('/teacher/:teacherId/class-teacher', classController.getClassByTeacher);
 router.get('/teacher/:teacherId/subjects', examController.getAssignedSubjects);
 

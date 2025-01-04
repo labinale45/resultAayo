@@ -438,8 +438,8 @@ const { data: examData, error: examError } = await supabaseClient
     .select('*')
     .eq('class', className)
     .eq('exam_id', examData.id)
-    .gte('updated_at', `${year}-01-01`)
-    .lte('updated_at', `${year}-12-31`)
+    .gte('created_at', `${year}-01-01`)
+    .lte('created_at', `${year}-12-31`)
     .eq('isPublished', true)
 
     console.log("ledgerData",ledgerData);

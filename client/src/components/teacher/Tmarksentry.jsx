@@ -44,7 +44,10 @@ import axios from "axios";
 
   // Update the useEffect to pass classId when fetching subjects
 useEffect(() => {
-  fetchClasses(teacherId);
+  if (teacherId && selectedYear) {
+  fetchClasses(teacherId,selectedYear);
+  }
+
   if (teacherId && selectedClass) {
       fetchSubjects(teacherId, selectedClass); // Pass selectedClass as classId
       console.log("classes, Subjects ", classes, subjects);
@@ -52,7 +55,7 @@ useEffect(() => {
   else if(!selectedClass){
     setSubjects([]);
   }
-}, [teacherId, selectedClass]); // Add selectedClass as a dependency
+}, [teacherId, selectedClass, selectedYear]); // Add selectedClass as a dependency
 
 useEffect(() => {
   if (selectedYear && selectedExamType && selectedClass || selectedSubject) {
@@ -114,7 +117,7 @@ useEffect(() => {
 
     const fetchClasses = async (teacherId) => {
       try {
-        const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/classes`);
+        const response = await fetch(`http://localhost:4000/api/auth/assigned-class/${teacherId}/${selectedYear}`);
         if (!response.ok) throw new Error("Failed to fetch classes");
 
         const { classes, count } = await response.json();

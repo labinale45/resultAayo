@@ -105,11 +105,11 @@ export default function Studentdetail() {
     }
 })
 useEffect(() => {
-  if (teacherId) {
-    fetchClasses(teacherId);
+  if (teacherId,selectedYear) {
+    fetchClasses(teacherId,selectedYear);
     console.log("classes : ", classes);
   }
-}, [teacherId]);
+}, [teacherId,selectedYear]);
 
   const fetchYears = async () => {
     try {
@@ -130,7 +130,7 @@ useEffect(() => {
 
   const fetchClasses = async (teacherId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/classes`);
+      const response = await fetch(`http://localhost:4000/api/auth/assigned-class/${teacherId}/${selectedYear}`);
       if (!response.ok) throw new Error("Failed to fetch classes");
 
       const { classes, count } = await response.json();

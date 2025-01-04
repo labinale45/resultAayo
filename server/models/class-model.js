@@ -214,9 +214,9 @@ const getTeachers = async () => {
     }
 };
 
-const getClassesByTeacher = async (teacherId) => {
+const getClassesByTeacher = async (teacherId,year) => {
     try {
-        console.log("Model teacher Id:", teacherId);
+        console.log("Model teacher Id and year:", teacherId, year);
         const createClient = await connectdb();
 
         const { data: teacherData, error: teacherError } = await createClient
@@ -236,7 +236,9 @@ const getClassesByTeacher = async (teacherId) => {
         const { data: assignedClass, error: assignedClassError } = await createClient
             .from('subjects')
             .select(`class_id:class(class, sec)`)
-            .eq('teacher_id', teacherData[0].id);
+            .eq('teacher_id', teacherData[0].id)
+            .gte('created_at', `${year}-01-01`)
+            .lte('created_at', `${year}-12-31}`)
 
         if (assignedClassError) {
             console.error("Query Error: ", assignedClassError);
