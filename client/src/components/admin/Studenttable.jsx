@@ -33,6 +33,8 @@ export default function Studenttable() {
     YearSelect();
     if (selectedYear) {
       fetchClasses();
+    }else{
+      setClasses([]);
     }
   }, [selectedYear]);
   
@@ -251,7 +253,9 @@ export default function Studenttable() {
       <div className="flex justify-center items-center mb-4">
         <select
           value={selectedYear}
-          onChange={(e) => setSelectedYear(e.target.value)}
+          onChange={(e) => {setSelectedYear(e.target.value);
+            setSelectedClass('');
+          }}
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-2"
         >
           <option value="">Select Year</option>

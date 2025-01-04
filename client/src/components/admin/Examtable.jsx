@@ -33,6 +33,8 @@ export default function Examtable() {
     YearSelect();
     if (selectedYear) {
       fetchClasses();
+    }else{
+      setClasses([]);
     }
     if (selectedYear && selectedClass) {
       fetchMarksData();

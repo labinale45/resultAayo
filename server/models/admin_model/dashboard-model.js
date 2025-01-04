@@ -97,7 +97,28 @@ const getHistoricalData = async (startDate, endDate, selectedClass) => {
     throw error;
   }
 };
+
+// const getExamsCount = async () => {
+//   try {
+//     const createClient = await connectdb();
+//     const currentDate = new Date();
+    
+//     const { data: upcomingExams, error } = await createClient
+//       .from('exams')
+//       .select('*', { count: 'exact' })
+//       .gte('deadline_date', currentDate.toISOString());
+
+//     if (error) throw error;
+
+//     return { upcomingExamsCount: upcomingExams.length };
+//   } catch (error) {
+//     console.error("Error getting exams count:", error);
+//     throw error;
+//   }
+// };
+
 module.exports = {
+
   getHistoricalData,
   getTotalCount
 }; 

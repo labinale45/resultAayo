@@ -46,6 +46,8 @@ import axios from "axios";
 useEffect(() => {
   if (teacherId && selectedYear) {
   fetchClasses(teacherId,selectedYear);
+  }else{
+    setClasses([]);
   }
 
   if (teacherId && selectedClass) {

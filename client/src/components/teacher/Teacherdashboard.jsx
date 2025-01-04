@@ -90,10 +90,20 @@ export default function Teacherdashboard() {
     loadData();
   }, [teacherId]);
 
+
+  const getCurrentYear = () => {
+    // Convert AD to BS year
+    const currentDate = new Date();
+    const adYear = currentDate.getFullYear();
+    const bsYear = adYear + 56; // Converting AD to BS (approximate conversion)
+    return adYear.toString();
+  };
+
  
   const fetchClasses = async (teacherId) => {
     try {
-        const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/classes`);
+        const currentYear = getCurrentYear();
+        const response = await fetch(`http://localhost:4000/api/auth/assigned-class/${teacherId}/${currentYear}`);
         if (!response.ok) throw new Error("Failed to fetch classes");
 
         const { classes, count } = await response.json();
@@ -120,6 +130,7 @@ export default function Teacherdashboard() {
 
   const fetchClass = async (teacherId) => {
     try {
+      const currentYear = getCurrentYear();
       const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/class-teacher`);
       if (!response.ok) throw new Error("Failed to fetch classes");
       const classData = await response.json();
@@ -177,13 +188,26 @@ export default function Teacherdashboard() {
     }
   }, [subjects]);
 
-  const fetchExamTypes = async () => {
-    try {
-
-    } catch (error) {
-      console.error("Error fetching exam types:", error);
-    }
-  };
+  useEffect(() => {
+    const fetchExamTypes = async () => {
+      try {
+        const response = await fetch(`http://localhost:4000/api/auth/exam-count/${new Date().getFullYear()}`);
+        if (!response.ok) throw new Error('Failed to fetch exam types');
+        
+        const data = await response.json();
+        setExamTypes(data.upcomingExams || []);
+        setStats(prevStats => ({
+          ...prevStats,
+          upcomingTests: data.upcomingCount || 0
+        }));
+      } catch (error) {
+        console.error("Error fetching exam types:", error);
+      }
+    };
+  
+    fetchExamTypes();
+  }, []);
+  
 
 
   const fetchSubjects = async () => {
@@ -224,7 +248,6 @@ export default function Teacherdashboard() {
   
 
   useEffect(() => {
-    fetchExamTypes();
     if (classes.length > 0) {
       fetchSubjects();
     }

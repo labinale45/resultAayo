@@ -108,6 +108,8 @@ useEffect(() => {
   if (teacherId,selectedYear) {
     fetchClasses(teacherId,selectedYear);
     console.log("classes : ", classes);
+  }else{
+    setClasses([]);
   }
 }, [teacherId,selectedYear]);
 

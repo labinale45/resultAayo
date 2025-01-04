@@ -31,6 +31,8 @@ export default function Ledgertable() {
     YearSelect();
     if (selectedYear) {
       fetchClasses();
+    }else{
+      setClasses([]);
     }
     if (selectedYear && selectedClass && selectedExamType) {
       fetchLedgerData();

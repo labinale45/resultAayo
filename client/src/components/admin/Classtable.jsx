@@ -24,6 +24,8 @@ export default function Classtable() {
     YearSelect();
       if (selectedYear) {
         fetchClasses();
+      }else{
+        setClasses([]);
       }
     fetchTeachers();
     if(selectedYear && selectedClass && selectedSection) { 
