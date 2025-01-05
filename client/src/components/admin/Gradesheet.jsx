@@ -127,13 +127,13 @@ export default function Gradesheet({ onClose, studentsData = [], schoolName, sch
 
                 <div className="text-center">
                   <div className="border-t border-black pt-2 inline-block dark:border-white">
-                    Class Teacher's Signature
+                    Class Teacher`&apos;s Signature
                   </div>
                 </div>
 
                 <div className="text-center">
                   <div className="border-t border-black pt-2 inline-block dark:border-white">
-                    Principal's Signature
+                    Principal`&apos;s Signature
                   </div>
                 </div>
               </div>

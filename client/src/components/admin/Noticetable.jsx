@@ -16,68 +16,70 @@ export default function Noticetable() {
 console.log("notices", notices)
  
 
-  const YearSelect = async () => {
-    try {
-      const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!Array.isArray(data)) {
-        throw new Error('Invalid data format received');
-      }
-      
-      setYears(data);
-      setError(null);
-      
-    } catch (error) {
-      console.error('Failed to fetch years:', error.message);
-      setError('Failed to fetch years. Please try again later.');
-      setYears([]);
-    }
-  };
 
   useEffect(() => {
+    const YearSelect = async () => {
+      try {
+        const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid data format received');
+        }
+        
+        setYears(data);
+        setError(null);
+        
+      } catch (error) {
+        console.error('Failed to fetch years:', error.message);
+        setError('Failed to fetch years. Please try again later.');
+        setYears([]);
+      }
+    };
     YearSelect();
+    const fetchNotices = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        setNotices(data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     if(selectedYear) { fetchNotices(); }
-  }, [selectedYear]);
+  }, [state,selectedYear]);
 
   
 
  
 
-  const fetchNotices = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setNotices(data);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="relative overflow-x-auto mt-7">

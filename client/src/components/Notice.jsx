@@ -18,46 +18,48 @@ function Notice() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [state] = useState("notices");
 
-  const fetchYears = async () => {
-    try {
-      const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`);
-      const data = await response.json();
-      setYears(data);
-      // Set the latest year by default (first year in the sorted array)
-      if (data && data.length > 0) {
-        setSelectedYear(data[0]);
-      }else{
-        setYears([]);
+
+
+
+
+  useEffect(() => {
+    const fetchYears = async () => {
+      try {
+        const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`);
+        const data = await response.json();
+        setYears(data);
+        // Set the latest year by default (first year in the sorted array)
+        if (data && data.length > 0) {
+          setSelectedYear(data[0]);
+        }else{
+          setYears([]);
+        }
+      } catch (error) {
+        setError('Failed to fetch years');
       }
-    } catch (error) {
-      setError('Failed to fetch years');
-    }
-  };
-
-  const fetchNotices = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}`
-      );
-      const data = await response.json();
-      setNotices(data);
-    } catch (error) {
-      setError('Failed to fetch notices');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
+    };
     fetchYears();
-  }, []);
+  }, [state]);
 
   useEffect(() => {
+    const fetchNotices = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}`
+        );
+        const data = await response.json();
+        setNotices(data);
+      } catch (error) {
+        setError('Failed to fetch notices');
+      } finally {
+        setIsLoading(false);
+      }
+    };
     if (selectedYear) {
       fetchNotices();
     }
-  }, [selectedYear]);
+  }, [state,selectedYear]);
 
   const filteredNotices = notices && notices?.filter(notice => {
     const matchesSearch = notice.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||

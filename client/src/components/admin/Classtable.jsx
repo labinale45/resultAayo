@@ -21,47 +21,51 @@ export default function Classtable() {
   console.log("ss",subjects);
 
   useEffect(() => {
-    YearSelect();
-      if (selectedYear) {
-        fetchClasses();
-      }else{
-        setClasses([]);
-      }
-    fetchTeachers();
-    if(selectedYear && selectedClass && selectedSection) { 
-      fetchClassData(); 
-    }
-  }, [selectedYear, selectedClass, selectedSection]);
-
-  const YearSelect = async () => {
-    try {
-      const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
+    const YearSelect = async () => {
+      try {
+        const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+  
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid data format received');
+        }
+        
+        setYears(data);
+        setError(null);
+        
+      } catch (error) {
+        console.error('Failed to fetch years:', error.message);
+        setError('Failed to fetch years. Please try again later.');
+        setYears([]);
       }
+    };
 
-      const data = await response.json();
-      if (!Array.isArray(data)) {
-        throw new Error('Invalid data format received');
+    const fetchClasses = async () => {
+      try {
+        const response = await fetch(`http://localhost:4000/api/auth/classes/${selectedYear}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (!response.ok) throw new Error("Failed to fetch classes");
+        const data = await response.json();
+        setClasses(data);
+      } catch (error) {
+        console.error("Error fetching classes:", error);
       }
-      
-      setYears(data);
-      setError(null);
-      
-    } catch (error) {
-      console.error('Failed to fetch years:', error.message);
-      setError('Failed to fetch years. Please try again later.');
-      setYears([]);
-    }
-  };
-
+    };
+    
   const fetchClassData = async () => {
     setIsLoading(true);
     setError(null);
@@ -90,22 +94,26 @@ export default function Classtable() {
       setIsLoading(false);
     }
   };
-
-  const fetchClasses = async () => {
-    try {
-      const response = await fetch(`http://localhost:4000/api/auth/classes/${selectedYear}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (!response.ok) throw new Error("Failed to fetch classes");
-      const data = await response.json();
-      setClasses(data);
-    } catch (error) {
-      console.error("Error fetching classes:", error);
+    async function fetchData() {
+      try {
+        await YearSelect();
+        if (selectedYear) {
+          await fetchClasses();
+        } else {
+          setClasses([]);
+        }
+        await fetchTeachers();
+        if (selectedYear && selectedClass && selectedSection) {
+          await fetchClassData();
+        }
+      } catch (error) {
+        console.error("Error in fetchData:", error);
+      }
     }
-  };
+  
+    fetchData();
+  }, [state,selectedYear, selectedClass, selectedSection]);
+  
 
   const fetchTeachers = async () => {
     try {

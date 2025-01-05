@@ -33,7 +33,20 @@ export default function Studentdetail() {
           targetClass: targetClass
         })
       });
-  
+      const fetchStudents = async () => {
+        setIsLoading(true);
+        try {
+          const response = await fetch(
+            `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&class=${selectedClass}`
+          );
+          const data = await response.json();
+          setStudents(data);
+        } catch (error) {
+          setError("Failed to fetch students");
+        } finally {
+          setIsLoading(false);
+        }
+      };
       if (response.ok) {
         setIsUpgradeModalOpen(false);
         setSelectedStudents([]);
@@ -47,6 +60,36 @@ export default function Studentdetail() {
 
   // Update the useEffect that runs when selectedClass changes
   useEffect(() => {
+    const fetchStudents = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&class=${selectedClass}`
+        );
+        const data = await response.json();
+        setStudents(data);
+      } catch (error) {
+        setError("Failed to fetch students");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    const checkIfClassTeacher = async (classId, sec, teacherId) => {
+      try {
+        // Find the selected class object from classes array to get the section
+        const selectedClassObj = classes.find(cls => cls.name === classId);
+        const section = selectedClassObj?.section;
+    
+        const response = await fetch(`http://localhost:4000/api/auth/class/${classId}/${section}/${selectedYear}`);
+        const subjects = await response.json();
+        const classTeacherInfo = subjects[0]?.classTeacher ===  teacherId;
+        setIsClassTeacher(classTeacherInfo);
+        console.log("Class Teacher Info:", classTeacherInfo);
+      } catch (error) {
+        console.error("Error checking class teacher status:", error);
+        setIsClassTeacher(false);
+      }
+    };
     if (selectedYear && selectedClass && teacherId) {
       fetchStudents();
       // Find the selected class object from classes array
@@ -55,25 +98,10 @@ export default function Studentdetail() {
     } else {
       setStudents([]);
     }
-  }, [selectedYear, selectedClass, teacherId]);
+  }, [state,classes,selectedYear, selectedClass, teacherId]);
   
 
-  const checkIfClassTeacher = async (classId, sec, teacherId) => {
-    try {
-      // Find the selected class object from classes array to get the section
-      const selectedClassObj = classes.find(cls => cls.name === classId);
-      const section = selectedClassObj?.section;
-  
-      const response = await fetch(`http://localhost:4000/api/auth/class/${classId}/${section}/${selectedYear}`);
-      const subjects = await response.json();
-      const classTeacherInfo = subjects[0]?.classTeacher ===  teacherId;
-      setIsClassTeacher(classTeacherInfo);
-      console.log("Class Teacher Info:", classTeacherInfo);
-    } catch (error) {
-      console.error("Error checking class teacher status:", error);
-      setIsClassTeacher(false);
-    }
-  };
+
   
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -103,33 +131,10 @@ export default function Studentdetail() {
         setTeacherId(decodedToken.id); // Assuming the teacher ID is stored as 'id' in the token
       }
     }
-})
+},[]);
+
+
 useEffect(() => {
-  if (teacherId,selectedYear) {
-    fetchClasses(teacherId,selectedYear);
-    console.log("classes : ", classes);
-  }else{
-    setClasses([]);
-  }
-}, [teacherId,selectedYear]);
-
-  const fetchYears = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/auth/year?status=${state}`
-      );
-      const data = await response.json();
-      setYears(data);
-      if (data && data.length > 0) {
-        setSelectedYear(data[0]);
-      }else{
-        setYears([]);
-      }
-    } catch (error) {
-      setError("Failed to fetch years");
-    }
-  };
-
   const fetchClasses = async (teacherId) => {
     try {
       const response = await fetch(`http://localhost:4000/api/auth/assigned-class/${teacherId}/${selectedYear}`);
@@ -152,34 +157,61 @@ useEffect(() => {
       setClasses([]);
     }
   };
+  if (teacherId,selectedYear) {
+    fetchClasses(teacherId,selectedYear);
+  }else{
+    setClasses([]);
+  }
+}, [teacherId,selectedYear]);
 
 
-  const fetchStudents = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&class=${selectedClass}`
-      );
-      const data = await response.json();
-      setStudents(data);
-    } catch (error) {
-      setError("Failed to fetch students");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+
+
+
+
 
   useEffect(() => {
+    const fetchYears = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/auth/year?status=${state}`
+        );
+        const data = await response.json();
+        setYears(data);
+        if (data && data.length > 0) {
+          setSelectedYear(data[0]);
+        }else{
+          setYears([]);
+        }
+      } catch (error) {
+        setError("Failed to fetch years");
+      }
+    };
     fetchYears();
-  }, []);
+  }, [state]);
 
   useEffect(() => {
+    const fetchStudents = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&class=${selectedClass}`
+        );
+        const data = await response.json();
+        setStudents(data);
+      } catch (error) {
+        setError("Failed to fetch students");
+      } finally {
+        setIsLoading(false);
+      }
+    };
     if (selectedYear && selectedClass) {
       fetchStudents();
     }else {
       setStudents([]);
     }
-  }, [selectedYear, selectedClass]);
+  }, [state,selectedYear, selectedClass]);
 
   const filteredStudents = students.filter(
     (student) =>
@@ -284,7 +316,7 @@ useEffect(() => {
                     Contact
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Parent's Name
+                    Parent&apos;s Name
                   </th>
                   <th scope="col" className="px-6 py-3">
                     Address

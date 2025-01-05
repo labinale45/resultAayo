@@ -98,9 +98,11 @@ const getCurrentYear = () => {
   return adYear.toString();
 };
 
+const currentYear = getCurrentYear();
+
 const fetchClasses = async () => {
   try {
-    const currentYear = getCurrentYear();
+    
     const response = await fetch(`http://localhost:4000/api/auth/classes/${currentYear}`, {
       method: "GET",
       headers: {
@@ -115,10 +117,13 @@ const fetchClasses = async () => {
   }
 };
 
-useEffect(() => {
-  fetchClasses();
-}, []);
+// useEffect(() => {
 
+
+//   fetchClasses();
+
+// }, [currentYear]);
+fetchClasses();
   return (
     <div>
       <div className="bg-white dark:bg-[#253553] dark:text-white flex rounded-3xl shadow-2xl max-w-4xl p-3 relative">

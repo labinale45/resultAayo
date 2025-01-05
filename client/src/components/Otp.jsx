@@ -13,7 +13,7 @@ function Otp() {
           Enter verification code
         </h1>
         <p className="text-center mt-2">
-          We've sent you a code on your@gmail.com
+          We&apos;ve sent you a code on your@gmail.com
         </p>
 
         <div className="flex justify-center items-center mt-4 space-x-2">
@@ -28,7 +28,7 @@ function Otp() {
         </div>
 
         <div className="flex justify-center items-center mt-4">
-          Didn't get a code?{" "}
+          Didn&apos;t get a code?{" "}
           <a
             href="#"
             className="text-indigo-800 font-semibold ml-1 no-underline hover:underline ..."

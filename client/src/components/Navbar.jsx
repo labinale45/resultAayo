@@ -142,7 +142,7 @@ export default function Navbar() {
               </ul>
               <div className="pt-40">
                 <p className="uppercase tracking-widest text-[#8AA4D6]">
-                  Let's connect
+                  Let&apos;s connect
                 </p>
                 <div className="flex items-center justify-between my-4 w-full sm:w-[80%]">
                   <a

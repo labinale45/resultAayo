@@ -52,7 +52,7 @@ function Module() {
               exam-specific.According to their individual performances on exams,
               terms, or in a subject,educators can add, delete, or edit remarks
               for each student. Teachers can use the Custom student remarks
-              module to send parents instant alerts on how a student's
+              module to send parents instant alerts on how a student&apos;s
               performance can be improved using constructive feedback.Student
               remark features in school ERP
             </div>
@@ -62,7 +62,7 @@ function Module() {
                 subject
               </li>
               <li className="mb-1">
-                Describe a typical student's performance on a particular exam.
+                Describe a typical student&apos;s performance on a particular exam.
               </li>
               <li className="mb-1">
                 For the daily update, students/parents can see the comments on
@@ -84,10 +84,10 @@ function Module() {
           >
             <div className="text-lg font-semibold mb-2">Exam Management</div>
             <div>
-              Students' progress can be tracked through online exams, customized
+              Student&apos;s progress can be tracked through online exams, customized
               report cards, and custom report cards. Moreover, schools can
               conduct descriptive & objective exams, stop printing report cards,
-              reduce administrative burden, & get instant feedback on students'
+              reduce administrative burden, & get instant feedback on student&apos;s
               progress.{" "}
             </div>
             <ul className="list-disc">
@@ -125,7 +125,7 @@ function Module() {
               levels to different features/modules.
               <ul className="list-disc">
                 <li className="mb-1">Username & Password generation</li>
-                <li className="mb-1">Set users' access level control</li>
+                <li className="mb-1">Set user&apos;s access level control</li>
                 <li className="mb-1">Grant special permission</li>
                 <li className="mb-1">Edit user details & reset password</li>
                 <li className="mb-1">Block any user</li>

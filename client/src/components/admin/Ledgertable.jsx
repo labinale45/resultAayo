@@ -28,6 +28,117 @@ export default function Ledgertable() {
 
 
   useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const response = await fetch(`http://localhost:4000/api/auth/classes/${selectedYear}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (!response.ok) throw new Error("Failed to fetch classes");
+        const data = await response.json();
+        setClasses(data);
+      } catch (error) {
+        console.error("Error fetching classes:", error);
+      }
+    };
+    const fetchLedgerData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&class=${selectedClass}&examType=${selectedExamType}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
+        const data = await response.json();
+  
+        console.log("marksheets Data:", data);
+      
+          // Process the data to group subjects by student
+          const groupedStudents = {};
+  
+          data.forEach(record => {
+              const key = `${record.students}-${record.rollNo}-${record.exam_type}-${record.class}`;
+              if (!groupedStudents[key]) {
+                  groupedStudents[key] = {
+                      id: [],
+                      rollNo: record.rollNo,
+                      students: record.students,
+                      exam_type: record.exam_type,
+                      class: record.class,
+                      schoolName: record.schoolName,
+                      schoolAddress: record.schoolAddress,
+                      estdYear: record.estdYear,
+                      TH:[],
+                      PR:[],
+                      subjects: []
+                  };
+              }
+              groupedStudents[key].subjects.push(record.subjects);
+              groupedStudents[key].TH.push(record.TH); 
+             groupedStudents[key].PR.push(record.PR);
+             groupedStudents[key].id.push(record.id); 
+  
+          });
+  
+          // Convert the grouped object back to an array
+          const formattedStudents = Object.values(groupedStudents).map(student => ({
+              ...student,
+              subjects: student.subjects.join(', '), // Join subjects into a single string or format as needed
+              totalScores: student.TH.map((_, index) => ( // Initialize totalScores based on the number of subjects
+                  (parseFloat(student.TH[index] || 0) || 0) + (parseFloat(student.PR[index] || 0) || 0) // Calculate total for each subject
+  
+                  
+              ))
+          }));
+          console.log("Formatted Data:", formattedStudents);
+          setStudents(formattedStudents);
+  
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    const YearSelect = async () => {
+      try {
+        const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid data format received');
+        }
+        
+        setYears(data);
+        setError(null);
+        
+      } catch (error) {
+        console.error('Failed to fetch years:', error.message);
+        setError('Failed to fetch years. Please try again later.');
+        setYears([]);
+      }
+    };
     YearSelect();
     if (selectedYear) {
       fetchClasses();
@@ -37,9 +148,23 @@ export default function Ledgertable() {
     if (selectedYear && selectedClass && selectedExamType) {
       fetchLedgerData();
     }
-  }, [selectedYear, selectedClass, selectedExamType]);
+  }, [state,selectedYear, selectedClass, selectedExamType]);
 
   useEffect(()=>{
+    const fetchExamTypes = async () => {
+      try {
+        // Correct the URL structure to use a query parameter or path parameter
+        const response = await fetch(`http://localhost:4000/api/auth/exam-types?year=${selectedYear}`);
+    
+        if (!response.ok) throw new Error("Failed to fetch exam types");
+  
+        const examData = await response.json();
+        setExamTypes(examData);
+  
+      } catch (error) {
+        console.error("Error fetching exam types:", error);
+      }
+    };
     if(selectedYear){
       fetchExamTypes();
     }else{
@@ -47,135 +172,14 @@ export default function Ledgertable() {
     }
   },[selectedYear]);
 
-  const YearSelect = async () => {
-    try {
-      const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!Array.isArray(data)) {
-        throw new Error('Invalid data format received');
-      }
-      
-      setYears(data);
-      setError(null);
-      
-    } catch (error) {
-      console.error('Failed to fetch years:', error.message);
-      setError('Failed to fetch years. Please try again later.');
-      setYears([]);
-    }
-  };
   
 
-  const fetchLedgerData = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&class=${selectedClass}&examType=${selectedExamType}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      console.log("marksheets Data:", data);
-    
-        // Process the data to group subjects by student
-        const groupedStudents = {};
-
-        data.forEach(record => {
-            const key = `${record.students}-${record.rollNo}-${record.exam_type}-${record.class}`;
-            if (!groupedStudents[key]) {
-                groupedStudents[key] = {
-                    id: [],
-                    rollNo: record.rollNo,
-                    students: record.students,
-                    exam_type: record.exam_type,
-                    class: record.class,
-                    schoolName: record.schoolName,
-                    schoolAddress: record.schoolAddress,
-                    estdYear: record.estdYear,
-                    TH:[],
-                    PR:[],
-                    subjects: []
-                };
-            }
-            groupedStudents[key].subjects.push(record.subjects);
-            groupedStudents[key].TH.push(record.TH); 
-           groupedStudents[key].PR.push(record.PR);
-           groupedStudents[key].id.push(record.id); 
-
-        });
-
-        // Convert the grouped object back to an array
-        const formattedStudents = Object.values(groupedStudents).map(student => ({
-            ...student,
-            subjects: student.subjects.join(', '), // Join subjects into a single string or format as needed
-            totalScores: student.TH.map((_, index) => ( // Initialize totalScores based on the number of subjects
-                (parseFloat(student.TH[index] || 0) || 0) + (parseFloat(student.PR[index] || 0) || 0) // Calculate total for each subject
-
-                
-            ))
-        }));
-        console.log("Formatted Data:", formattedStudents);
-        setStudents(formattedStudents);
-
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
   
-  const fetchExamTypes = async () => {
-    try {
-      // Correct the URL structure to use a query parameter or path parameter
-      const response = await fetch(`http://localhost:4000/api/auth/exam-types?year=${selectedYear}`);
-  
-      if (!response.ok) throw new Error("Failed to fetch exam types");
 
-      const examData = await response.json();
-      setExamTypes(examData);
 
-    } catch (error) {
-      console.error("Error fetching exam types:", error);
-    }
-  };
 
-  const fetchClasses = async () => {
-    try {
-      const response = await fetch(`http://localhost:4000/api/auth/classes/${selectedYear}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (!response.ok) throw new Error("Failed to fetch classes");
-      const data = await response.json();
-      setClasses(data);
-    } catch (error) {
-      console.error("Error fetching classes:", error);
-    }
-  };
 
   const handleInputChange = (index, subjectIndex, field, value) => {
     const updatedStudents = students.map((student, i) => {

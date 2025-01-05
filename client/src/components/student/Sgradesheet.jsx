@@ -28,55 +28,9 @@ export default function Sgradesheet() {
         setStudentId(decodedToken.id); // Assuming the student ID is stored as 'id' in the token
       }
     }
-})
+},[setStudentId]);
 
 useEffect(() => {
-  if (studentId) {
-    fetchClasses(studentId);
-    console.log("classes : ", classes);
-  }
-}, [studentId]);
-
-useEffect(()=>{
-  YearSelect();
-
-  if(selectedYear){
-    fetchExamTypes();
-  }else{
-    setExamTypes([]);
-  }
-},[selectedYear]);
-
-const YearSelect = async () => {
-  try {
-    const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (!Array.isArray(data)) {
-      throw new Error('Invalid data format received');
-    }
-    
-    setYears(data);
-    setError(null);
-    
-  } catch (error) {
-    console.error('Failed to fetch years:', error.message);
-    setError('Failed to fetch years. Please try again later.');
-    setYears([]);
-  }
-};
-
-
   const fetchClasses = async (teacherId) => {
     try {
       const response = await fetch(`http://localhost:4000/api/auth/student/${studentId}/classes`);
@@ -91,6 +45,41 @@ const YearSelect = async () => {
       console.error("Error fetching classes:", error);
     }
   };
+  if (studentId) {
+    fetchClasses(studentId);
+  }
+}, [studentId]);
+
+useEffect(()=>{
+  const YearSelect = async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid data format received');
+      }
+      
+      setYears(data);
+      setError(null);
+      
+    } catch (error) {
+      console.error('Failed to fetch years:', error.message);
+      setError('Failed to fetch years. Please try again later.');
+      setYears([]);
+    }
+  };
+  YearSelect();
 
   const fetchExamTypes = async () => {
     try {
@@ -107,64 +96,78 @@ const YearSelect = async () => {
     }
   };
 
+  if(selectedYear){
+    fetchExamTypes();
+  }else{
+    setExamTypes([]);
+  }
+},[state,selectedYear]);
+
+
+
+
+
+
+
+
   useEffect(() => {
+    const checkPublicationStatus = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/auth/ledger-status`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              year: selectedYear,
+              class: selectedClass,
+              examType: selectedExamType,
+            }),
+          }
+        );
+    
+        if (!response.ok) {
+          throw new Error("Failed to check publication status");
+  
+        }
+    
+        const data = await response.json();
+  
+        console.log("Full ledger data:", data);
+        console.log("isPublished:", data.isPublished);
+        setIsPublished(data.isPublished);
+  
+        if (data.isPublished) {
+        
+  
+          const gradesheetResponse = await fetch(
+            `http://localhost:4000/api/auth/gradesheet/${selectedYear}?status=${state}&class=${selectedClass}&examType=${selectedExamType}&studentId=${studentId}`
+          );
+    
+          if (!gradesheetResponse.ok) {
+            throw new Error("Failed to fetch gradesheet");
+          }
+    
+          const gradesheetData = await gradesheetResponse.json();
+          setStudents(gradesheetData);
+          console.log("Gradesheet data:", gradesheetData);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        setIsPublished(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     if ( selectedYear && selectedClass && selectedExamType) {
       checkPublicationStatus();
     }
-  }, [ selectedYear, selectedClass, selectedExamType]);
+  }, [studentId,state,selectedYear, selectedClass, selectedExamType]);
 
-  const checkPublicationStatus = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/auth/ledger-status`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            year: selectedYear,
-            class: selectedClass,
-            examType: selectedExamType,
-          }),
-        }
-      );
-  
-      if (!response.ok) {
-        throw new Error("Failed to check publication status");
 
-      }
-  
-      const data = await response.json();
-
-      console.log("Full ledger data:", data);
-      console.log("isPublished:", data.isPublished);
-      setIsPublished(data.isPublished);
-
-      if (data.isPublished) {
-        // If published, fetch student's gradesheet
-        console.log("Fetching gradesheet for student:", studentId);
-
-        const gradesheetResponse = await fetch(
-          `http://localhost:4000/api/auth/gradesheet/${selectedYear}?status=${state}&class=${selectedClass}&examType=${selectedExamType}&studentId=${studentId}`
-        );
-  
-        if (!gradesheetResponse.ok) {
-          throw new Error("Failed to fetch gradesheet");
-        }
-  
-        const gradesheetData = await gradesheetResponse.json();
-        setStudents(gradesheetData);
-        console.log("Gradesheet data:", gradesheetData);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      setIsPublished(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
   
 
   const handlePrint = () => {
@@ -484,13 +487,13 @@ const YearSelect = async () => {
 
           <div className="text-center">
             <div className="border-t border-black pt-2 inline-block dark:border-white">
-              Class Teacher's Signature
+              Class Teacher&apos;s Signature
             </div>
           </div>
 
           <div className="text-center">
             <div className="border-t border-black pt-2 inline-block dark:border-white">
-              Principal's Signature
+              Principal&apos;s Signature
             </div>
           </div>
         </div>

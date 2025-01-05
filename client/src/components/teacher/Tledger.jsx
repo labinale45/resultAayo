@@ -26,50 +26,10 @@ const TLedger = () => {
         setTeacherId(decodedToken.id); // Assuming the teacher ID is stored as 'id' in the token
       }
     }
-})
+},[])
 
 
 useEffect(() => {
-  if (teacherId,selectedYear) {
-    fetchClasses(teacherId,selectedYear);
-    console.log("classes : ", classes);
-  }else{
-    setClasses([]);
-  }
-}, [teacherId,selectedYear]);
-
-useEffect(() => {
-  fetchYears();
-  if (selectedYear) {
-    fetchExamTypes();
-  }else{
-    setExamTypes([]);
-  }
-}, [selectedYear]);
-
-  useEffect(() => {
-    if (year && selectedClass && selectedExamType) {
-      checkPublicationStatus();
-    }
-  }, [year, selectedClass, selectedExamType]);
-
-  const fetchYears = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/auth/year?status=${state}`
-      );
-      const data = await response.json();
-      setYears(data);
-      if (data && data.length > 0) {
-        setYear(data[0]);
-      }else{
-        setYears([]);
-      }
-    } catch (error) {
-      setError("Failed to fetch years");
-    }
-  };
-
   const fetchClasses = async (teacherId) => {
     try {
       const response = await fetch(`http://localhost:4000/api/auth/assigned-class/${teacherId}/${selectedYear}`);
@@ -92,7 +52,32 @@ useEffect(() => {
       setClasses([]);
     }
   };
+  if (teacherId,selectedYear) {
+    fetchClasses(teacherId,selectedYear);
+    
+  }else{
+    setClasses([]);
+  }
+}, [teacherId,selectedYear]);
 
+useEffect(() => {
+  const fetchYears = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/auth/year?status=${state}`
+      );
+      const data = await response.json();
+      setYears(data);
+      if (data && data.length > 0) {
+        setYear(data[0]);
+      }else{
+        setYears([]);
+      }
+    } catch (error) {
+      setError("Failed to fetch years");
+    }
+  };
+  fetchYears();
   const fetchExamTypes = async () => {
     try {
       // Correct the URL structure to use a query parameter or path parameter
@@ -106,56 +91,69 @@ useEffect(() => {
       console.error("Error fetching exam types:", error);
     }
   };
+  if (selectedYear) {
+    fetchExamTypes();
+  }else{
+    setExamTypes([]);
+  }
+}, [state,selectedYear]);
 
-  const checkPublicationStatus = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/auth/ledger-status`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            year: selectedYear,
-            class: selectedClass,
-            examType: selectedExamType,
-          }),
-        }
-      );
-  
-      if (!response.ok) {
-        throw new Error("Failed to check publication status");
-
-      }
-  
-      const data = await response.json();
-
-      console.log("Full ledger data:", data);
-      console.log("isPublished:", data.isPublished);
-      setIsPublished(data.isPublished);
-      
-      if (data.isPublished) {
-        console.log("Result is published");
-        // Fetch and display student records
-        const ledgerResponse = await fetch(
-          `http://localhost:4000/api/auth/records/${year}?status=${state}&class=${selectedClass}&examType=${selectedExamType}`
+  useEffect(() => {
+    const checkPublicationStatus = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/auth/ledger-status`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              year: selectedYear,
+              class: selectedClass,
+              examType: selectedExamType,
+            }),
+          }
         );
+    
+        if (!response.ok) {
+          throw new Error("Failed to check publication status");
   
-        if (ledgerResponse.ok) {
-          const ledgerData = await ledgerResponse.json();
-          console.log("Student records:", ledgerData);
-          setStudents(ledgerData);
         }
+    
+        const data = await response.json();
+  
+        console.log("Full ledger data:", data);
+        console.log("isPublished:", data.isPublished);
+        setIsPublished(data.isPublished);
+        
+        if (data.isPublished) {
+          console.log("Result is published");
+          // Fetch and display student records
+          const ledgerResponse = await fetch(
+            `http://localhost:4000/api/auth/records/${year}?status=${state}&class=${selectedClass}&examType=${selectedExamType}`
+          );
+    
+          if (ledgerResponse.ok) {
+            const ledgerData = await ledgerResponse.json();
+            console.log("Student records:", ledgerData);
+            setStudents(ledgerData);
+          }
+        }
+  
+      } catch (error) {
+        setIsPublished(false);
+      } finally {
+        setIsLoading(false);
       }
-
-    } catch (error) {
-      setIsPublished(false);
-    } finally {
-      setIsLoading(false);
+    };
+    if (year && selectedClass && selectedExamType) {
+      checkPublicationStatus();
     }
-  };
+  }, [year,selectedYear, state, selectedClass, selectedExamType]);
+
+
   
 
   const handlePrint = () => {

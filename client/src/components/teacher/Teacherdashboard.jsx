@@ -80,28 +80,7 @@ export default function Teacherdashboard() {
   }, []);
 
   useEffect(() => {
-    const loadData = async () => {
-      if (teacherId) {
-        await Promise.all([
-          fetchClass(teacherId),
-          fetchClasses(teacherId)
-        ]);
-      }
-    };
-  
-    loadData();
-  }, [teacherId]);
-
-
-  const getCurrentYear = () => {
-    // Convert AD to BS year
-    const currentDate = new Date();
-    const adYear = currentDate.getFullYear();
-    const bsYear = adYear + 56; // Converting AD to BS (approximate conversion)
-    return adYear.toString();
-  };
-
- 
+     
   const fetchClasses = async (teacherId) => {
     try {
         const currentYear = getCurrentYear();
@@ -128,27 +107,51 @@ export default function Teacherdashboard() {
         setTotalClasses(0);
     }
 };
+const fetchClass = async (teacherId) => {
+  try {
+    const currentYear = getCurrentYear();
+    const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/class-teacher?year=${currentYear}`);
+    if (!response.ok) throw new Error("Failed to fetch classes");
+    const classData = await response.json();
+    const classes = classData.map(item => ({
+      id: item.class,
+      name: `${item.class}`,
+      section: item.section,
+      year: new Date(item.updated_at).getFullYear(),
+      totalStudent: item.studentCount
+    }));
+    setClasses(classes);
+    console.log("Classes :",classes);
+  } catch (error) {
+    console.error("Error fetching classes:", error);
+  }
+};
+    const loadData = async () => {
+
+      if (teacherId) {
+        await Promise.all([
+          fetchClass(teacherId),
+          fetchClasses(teacherId)
+        ]);
+      }
+    };
+  
+    loadData();
+  }, [teacherId]);
 
 
-  const fetchClass = async (teacherId) => {
-    try {
-      const currentYear = getCurrentYear();
-      const response = await fetch(`http://localhost:4000/api/auth/teacher/${teacherId}/class-teacher?year=${currentYear}`);
-      if (!response.ok) throw new Error("Failed to fetch classes");
-      const classData = await response.json();
-      const classes = classData.map(item => ({
-        id: item.class,
-        name: `${item.class}`,
-        section: item.section,
-        year: new Date(item.updated_at).getFullYear(),
-        totalStudent: item.studentCount
-      }));
-      setClasses(classes);
-      console.log("Classes :",classes);
-    } catch (error) {
-      console.error("Error fetching classes:", error);
-    }
+  const getCurrentYear = () => {
+    // Convert AD to BS year
+    const currentDate = new Date();
+    const adYear = currentDate.getFullYear();
+    const bsYear = adYear + 56; // Converting AD to BS (approximate conversion)
+    return adYear.toString();
   };
+
+
+
+
+
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -214,41 +217,7 @@ export default function Teacherdashboard() {
   
 
 
-  const fetchSubjects = async () => {
-    setIsLoading(true);
-    setError(null);
-  
-    try {
-      const subjectsPromises = classes.map(async (classItem) => {
-        const response = await fetch(
-          `http://localhost:4000/api/auth/subjects/${classItem.id}?section=${classItem.section}&year=${classItem.year}`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-  
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch subjects');
-        }
-  
-        return await response.json();
-      });
-  
-      const allSubjects = await Promise.all(subjectsPromises);
-      const flatSubjects = allSubjects.flat();
-      console.log("Flat Subjects:", flatSubjects);
-      setSubjects(flatSubjects);
-    } catch (error) {
-      console.error('Error:', error);
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
   
 
   useEffect(() => {
@@ -258,48 +227,86 @@ export default function Teacherdashboard() {
   }, [classes]);
 
   useEffect(() => {
+    const fetchSubjects = async () => {
+      setIsLoading(true);
+      setError(null);
+    
+      try {
+        const subjectsPromises = classes.map(async (classItem) => {
+          const response = await fetch(
+            `http://localhost:4000/api/auth/subjects/${classItem.id}?section=${classItem.section}&year=${classItem.year}`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+    
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch subjects');
+          }
+    
+          return await response.json();
+        });
+    
+        const allSubjects = await Promise.all(subjectsPromises);
+        const flatSubjects = allSubjects.flat();
+        console.log("Flat Subjects:", flatSubjects);
+        setSubjects(flatSubjects);
+      } catch (error) {
+        console.error('Error:', error);
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (subjects.length > 0) {
+      const updateChartData = () => {
+        setChartData({
+          labels: subjects.map(subject => subject.name),
+          datasets: [
+            {
+              label: "Theory Average",
+              data: subjects.map(subject => subject.theoryAverage),
+              borderColor: "rgb(99, 179, 237)",
+              backgroundColor: "rgba(99, 179, 237, 0.1)",
+              tension: 0.4,
+              fill: true,
+            },
+            {
+              label: "Practical Average",
+              data: subjects.map(subject => subject.practicalAverage),
+              borderColor: "rgb(237, 99, 99)",
+              backgroundColor: "rgba(237, 99, 99, 0.1)", 
+              tension: 0.4,
+              fill: true,
+            }
+          ]
+        });
+      };
       updateChartData();
+      const updateProgressRate = () => {
+        const totalTheory = subjects.reduce((sum, subject) => sum + subject.theoryAverage, 0);
+        const totalPractical = subjects.reduce((sum, subject) => sum + subject.practicalAverage, 0);
+        const totalSubjects = subjects.length;
+    
+        if (totalSubjects > 0) {
+          const overallAverage = (totalTheory + totalPractical) / (2 * totalSubjects);
+          setProgressRate(Math.round(overallAverage));
+        } else {
+          setProgressRate(0);
+        }
+      };
       updateProgressRate();
     }
-  }, [subjects]);
+  }, [classes,subjects]);
 
-  const updateChartData = () => {
-    setChartData({
-      labels: subjects.map(subject => subject.name),
-      datasets: [
-        {
-          label: "Theory Average",
-          data: subjects.map(subject => subject.theoryAverage),
-          borderColor: "rgb(99, 179, 237)",
-          backgroundColor: "rgba(99, 179, 237, 0.1)",
-          tension: 0.4,
-          fill: true,
-        },
-        {
-          label: "Practical Average",
-          data: subjects.map(subject => subject.practicalAverage),
-          borderColor: "rgb(237, 99, 99)",
-          backgroundColor: "rgba(237, 99, 99, 0.1)", 
-          tension: 0.4,
-          fill: true,
-        }
-      ]
-    });
-  };
+
   
-  const updateProgressRate = () => {
-    const totalTheory = subjects.reduce((sum, subject) => sum + subject.theoryAverage, 0);
-    const totalPractical = subjects.reduce((sum, subject) => sum + subject.practicalAverage, 0);
-    const totalSubjects = subjects.length;
 
-    if (totalSubjects > 0) {
-      const overallAverage = (totalTheory + totalPractical) / (2 * totalSubjects);
-      setProgressRate(Math.round(overallAverage));
-    } else {
-      setProgressRate(0);
-    }
-  };
   
 
   useEffect(() => {
@@ -312,7 +319,7 @@ export default function Teacherdashboard() {
       totalClasses: totalClasses,
       upcomingTests: upcomingTests
     }));
-  }, [classes]);
+  }, [classes,cls, examTypes]);
 
   const options = {
     responsive: true,
@@ -494,7 +501,7 @@ export default function Teacherdashboard() {
   <div className="hidden group-hover:block absolute z-10 bg-white p-3 rounded-lg shadow-lg left-0 mt-2 min-w-[200px] border border-gray-100">
     {cls.map((classItem) => (
       <div key={classItem.id} className="text-sm py-1">
-        Class {classItem.name} '{classItem.section}'
+        Class {classItem.name} &apos;{classItem.section}&apos;
       </div>
     ))}
   </div>

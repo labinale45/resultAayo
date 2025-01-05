@@ -86,7 +86,7 @@ export default function Login({ onClose }) {
           L O G I N
         </h1>
         <p className="text-[#253553] dark:text-white text-l mt-4 flex items-center justify-center">
-          If you're a registered member, log in here.
+          If you&apos;re a registered member, log in here.
         </p>
         {errorMessage && (
           <p className="text-red-500 text-center mt-4">{errorMessage}</p>

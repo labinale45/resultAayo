@@ -21,71 +21,73 @@ export default function Teachertable() {
  const [changePassword, setChangePassword] = useState(""); // Controls visibility of the change password modal
   // Effect hook to fetch years and teachers when the selected year changes
  useEffect(() => {
+  const YearSelect = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/auth/year?status=${state}`, // API endpoint to get years
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // Check if the response is OK
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || `HTTP error! status: ${response.status}`
+        );
+      }
+      const data = await response.json(); // Parse the response data
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid data format received"); // Validate data format
+      }
+      setYears(data); // Update years state
+      setError(null); // Clear any previous errors
+    } catch (error) {
+      console.error("Failed to fetch years:", error.message); // Log error
+      setError("Failed to fetch years. Please try again later."); // Set error message
+      setYears([]); // Reset years state
+    }
+  };
+  const fetchTeachers = async () => {
+    setIsLoading(true); // Set loading state
+    setError(null); // Clear previous errors
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}` // API endpoint to get teachers
+      );
+      // Check if the response is OK
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json(); // Parse the response data
+ 
+       // Log the fetched data
+      // Map through the data to include status
+      const teachersWithStatus = data.map(teacher => ({
+        ...teacher,
+        status: teacher.tstatus
+      }));
+      console.log("data: ", data);
+      console.log("teacher with status: ",teachersWithStatus); // Log the teachers with status
+      setTeachers(teachersWithStatus); // Update teachers state
+    } catch (error) {
+      setError(error.message); // Set error message
+    } finally {
+      setIsLoading(false); // Reset loading state
+    }
+  };
    YearSelect(); // Fetch available years
    if (selectedYear) {
      fetchTeachers(); // Fetch teachers if a year is selected
    }
- }, [selectedYear]);
+ }, [state,selectedYear]);
   // Function to fetch available years from the API
- const YearSelect = async () => {
-   try {
-     const response = await fetch(
-       `http://localhost:4000/api/auth/year?status=${state}`, // API endpoint to get years
-       {
-         method: "GET",
-         headers: {
-           "Content-Type": "application/json",
-         },
-       }
-     );
-     // Check if the response is OK
-     if (!response.ok) {
-       const errorData = await response.json();
-       throw new Error(
-         errorData.error || `HTTP error! status: ${response.status}`
-       );
-     }
-     const data = await response.json(); // Parse the response data
-     if (!Array.isArray(data)) {
-       throw new Error("Invalid data format received"); // Validate data format
-     }
-     setYears(data); // Update years state
-     setError(null); // Clear any previous errors
-   } catch (error) {
-     console.error("Failed to fetch years:", error.message); // Log error
-     setError("Failed to fetch years. Please try again later."); // Set error message
-     setYears([]); // Reset years state
-   }
- };
-  // Function to fetch teachers based on the selected year
- const fetchTeachers = async () => {
-   setIsLoading(true); // Set loading state
-   setError(null); // Clear previous errors
-   try {
-     const response = await fetch(
-       `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}` // API endpoint to get teachers
-     );
-     // Check if the response is OK
-     if (!response.ok) {
-       throw new Error(`HTTP error! status: ${response.status}`);
-     }
-     const data = await response.json(); // Parse the response data
 
-      // Log the fetched data
-     // Map through the data to include status
-     const teachersWithStatus = data.map(teacher => ({
-       ...teacher,
-       status: teacher.tstatus
-     }));
-     console.log("data: ", data);
-     console.log("teacher with status: ",teachersWithStatus); // Log the teachers with status
-     setTeachers(teachersWithStatus); // Update teachers state
-   } catch (error) {
-     setError(error.message); // Set error message
-   } finally {
-     setIsLoading(false); // Reset loading state
-   }
- };
+  // Function to fetch teachers based on the selected year
+
   // Function to handle editing a teacher's details
  const handleEdit = async (teacherId) => {
    try {

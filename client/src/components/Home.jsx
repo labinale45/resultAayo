@@ -105,33 +105,33 @@ function Home() {
           >
             <div className="bg-white p-4 rounded-lg shadow-md">
               <p className="text-gray-600">
-                "Result Aayo is a web app for handling student results, offering
-                GPA calculations and secure data management."
+              &quot;Result Aayo is a web app for handling student results, offering
+                GPA calculations and secure data management.&quot;
               </p>
               <p className="text-gray-900 mt-2">- Rabin Ale</p>
             </div>
 
             <div className="bg-white p-4 rounded-lg shadow-md">
               <p className="text-gray-600">
-                "Result Aayo is a web application designed for managing student
-                results, featuring GPA calculations and secure data management."
+              &quot;Result Aayo is a web application designed for managing student
+                results, featuring GPA calculations and secure data management.&quot;
               </p>
               <p className="text-gray-900 mt-2">- Aasha Shrestha</p>
             </div>
 
             <div className="bg-white p-4 rounded-lg shadow-md">
               <p className="text-gray-600">
-                "Result Aayo is a web app for managing student results, offering
+              &quot;Result Aayo is a web app for managing student results, offering
                 features like GPA calculation and performance analytics to
-                simplify and secure academic result tracking."
+                simplify and secure academic result tracking.&quot;
               </p>
               <p className="text-gray-900 mt-2">- Yubraj Dauliya</p>
             </div>
 
             <div className="bg-white p-4 rounded-lg shadow-md">
               <p className="text-gray-600">
-                "Result Aayo is a web app for managing student results, offering
-                GPA calculation and secure data handling."
+              &quot;Result Aayo is a web app for managing student results, offering
+                GPA calculation and secure data handling.&quot;
               </p>
               <p className="text-gray-900 mt-2">- Supriya Shrestha</p>
             </div>
