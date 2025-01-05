@@ -4,9 +4,24 @@ import { useState } from "react";
 import TMenu from "@/components/Tmenu";
 import Dnav from "../../components/DNav";
 import Copyright from "../../components/Mini Component/Copyright";
+import PageNotFound from "@/components/404";
+
 
 export default function RootLayout({ children }) {
   const [menuOpen, setMenuOpen] = useState(true);
+  let userData = null;
+  let token = null;
+  if(typeof window !== "undefined"){
+  userData = JSON.parse(localStorage.getItem("userData"));
+  token = localStorage.getItem("token");
+  }
+  if(!userData || !token){
+    return (
+      <div>
+        <PageNotFound />
+      </div>
+    )
+  }
 
   return (
     <html lang="en">

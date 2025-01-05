@@ -5,9 +5,23 @@ import Menu from "@/components/Menu";
 import Dnav from "../../components/DNav";
 import Copyright from "../../components/Mini Component/Copyright";
 import FloatingAIChat from '@/components/FloatingAIChat';
+import PageNotFound from "@/components/404";
 
 export default function AdminLayout({ children }) {
   const [menuOpen, setMenuOpen] = useState(true);
+  let userData = null;
+  let token = null;
+  if(typeof window !== "undefined"){
+  userData = JSON.parse(localStorage.getItem("userData"));
+  token = localStorage.getItem("token");
+  }
+  if(!userData || !token){
+    return (
+      <div>
+        <PageNotFound />
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen dark:bg-[#B3B4BD]">

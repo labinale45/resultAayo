@@ -7,8 +7,10 @@
 // import Login from "./Login/page";
 
 import Redirect from "./redirecting";
+import PageNotFound from "@/components/404";
 
 export default function Main() {
+
   return (
     <div>
       <Redirect />
