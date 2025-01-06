@@ -310,7 +310,7 @@ const getMarksData = async (req, res) => {
 
         const { data, error } = await createClient
             .from('markSetup')
-            .select('id, class_id, subject_id, FM, PM, subjects(subject_name)') 
+            .select('id, class_id, subject_id, FM, PM, subjects(id,subject_name)') 
             .gte('created_at', `${year}-01-01`)
             .lte('created_at', `${year}-12-31`)
             .eq('class_id', classData[0].id)

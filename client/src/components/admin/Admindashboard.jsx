@@ -278,7 +278,7 @@ export default function Admindashboard() {
 
   useEffect(() => {
     const fetchAllData = async () => {
-      await Promise.all([fetchClasses(), fetchDashboardData()]);
+      await Promise.all([fetchClasses()]);
     };
     fetchAllData();
   }, [dateRange, selectedClass]);

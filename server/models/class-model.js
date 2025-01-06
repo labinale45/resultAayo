@@ -121,11 +121,13 @@ const getSubjectsByClass = async (classId, section, year) => {
                 )
             `)
             .eq('class_id', classData[0].id);
+            console.log("subjectsData: ", subjectsData);
 
         if (subjectsError) throw subjectsError;
 
         // Get marks data for each subject
         const subjectsWithMarks = await Promise.all(subjectsData.map(async (subject) => {
+            console.log(subject.id);
             const { data: marksData, error: marksError } = await createClient
                 .from('marksheets')
                 .select('TH,PR')
@@ -138,12 +140,11 @@ const getSubjectsByClass = async (classId, section, year) => {
             
             const theoryAverage = marksData.length ? Math.round((theoryTotal / marksData.length) * 100) / 100 : 0;
             const practicalAverage = marksData.length ? Math.round((practicalTotal / marksData.length) * 100) / 100 : 0;
-
             return {
                 id: subject.id,
                 name: subject.subject_name,
-                ctId: subject.class_id.classTeacher.id,
-                classTeacher: subject.class_id.classTeacher.teacher_id,
+                ctId: subject.class_id.classTeacher?.id|| "",
+                classTeacher: subject.class_id.classTeacher?.teacher_id || "",
                 teacher: subject.teacher_id ? `${subject.teacher_id.first_name} ${subject.teacher_id.last_name}` : '',
                 theoryAverage,
                 practicalAverage

@@ -15,7 +15,7 @@ export default function AdminLayout({ children }) {
   userData = JSON.parse(localStorage.getItem("userData"));
   token = localStorage.getItem("token");
   }
-  if(!userData || !token){
+  if(!userData || !token||userData.role !== 'Admin'){
     return (
       <div>
         <PageNotFound />

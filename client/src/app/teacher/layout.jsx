@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
   userData = JSON.parse(localStorage.getItem("userData"));
   token = localStorage.getItem("token");
   }
-  if(!userData || !token){
+  if(!userData || !token||userData.role !== 'teachers'){
     return (
       <div>
         <PageNotFound />

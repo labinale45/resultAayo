@@ -16,7 +16,7 @@ export default function Classtable() {
   const [subjects, setSubjects] = useState([ ]);
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
-  const [classTeacher, setClassTeacher] = useState("");
+  const [classTeacher, setClassTeacher] = useState(""); 
 
   console.log("ss",subjects);
 
@@ -60,6 +60,7 @@ export default function Classtable() {
         });
         if (!response.ok) throw new Error("Failed to fetch classes");
         const data = await response.json();
+        console.log(data);
         setClasses(data);
       } catch (error) {
         console.error("Error fetching classes:", error);
@@ -195,11 +196,14 @@ export default function Classtable() {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
         >
           <option value="">Select Section</option>
-          {classes.map((cls) => (
-            <option key={cls.sections} value={cls.sections}>
-              {cls.sections}
-            </option>
-          ))}
+          {selectedClass &&
+    classes
+      .find((cls) => cls.grade === selectedClass)
+      ?.sections.map((section, index) => (
+        <option key={index} value={section}>
+          {section}
+        </option>
+      ))}
         </select>
         <div className="flex space-x-2 absolute right-4">
           <button
