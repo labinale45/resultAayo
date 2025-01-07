@@ -476,22 +476,23 @@ const enterMarks = async (req, res)=>{
         }
 
 
-        const {data: subjectData, error: subjectError} = await createClient
-        .from('subjects')
-        .select('id')
-        .eq('subject_name', subject)
-        .eq('class_id', classData.id)
-        .single();
+        const sanitizedSubject = subject.trim().toLowerCase();
 
+        // Fetch subject data
+        const { data: subjectData, error: subjectError } = await createClient
+            .from('subjects')
+            .select('id')
+            .eq('subject_name', sanitizedSubject)   // Ensure subject name matches, case insensitive
+            .eq('class_id', classData.id)           // Ensure class_id matches
+            .limit(1)
+            .single();                             // Limit the result to a single row
 
-        console.log("subjectData: ",subjectData);
+        console.log("subjectData: ", subjectData);
 
         if (subjectError) throw subjectError;
         if (!subjectData || subjectData.length === 0) {
             return res.status(404).json({ message: "No subject found" }); // Return 404 if no subject found
         }
-
-       
 
         const {data: studentData, error: studentError} = await createClient
         .from('students')

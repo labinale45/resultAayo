@@ -344,9 +344,9 @@ const getClasses = async (req, res) => {
 
 const getRecordsByYearAndClass = async (req, res) => {
   const { year } = req.params;
-  const { cls } = req.query; // Get the class from query parameters
+  const { cls,subject,examType } = req.query; // Get the class from query parameters
 
-  console.log("Fetching records for year:", year, "and class:", cls);
+  console.log("Fetching records for year:", year, "class:", cls,"Exam:",examType, "and subject:", subject);
 
   try {
     // Fetch records based on year and class
@@ -358,16 +358,117 @@ const getRecordsByYearAndClass = async (req, res) => {
      .gte("created_at", `${year}-01-01`)
      .lte("created_at", `${year}-12-31`);
 
-
-     console.log("Fetched data:", data);
      if (error) throw error;
     
-     if (!data || data.length === 0) {
+     if (!data || data?.length === 0) {
 
       return res.status(404).json({ error: "No records found for the given year and class" });
     }
+    console.log("Fetched Student data:", data);
+
+    const {data:classData, error: classError} = await supabaseClient
+    .from("class")
+    .select("id,class,sec")
+    .eq("class", cls)
+    .gte("created_at", `${year}-01-01`)
+    .lte("created_at", `${year}-12-31`)
+    .single();
+
+    if (classError) throw classError;
+    if (!classData || classData?.length === 0) {
+      return res.status(404).json({ error: "No class data found for the given year and class" });
+    }
+
+    console.log("Fetched class data:", classData);
+
+    const sanitizedSubject = subject.trim().toLowerCase();
+    const {data: subjectData, error: subjectError} = await supabaseClient
+    .from("subjects")
+    .select("id,subject_name")
+    .eq("subject_name", sanitizedSubject)
+    .eq("class_id", classData.id)
+    .single();
+
+    if (subjectError) throw subjectError;
+    if (!subjectData || subjectData?.length === 0) {
+      return res.status(404).json({ error: "No subject data found for the given year, class, and subject" });
+    }
+
+    console.log("Fetched subject data:", subjectData);
+
+    const {data: examTypeData, error: examTypeError} = await supabaseClient
+    .from("exams")
+    .select("id,exam_type")
+    .eq("exam_type", examType)
+    .gte("created_at", `${year}-01-01`)
+    .lte("created_at", `${year}-12-31`)
+    .single();
+
+    if (examTypeError) throw examTypeError;
+    if (!examTypeData || examTypeData?.length === 0) {
+      return res.status(404).json({ error: "No exam type data found for the given year, class, and exam type" });
+    }
+
+    console.log("Fetched exam type data:", examTypeData);
+
+
+    const studentIds = data.map(student => student.id);
+    console.log("Student IDs:", studentIds);
+
+    const {data: marksData, error: marksError} = await supabaseClient
+    .from("marksheets")
+    .select("student_id,id,TH,PR")
+    .in("student_id", studentIds)
+    .eq("subject_id", subjectData.id)
+    .eq("class",cls)
+    .eq("exam_id", examTypeData.id)
+    .gte("created_at", `${year}-01-01`)
+    .lte("created_at", `${year}-12-31`);
+
+    if (marksError) throw marksError;
+    if (!marksData || marksData?.length === 0) {
+      return res.status(404).json({ error: "No marks data found for the given year, class, subject, and exam type" });
+    }
+    console.log("Fetched marks data:", marksData);
+
+    const {data: markSetupData, error: markSetupError} = await supabaseClient
+    .from("markSetup")
+    .select("setup_id,PM,FM")
+    .eq("class_id", classData.id)
+    .eq("subject_id", subjectData.id)
+    .eq("id", examTypeData.id)
+    .gte("created_at", `${year}-01-01`)
+    .lte("created_at", `${year}-12-31`);
+    
+    if (!markSetupData || markSetupData?.length === 0) {
+      return res.status(404).json({ error: "No mark setup data found for the given year, class, subject, and exam type" });
+    }
+
+    if (markSetupError) throw markSetupError;
+
   
-    res.status(200).json(data);
+    console.log("Fetched mark setup data:", markSetupData);
+
+    // Attach marks data to each student
+    const studentsWithMarks = data.map(student => {
+      const studentMarks = marksData.filter(mark => mark.student_id === student.id);
+      console.log("Student marks:", studentMarks);
+      return {
+        ...student,
+        marks: studentMarks
+      };
+    });
+    console.log("Students with marks:", studentsWithMarks);
+  
+    res.status(200).json({
+      students: studentsWithMarks,
+      class: classData,
+      subject: subjectData,
+      examType: examTypeData,
+      marks: marksData,
+      markSetup: markSetupData,
+    });
+
   } catch (error) {
     console.error("Error fetching records:", error);
     res.status(500).json({ error: "Failed to fetch records" });
