@@ -561,8 +561,8 @@ const updateTeacherStatus = async (req, res) => {
 
 const upgradeStudents = async (req, res) => {
   try {
-    const { studentIds, targetClass } = req.body;
-    console.log("studentIds",studentIds,targetClass);
+    const { studentIds, targetClass,updateDate } = req.body;
+    console.log("studentIds",studentIds,targetClass,updateDate);
     const supabase = await connectdb();
 
     const{data:classData, error: classError} = await supabase
@@ -581,7 +581,7 @@ const upgradeStudents = async (req, res) => {
     // Update students' class in both students and users tables
     const { error } = await supabase
       .from('students')
-      .update({ class: targetClass, class_id: classData.id })
+      .update({ class: targetClass, class_id: classData.id, updated_at: updateDate })
       .in('id', studentIds);
 
     if (error) throw error;

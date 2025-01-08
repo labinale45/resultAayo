@@ -10,12 +10,12 @@ const createClass = async (userData) => {
             throw new Error("Incomplete class data");
         }
         const createClient = await connectdb();
-        
+        const sanitizedSec = userData.sec.trim().toUpperCase();
         const { data: classData, error: classError } = await createClient
             .from('class')
             .insert({
                 class: userData.className,
-                sec: userData.sec,
+                sec: sanitizedSec,
                 // updated_at will be automatically set by Supabase
             })
             .select();
@@ -52,7 +52,7 @@ const createSubject = async (userData, classId) => {
             createClient
                 .from('subjects')
                 .insert({ 
-                    subject_name: subject,
+                    subject_name: subject.trim().toLowerCase(),
                     class_id: classId
                 })
         );

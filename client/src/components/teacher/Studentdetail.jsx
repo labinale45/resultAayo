@@ -30,7 +30,8 @@ export default function Studentdetail() {
         },
         body: JSON.stringify({
           studentIds: selectedStudents,
-          targetClass: targetClass
+          targetClass: targetClass,
+          updateDate: new Date().toISOString()
         })
       });
       const fetchStudents = async () => {
@@ -199,13 +200,15 @@ useEffect(() => {
           `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}&class=${selectedClass}`
         );
         const data = await response.json();
-        setStudents(data);
+        setStudents(Array.isArray(data) ? data : []); // Ensure students is an array
       } catch (error) {
         setError("Failed to fetch students");
+        setStudents([]); // Fallback to an empty array on error
       } finally {
         setIsLoading(false);
       }
     };
+    
     if (selectedYear && selectedClass) {
       fetchStudents();
     }else {
@@ -213,11 +216,14 @@ useEffect(() => {
     }
   }, [state,selectedYear, selectedClass]);
 
-  const filteredStudents = students.filter(
-    (student) =>
-      student.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStudents = Array.isArray(students)
+  ? students.filter(
+      (student) =>
+        student.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  : [];
+
 
   return (
     <div className="px-9 py-8 relative mt-7">

@@ -10,11 +10,11 @@ const createExam = async (req, res) => {
     try {
         const { examType, ddate,dtime,rdate,rtime} = req.body;
         const createClient = await connectdb();
-        
+        const sanitizedExamType = examType.trim().toLowerCase();
         const {data,error} = await createClient
         .from('exams')
         .insert({
-            exam_type: examType,
+            exam_type: sanitizedExamType,
             deadline_date: ddate,
             deadline_time: dtime,
             resultDate: rdate,

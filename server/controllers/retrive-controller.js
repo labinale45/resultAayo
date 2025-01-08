@@ -1,3 +1,4 @@
+const e = require("express");
 const connectdb = require("../utils/connectdb");
 
 // Get years based on selected status (teachers, students, or staff)
@@ -65,15 +66,18 @@ const getRecordsByYear = async (req, res) => {
 
     console.log(`Fetching ${status} for year:`, year, `and class ID:`, classId, `and exam type:`, examType);
 
-    const {data: examData, error: examError} = await supabaseClient
-    .from("exams")
-    .select("*")
-    .eq("exam_type", examType)
-    .gte("created_at", `${year}-01-01`)
-    .lte("created_at", `${year}-12-31`)
-    .single();
 
-    console.log("Exam Data:", examData);
+    const { data: examData, error: examError } = await supabaseClient
+    .from('exams')
+    .select('id')
+    .ilike('exam_type', `%${examType}%`)  // Use ilike for case-insensitive matching
+    .gte('created_at', `${year}-01-01`)
+    .lte('created_at', `${year}-12-31`)
+    .single();
+  
+
+    console.log("examData: ",examData);
+
 
     const {data:studentData, error: studentError} = await supabaseClient
     .from("students")
@@ -113,7 +117,10 @@ const getRecordsByYear = async (req, res) => {
       }
     // Add class filter only for students
     if (status === "students" && classId) {
-      query = query.eq("class", classId);
+      query = query.eq("class", classId)
+      .gte("updated_at", `${year}-01-01`)
+      .lte("updated_at", `${year}-12-31`);
+      
     }
     if (status === "marksheets" && classId && examType && year) {
 
@@ -128,6 +135,7 @@ const getRecordsByYear = async (req, res) => {
         return res.status(400).json({ error: "No valid student IDs found" });
       }
 
+     
       query = query.eq("class", classId)
       .eq("exam_id", examData.id)
       .in("student_id", studentIds) // Ensure this is an array

@@ -99,54 +99,55 @@ export default function Tmarksentry() {
     fetchClassesAndSubjects();
   }, [teacherId, selectedClass, selectedYear]);
 
-const fetchStudents = async () => {
-  setLoading(true);
-  try {
-    const response = await axios.get(
-      `http://localhost:4000/api/auth/studentRecords/${selectedYear}`,
-      {
-        params: {
-          status: 'students',
-          cls: selectedClass,
-          subject: selectedSubject,
-          examType: selectedExamType
-        }
-      });
 
-    console.log("Response Data:", response.data);
-
-    // Extracting the marks and other necessary details
-    const classStudents = response.data.students.map(student => {
-      // Find the marks for the student, assuming marks are present in an array
-      const studentMarks = response.data.marks?.find(m => m.student_id === student.id) || {};
-      
-      // Find the max marks setup for the class and subject (assuming single mark setup)
-      const markSetup = response.data.markSetup[0] || {};
-
-      return {
-        rollNo: student.rollNo || "N/A",
-        name: `${student.first_name} ${student.last_name}`.trim() || "Unknown",
-        id: student.id,
-        th: studentMarks?.TH || "",  // Theory marks
-        pr: studentMarks?.PR || "",  // Practical marks
-        total: (studentMarks?.TH || 0) + (studentMarks?.PR || 0),  // Total marks
-        passMark: markSetup?.PM || 30,  // Pass Marks (PM)
-        fullMark: markSetup?.FM || 100     // full Marks (FM)
-      };
-    });
-
-    console.log("Final Retrieved Data:", classStudents);
-    setStudents(classStudents);
-
-  } catch (error) {
-    console.error("Error fetching students:", error);
-    setStudents([]);  // In case of an error, set the students list to an empty array
-  } finally {
-    setLoading(false);
-  }
-};
 
   useEffect(() => {
+    const fetchStudents = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `http://localhost:4000/api/auth/studentRecords/${selectedYear}`,
+          {
+            params: {
+              status: 'students',
+              cls: selectedClass,
+              subject: selectedSubject,
+              examType: selectedExamType
+            }
+          });
+    
+        console.log("Response Data:", response.data);
+    
+        // Extracting the marks and other necessary details
+        const classStudents = response.data.students.map(student => {
+          // Find the marks for the student, assuming marks are present in an array
+          const studentMarks = response.data.marks?.find(m => m.student_id === student.id) || {};
+          
+          // Find the max marks setup for the class and subject (assuming single mark setup)
+          const markSetup = response.data.markSetup[0] || {};
+    
+          return {
+            rollNo: student.rollNo || "N/A",
+            name: `${student.first_name} ${student.last_name}`.trim() || "Unknown",
+            id: student.id,
+            th: studentMarks?.TH || "",  // Theory marks
+            pr: studentMarks?.PR || "",  // Practical marks
+            total: (studentMarks?.TH || 0) + (studentMarks?.PR || 0),  // Total marks
+            passMark: markSetup?.PM || 30,  // Pass Marks (PM)
+            fullMark: markSetup?.FM || 100     // full Marks (FM)
+          };
+        });
+    
+        console.log("Final Retrieved Data:", classStudents);
+        setStudents(classStudents);
+    
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        setStudents([]);  // In case of an error, set the students list to an empty array
+      } finally {
+        setLoading(false);
+      }
+    };
     if (selectedYear && selectedExamType && selectedClass && selectedSubject) {
       fetchStudents();
     }
