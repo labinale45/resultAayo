@@ -83,16 +83,26 @@ const handleSubmit = async (e) => {
                 />
               </div>
 
-              <div>
+                           <div>
                 <label htmlFor="deadlineDate" className="block mb-2">
                   Starting date:
                 </label>
                 <input
                   className="txt p-2 rounded-xl w-full h-10 border shadow-xl text-black"
                   type="date"
-                 value={ddate}
+                  value={ddate}
                   placeholder="Deadline Date"
-                  onChange={(e) => setDdate(e.target.value)}
+                  onChange={(e) => {
+                    const selectedDate = new Date(e.target.value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Set time to midnight for comparison
+                    today.setDate(today.getDate() + 1); // Set to tomorrow
+                    if (selectedDate < today) {
+                      alert("Please select a date that is tomorrow or in the future.");
+                    } else {
+                      setDdate(e.target.value);
+                    }
+                  }}
                   required
                 />
               </div>
@@ -120,7 +130,17 @@ const handleSubmit = async (e) => {
                   type="date"
                   value={rdate}
                   placeholder="Result Date"
-                  onChange={(e) => setRdate(e.target.value)}
+                  onChange={(e) => {
+                    const selectedDate = new Date(e.target.value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Set time to midnight for comparison
+                    today.setDate(today.getDate() + 1); // Set to tomorrow
+                    if (selectedDate < today) {
+                      alert("Please select a date that is tomorrow or in the future.");
+                    } else {
+                      setRdate(e.target.value);
+                    }
+                  }}
                   required
                 />
               </div>

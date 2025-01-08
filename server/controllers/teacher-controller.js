@@ -5,6 +5,27 @@ const e = require('express');
 
 const salt = bcrypt.genSaltSync(10);
 
+
+const deleteNotice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const supabase = await connectdb();
+
+
+    const { error: noticeError } = await supabase
+    .from('notices')
+    .delete()
+    .eq('id', id);
+
+    if (noticeError) throw error;
+
+    res.status(200).json({ message: 'Notice deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting Notice:', error);
+    res.status(500).json({ error: 'Failed to delete Notice' });
+  }
+};
+
 const deleteTeacher = async (req, res) => {
   try {
     const { id } = req.params;
@@ -203,6 +224,7 @@ const getTeacher = async (req, res) => {
 };
 
 module.exports = {
+  deleteNotice,
   deleteTeacher,
   updateTeacher,
   getTeacher

@@ -13,37 +13,61 @@ export default function Noticetable() {
   const [error, setError] = useState(null);
   const [state, setState] = useState("notices");
   const [selectedImage, setSelectedImage] = useState(null);
-console.log("notices", notices)
- 
+  console.log("notices", notices);
 
-
+  const handleDelete = async (noticeId) => {
+    if (window.confirm("Are you sure you want to delete this Notice?")) {
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/auth/notice/${noticeId}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          alert("Failed to delete Notice. Please try again.");
+        }
+        window.location.reload();
+      } catch (error) {
+        console.error("Error deleting Notice:", error);
+        setError("Failed to delete Notice. Please try again.");
+      }
+    }
+  };
 
   useEffect(() => {
     const YearSelect = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
+        const response = await fetch(
+          `http://localhost:4000/api/auth/year?status=${state}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
-        });
-  
+        );
+
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+          throw new Error(
+            errorData.error || `HTTP error! status: ${response.status}`
+          );
         }
-  
+
         const data = await response.json();
         if (!Array.isArray(data)) {
-          throw new Error('Invalid data format received');
+          throw new Error("Invalid data format received");
         }
-        
+
         setYears(data);
         setError(null);
-        
       } catch (error) {
-        console.error('Failed to fetch years:', error.message);
-        setError('Failed to fetch years. Please try again later.');
+        console.error("Failed to fetch years:", error.message);
+        setError("Failed to fetch years. Please try again later.");
         setYears([]);
       }
     };
@@ -53,17 +77,19 @@ console.log("notices", notices)
       setError(null);
       try {
         const response = await fetch(
-          `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
+          `http://localhost:4000/api/auth/records/${selectedYear}?status=${state}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
-        });
-  
+        );
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-  
+
         const data = await response.json();
         setNotices(data);
       } catch (error) {
@@ -72,14 +98,10 @@ console.log("notices", notices)
         setIsLoading(false);
       }
     };
-    if(selectedYear) { fetchNotices(); }
-  }, [state,selectedYear]);
-
-  
-
- 
-
-
+    if (selectedYear) {
+      fetchNotices();
+    }
+  }, [state, selectedYear]);
 
   return (
     <div className="relative overflow-x-auto mt-7">
@@ -90,11 +112,11 @@ console.log("notices", notices)
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-2"
         >
           <option value="">Select Year</option>
-           {years.map((year) => (
+          {years.map((year) => (
             <option key={year} value={year}>
               {year}
             </option>
-             ))}
+          ))}
         </select>
         <button
           onClick={() => setShowAddNotice(true)}
@@ -116,11 +138,7 @@ console.log("notices", notices)
         </div>
       )}
 
-      {error && (
-        <div className="text-red-500">
-          {error}
-        </div>
-      )}
+      {error && <div className="text-red-500">{error}</div>}
 
       {notices.length > 0 && (
         <div className="overflow-x-auto relative">
@@ -147,45 +165,49 @@ console.log("notices", notices)
               </thead>
               <tbody>
                 {notices.map((notice) => (
-                  <tr key={notice.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                  <tr
+                    key={notice.id}
+                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                  >
                     <td className="px-6 py-4 sticky left-0 z-20 bg-white dark:bg-gray-800">
                       {notice.description}
                     </td>
                     <td className="px-6 py-4">{notice.created_at}</td>
                     <td className="px-6 py-4">{notice.title}</td>
-                   <td className="px-6 py-4">
-  {notice.img_url ? (
-    <div
-      className="relative w-24 h-24 cursor-pointer"
-      onClick={() => setSelectedImage(notice.img_url)}
-    >
-    <Image
-  src={ notice?.img_url}
-  alt={notice.title}
-  layout="fill"
-  objectFit="cover"
-  className="rounded"
-  onError={(e) => {
-    console.error('Failed to load image:', notice.img_url);
-    e.target.src = "/assets/profile.png";
-  }}
-  placeholder="blur"
-  blurDataURL="/placeholder-image.jpg"
-/>
-    </div>
-  ) : (
-    <span className="text-gray-400">No image</span>
-  )}
-</td> 
+                    <td className="px-6 py-4">
+                      {notice.img_url ? (
+                        <div
+                          className="relative w-24 h-24 cursor-pointer"
+                          onClick={() => setSelectedImage(notice.img_url)}
+                        >
+                          <Image
+                            src={notice?.img_url}
+                            alt={notice.title}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded"
+                            onError={(e) => {
+                              console.error(
+                                "Failed to load image:",
+                                notice.img_url
+                              );
+                              e.target.src = "/assets/profile.png";
+                            }}
+                            placeholder="blur"
+                            blurDataURL="/placeholder-image.jpg"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">No image</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <a
-                        href="#"
-                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                      >
-                        Edit
-                      </a>
-                      <a
-                        href="#"
+                        href=""
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleDelete(notice.id);
+                        }}
                         className="font-medium text-blue-600 dark:text-blue-500 hover:underline ml-2"
                       >
                         Delete
@@ -201,7 +223,7 @@ console.log("notices", notices)
 
       {/* Image Preview Modal */}
       {selectedImage && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[102]"
           onClick={() => setSelectedImage(null)}
         >
@@ -209,16 +231,26 @@ console.log("notices", notices)
             <Image
               src={selectedImage}
               width={1000}
-              height={1000} 
+              height={1000}
               alt="Preview"
               className="max-w-full max-h-[90vh] object-contain"
             />
-            <button 
+            <button
               className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2"
               onClick={() => setSelectedImage(null)}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>

@@ -139,7 +139,7 @@ fetchClasses();
             <IoPersonAddSharp className="h-7 w-12 mr-2  " />
 
             <h1 className="text-[#253553]   dark:text-white underline text-2xl font-bold">
-            __A d d _S t u d e n t
+              __A d d _S t u d e n t
             </h1>
           </div>
 
@@ -148,8 +148,7 @@ fetchClasses();
               {successMessage}
             </div>
           )}
-<form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
-            
+          <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
             <div className="row-span-2">
               <label className="block text-sm font-medium text-gray-700">
                 First Name
@@ -161,7 +160,7 @@ fetchClasses();
                 onChange={(e) => setFirstName(e.target.value)}
                 required
               />
-               <label className="block mt-4 text-sm font-medium text-gray-700">
+              <label className="block mt-4 text-sm font-medium text-gray-700">
                 Last Name
               </label>
               <input
@@ -176,20 +175,20 @@ fetchClasses();
               <label className="block text-sm font-medium text-gray-700">
                 Class
               </label>
-             
+
               <select
-          value={selectedClassId}
-          onChange={(e) => setSelectedClassId(e.target.value)}
-          className="txt p-2 mt-6  w-full rounded-xl border shadow-xl"
-          required
-        >
-          <option value="">Select Class</option>
-          {classes.map((cls) => (
-            <option key={cls.id} value={cls.id}>
-              {cls.grade}
-            </option>
-          ))}
-        </select>
+                value={selectedClassId}
+                onChange={(e) => setSelectedClassId(e.target.value)}
+                className="txt p-2 mt-6  w-full rounded-xl border shadow-xl"
+                required
+              >
+                <option value="">Select Class</option>
+                {classes.map((cls) => (
+                  <option key={cls.id} value={cls.id}>
+                    {cls.grade}
+                  </option>
+                ))}
+              </select>
 
               <label className="block text-sm font-medium text-gray-700">
                 Gender
@@ -237,7 +236,7 @@ fetchClasses();
               <input
                 className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
                 type="tel"
-                pattern="(\+977?)?[9][6-9]\d{8}"      
+                pattern="(\+977?)?[9][6-9]\d{8}"
                 value={phone_number}
                 onChange={(e) => setContact(e.target.value)}
                 required
@@ -263,35 +262,57 @@ fetchClasses();
                 className="txt p-2 mt-1 w-full rounded-xl border shadow-xl"
                 type="date"
                 value={dob}
-                onChange={(e) => setDob(e.target.value)}
+                onChange={(e) => {
+                  const selectedDate = new Date(e.target.value);
+                  const today = new Date();
+                  const age = today.getFullYear() - selectedDate.getFullYear();
+                  const isValidAge =
+                    age > 2 ||
+                    (age === 2 &&
+                      (today.getMonth() > selectedDate.getMonth() ||
+                        (today.getMonth() === selectedDate.getMonth() &&
+                          today.getDate() >= selectedDate.getDate())));
+
+                  if (isValidAge) {
+                    setDob(e.target.value);
+                  } else {
+                    alert("You must be at least 1 year old.");
+                    setDob(""); // Optionally clear the input if the age is invalid
+                  }
+                }}
                 required
               />
             </div>
             <div className="ps-20 absolute top-40 right-14 z-10 p-4">
-  <label htmlFor="photo-upload" className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-gray-300 rounded-full cursor-pointer hover:border-blue-500 transition-all duration-200">
-    {image ? (
-      <Image
-        src={URL.createObjectURL(image)} 
-        alt="Preview" 
-        className="w-full h-full object-cover rounded-full"
-        width={20}
-        height={20}
-      />
-    ) : (
-      <>
-        <MdOutlineAddReaction className="w-12 h-12 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
-        <span className="mt-2 text-sm text-gray-500 group-hover:text-blue-500">Upload Photo</span>
-      </>
-    )}
-  </label>
-  <input
-    id="photo-upload"
-    type="file"
-    accept="image/*"
-    onChange={(e) => setImage(e.target.files[0])}
-    className="hidden"
-  />
-</div>
+              <label
+                htmlFor="photo-upload"
+                className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-gray-300 rounded-full cursor-pointer hover:border-blue-500 transition-all duration-200"
+              >
+                {image ? (
+                  <Image
+                    src={URL.createObjectURL(image)}
+                    alt="Preview"
+                    className="w-full h-full object-cover rounded-full"
+                    width={20}
+                    height={20}
+                  />
+                ) : (
+                  <>
+                    <MdOutlineAddReaction className="w-12 h-12 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+                    <span className="mt-2 text-sm text-gray-500 group-hover:text-blue-500">
+                      Upload Photo
+                    </span>
+                  </>
+                )}
+              </label>
+              <input
+                id="photo-upload"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImage(e.target.files[0])}
+                className="hidden"
+              />
+            </div>
 
             <div className="col-span-2 flex justify-start">
               <button
