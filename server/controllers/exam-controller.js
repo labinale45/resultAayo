@@ -496,7 +496,7 @@ const enterMarks = async (req, res)=>{
 
         const {data: studentData, error: studentError} = await createClient
         .from('students')
-        .select('id')
+        .select('id, rollNo')
         .eq('class_id', classData.id)
         .in('rollNo', marks.map(mark => mark.rollNo));
 

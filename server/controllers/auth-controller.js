@@ -244,6 +244,7 @@ const publishResult = async (req, res) => {
     if (!examData) {
       return res.status(404).json({ error: 'Exam not found' });
     }
+    console.log("Exam ID:", examData.id);
 
     const { data: classData, error: classError } = await supabaseClient
       .from('class')
@@ -260,33 +261,27 @@ const publishResult = async (req, res) => {
       return res.status(404).json({ error: 'Class not found' });
     }
 
-    const subjectsArray = []; // Initialize an array to hold all subjects
+    console.log("Class ID:", classData.id);
 
-    students.forEach(student => {
-      const studentSubjects = student.subjects.split(', ').map(subject => subject.trim());
-      subjectsArray.push(...studentSubjects); // Add subjects to the array
-      console.log(`Subjects for ${student.students}:`, studentSubjects);
-    });
+   // Create an array of subjects from the students' data (Extract subject names)
+   const subjectsArray = students.flatMap(student => Object.keys(student.subjects));
 
-    // Query the database for subjects based on the first subject in the array
-    const { data: subjects, error: subjectsError } = await supabaseClient
-      .from('subjects')
-      .select('id, subject_name')
-      .in('subject_name', subjectsArray) // Use .in() to match any subject in the array
-      .eq('class_id', classData.id);
+   // Fetch subject details from the database
+   const { data: subjects, error: subjectsError } = await supabaseClient
+     .from('subjects')
+     .select('id, subject_name')
+     .in('subject_name', subjectsArray)
+     .eq('class_id', classData.id);
 
-    if (subjectsError) {
-      throw subjectsError;
-    }
-    if (!subjects || subjects.length === 0) {
-      return res.status(404).json({ error: 'Subject not found' });
-    }
+   if (subjectsError) throw subjectsError;
+   if (!subjects || subjects.length === 0) return res.status(404).json({ error: 'Subject not found' });
 
-    console.log('Subjects id and Name:', subjects);
+   console.log('Subjects id and Name:', subjects);
+
 
     const {data: studentData, error: studentError } = await supabaseClient
     .from('students')
-    .select('id')
+    .select('id,rollNo')
     .eq('class', className)
     .gte('updated_at', `${year}-01-01`)
     .lte('updated_at', `${year}-12-31`);
@@ -304,104 +299,114 @@ const publishResult = async (req, res) => {
     // Loop through each student
     const markSheetsData = []; // Initialize an array to hold mark sheets data
 
-    // Loop through each student
     students.forEach(student => {
-      const studentSubjects = student.subjects.split(', ').map(subject => subject.trim());
-      
-      // Loop through student's specific subjects and their marks
-      studentSubjects.forEach((subjectName, index) => {
-        // Find the matching subject from our subjects array
-        const subjectData = subjects.find(s => s.subject_name === subjectName);
-        if (subjectData) {
-          markSheetsData.push({
-            class: className,
-            id: student.id[index],
-            exam_id: examData.id,
-            subject_id: subjectData.id,
-            TH: student.TH[index], // Get TH mark for this specific subject
-            PR: student.PR[index], // Get PR mark for this specific subject
-            updated_at: new Date().toISOString()
-          });
-        }
-      });
+      // Find the corresponding student record from `studentData` by rollNo
+  const studentRecord = studentData.find(sd => sd.rollNo === student.rollNo);
+  if (studentRecord) {
+    // Iterate over the subject names (keys) of the student.subjects object
+    Object.keys(student.subjects).forEach(subjectName => {
+      const subjectData = student.subjects[subjectName]; // Access the marks data for the subject
+      const subject = subjects.find(s => s.subject_name === subjectName); // Find the corresponding subject in the DB
+
+      if (subject) {
+        // Push the mark sheet data with the relevant theory (TH) and practical (PR) marks
+        markSheetsData.push({
+          class: className,
+          student_id: studentRecord.id, // Use the id of the student found in studentData
+          exam_id: examData.id,
+          subject_id: subject.id,
+          TH: subjectData.theory, // Theory marks
+          PR: subjectData.practical, // Practical marks
+          updated_at: new Date().toISOString()
+        });
+      }
     });
+  } else {
+    console.log(`Student with rollNo ${student.rollNo} not found in the database.`);
+  }
+});
+
 
   // Log the markSetupData to check for undefined values
   console.log("Mark Sheets Data:", markSheetsData);
 
+// Proceed to insert/update mark sheets into the database
 
-    const results = []; // Array to hold results for each student
+for (const mark of markSheetsData) {
+  const { student_id, exam_id, subject_id, TH, PR } = mark;
 
-    for (const mark of markSheetsData) {
+  // Check if student_id or subject_id is undefined
+  if (!student_id || !subject_id) {
+    console.error(`Skipping entry: student_id or subject_id is undefined. Student ID: ${student_id}, Subject ID: ${subject_id}`);
+    continue; // Skip this iteration
+  }
 
-      const {class:className,id, exam_id, subject_id, TH, PR} = mark;
+  // Perform the database operations (update or insert) here
+  try {
+    const { data: existingRecord, error: fetchError } = await supabaseClient
+      .from('marksheets')
+      .select('*')
+      .eq("class", className)
+      .eq('student_id', student_id) // Check for existing record by student_id
+      .eq('exam_id', exam_id) // Check for existing record by exam_id
+      .eq('subject_id', subject_id) // Check for existing record by subject_id
+      .limit(1)
+      .single();
 
-      console.log("Mark Data:", mark);
-      // Check if a record already exists for the current student
-      const { data: existingRecord, error: fetchError } = await supabaseClient
-        .from('marksheets')
-        .select('*')
-        .eq("class", className)
-        .eq('id',id) // Check for existing record by student_id
-        .eq('exam_id', exam_id) // Check for existing record by exam_id
-        .eq('subject_id', subject_id) // Check for existing record by subject_id
-        .limit(1) // Get a single record
-        .single(); // Get a single record
-
-      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found" error
-        throw fetchError;
-      }
-
-      console.log("Existing Record:", existingRecord);
-
-      if (existingRecord) {
-        // Update existing record for the current student
-        const { error } = await supabaseClient
-          .from('marksheets')
-          .update({
-            schoolName,
-            schoolAddress,
-            estdYear: establishmentYear,
-            TH: TH, // Use the specific TH value for the student
-            PR: PR, // Use the specific PR value for the student
-            isPublished: isPublished,
-            updated_at: new Date().toISOString()
-          })
-          .eq("class", className)
-          .eq('id',id) // Check for existing record by student_id
-          .eq('exam_id', exam_id) // Check for existing record by exam_id
-          .eq('subject_id', subject_id)// Update the specific record
-
-        if (error) throw error;
-        results.push(existingRecord); // Store the updated result
-        console.log(`Updated result for subject ${subject_id} for student ${id}`);
-      } else {
-        // Insert new record for the current student
-        const { error } = await supabaseClient
-          .from('marksheets')
-          .insert([{
-            id:id, // Use current student's ID
-            subject_id: subject_id,
-            class: className,
-            exam_id: exam_id,
-            schoolName,
-            schoolAddress,
-            estdYear: establishmentYear,
-            TH: TH, // Use the specific TH value for the student
-            PR: PR, // Use the specific PR value for the student
-            isPublished: isPublished,
-            updated_at: new Date().toISOString()
-          }]);
-
-        if (error) throw error;
-        results.push(data); // Store the newly created result
-      }
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      throw fetchError;
     }
 
-    res.status(200).json({
-      message: 'Results published successfully',
-      data: results // Return all results
-    });
+    if (existingRecord) {
+      const { error } = await supabaseClient
+        .from('marksheets')
+        .update({
+          schoolName,
+          schoolAddress,
+          estdYear: establishmentYear,
+          TH: TH,
+          PR: PR,
+          isPublished: isPublished,
+          updated_at: new Date().toISOString()
+        })
+        .eq("class", className)
+        .eq('student_id', student_id)
+        .eq('exam_id', exam_id)
+        .eq('subject_id', subject_id);
+
+      if (error) throw error;
+
+      console.log(`Updated result for student ${student_id}, subject ${subject_id}`);
+    } else {
+      const { error } = await supabaseClient
+        .from('marksheets')
+        .insert([{
+          student_id,
+          subject_id,
+          class: className,
+          exam_id,
+          schoolName,
+          schoolAddress,
+          estdYear: establishmentYear,
+          TH,
+          PR,
+          isPublished,
+          updated_at: new Date().toISOString()
+        }]);
+
+      if (error) throw error;
+
+      console.log(`Inserted new result for student ${student_id}, subject ${subject_id}`);
+    }
+  } catch (error) {
+    console.error('Error inserting/updating mark sheet:', error);
+  }
+}
+
+res.status(200).json({
+  message: 'Results published successfully',
+  data: markSheetsData // Return all results
+});
 
   } catch (error) {
     console.error('Error publishing result:', error);

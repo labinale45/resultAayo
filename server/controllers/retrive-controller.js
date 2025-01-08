@@ -56,7 +56,7 @@ const getYears = async (req, res) => {
 };
 
 // Get records by year and status
-const getRecordsByYear = async (req, res) => {
+const  getRecordsByYear = async (req, res) => {
   try {
     const supabaseClient = await connectdb();
     const { year } = req.params;
@@ -141,7 +141,7 @@ const getRecordsByYear = async (req, res) => {
       .in("student_id", studentIds) // Ensure this is an array
       .gte("created_at", `${year}-01-01`)
       .lte("created_at", `${year}-12-31`)
-      .select(`*,student_id:students(first_name,last_name,rollNo), subject_id:subjects(subject_name), exam_id:exams(exam_type)`);
+      .select(`*,student_id:students(dob,first_name,last_name,rollNo), subject_id:subjects(subject_name), exam_id:exams(exam_type)`);
     }
 
     if (status === "ledgers" && classId && examType && year) {
@@ -180,7 +180,6 @@ const getRecordsByYear = async (req, res) => {
         email: record.email || "",
         contact: record.phone_number || "",
         address: record.address || "",
-        dateOfBirth: new Date(record.dob).toLocaleDateString() || "",
         username: record.username || "",
       };
 
@@ -246,6 +245,7 @@ const getRecordsByYear = async (req, res) => {
             TH: record.TH,
             PR: record.PR,
             created_at: new Date(record.created_at).toLocaleDateString(),
+            dob: record.student_id.dob || "",
           };
         default:
           return baseFormat;
@@ -433,10 +433,7 @@ const getRecordsByYearAndClass = async (req, res) => {
     .gte("created_at", `${year}-01-01`)
     .lte("created_at", `${year}-12-31`);
 
-    if (marksError) throw marksError;
-    if (!marksData || marksData?.length === 0) {
-      return res.status(404).json({ error: "No marks data found for the given year, class, subject, and exam type" });
-    }
+
     console.log("Fetched marks data:", marksData);
 
     const {data: markSetupData, error: markSetupError} = await supabaseClient

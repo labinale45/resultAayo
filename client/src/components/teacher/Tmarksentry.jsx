@@ -219,7 +219,7 @@ export default function Tmarksentry() {
 
       if (response.status === 200) {
         alert("Marks saved successfully!");
-        await fetchStudents();
+        window.location.reload();
       }
     } catch (error) {
       alert(error.response?.data?.message || "Failed to save marks");

@@ -4,6 +4,7 @@
 import React, { useState, useEffect ,useRef} from "react";
 import Gradesheet from "./Gradesheet";
 import Print from "@/components/Mini Component/Print"
+import adbs from 'ad-bs-converter';
 
 export default function Ledgertable() {
   const [showGradesheet, setShowGradesheet] = useState(false);
@@ -64,46 +65,10 @@ export default function Ledgertable() {
         const data = await response.json();
   
         console.log("marksheets Data:", data);
-      
-          // Process the data to group subjects by student
-          const groupedStudents = {};
-  
-          data.forEach(record => {
-              const key = `${record.students}-${record.rollNo}-${record.exam_type}-${record.class}`;
-              if (!groupedStudents[key]) {
-                  groupedStudents[key] = {
-                      id: [],
-                      rollNo: record.rollNo,
-                      students: record.students,
-                      exam_type: record.exam_type,
-                      class: record.class,
-                      schoolName: record.schoolName,
-                      schoolAddress: record.schoolAddress,
-                      estdYear: record.estdYear,
-                      TH:[],
-                      PR:[],
-                      subjects: []
-                  };
-              }
-              groupedStudents[key].subjects.push(record.subjects);
-              groupedStudents[key].TH.push(record.TH); 
-             groupedStudents[key].PR.push(record.PR);
-             groupedStudents[key].id.push(record.id); 
-  
-          });
-  
-          // Convert the grouped object back to an array
-          const formattedStudents = Object.values(groupedStudents).map(student => ({
-              ...student,
-              subjects: student.subjects.join(', '), // Join subjects into a single string or format as needed
-              totalScores: student.TH.map((_, index) => ( // Initialize totalScores based on the number of subjects
-                  (parseFloat(student.TH[index] || 0) || 0) + (parseFloat(student.PR[index] || 0) || 0) // Calculate total for each subject
-  
-                  
-              ))
-          }));
-          console.log("Formatted Data:", formattedStudents);
-          setStudents(formattedStudents);
+         // Group students by roll number and aggregate marks
+         const groupedStudents = groupStudentsByRollNo(data);
+         console.log("Grouped Students:", groupedStudents);
+         setStudents(groupedStudents); // Update the state with grouped data
   
       } catch (error) {
         setError(error.message);
@@ -111,6 +76,71 @@ export default function Ledgertable() {
         setIsLoading(false);
       }
     };
+
+      // Helper function to group students by roll number and aggregate marks by subject
+      const groupStudentsByRollNo = (students) => {
+        const grouped = {};
+      
+        students.forEach((student) => {
+          const { rollNo, dob, students: studentName, subjects, TH, PR } = student;
+      
+          // Ensure we have a student record for this rollNo
+          if (!grouped[rollNo]) {
+            grouped[rollNo] = {
+              rollNo: rollNo,
+              dateOfBirth: dob,
+              name: studentName,
+              subjects: {}, // Store subjects as keys
+              totalMarks: 0, // Total marks obtained by student
+              totalMaxMarks: 0, // Total maximum marks (assuming 100 marks per subject)
+              totalGPA: 0, // Placeholder for GPA
+            };
+          }
+      
+          // Add the marks for the specific subject
+          if (!grouped[rollNo].subjects[subjects]) {
+            grouped[rollNo].subjects[subjects] = {
+              theory: 0,
+              practical: 0,
+              total: 0,
+            };
+          }
+      
+          // Ensure missing marks are handled as 0
+          const theoryMarks = TH || 0; // Default to 0 if missing
+          const practicalMarks = PR || 0; // Default to 0 if missing
+      
+          // Aggregate marks for this subject
+          grouped[rollNo].subjects[subjects].theory += theoryMarks;
+          grouped[rollNo].subjects[subjects].practical += practicalMarks;
+          grouped[rollNo].subjects[subjects].total += theoryMarks + practicalMarks;
+      
+          // Update total marks for the student
+          grouped[rollNo].totalMarks += theoryMarks + practicalMarks;
+      
+          // Update the total maximum marks for this student (assuming 100 for theory and 100 for practical per subject)
+          grouped[rollNo].totalMaxMarks += 100; // 100 for theory and 100 for practical per subject
+        });
+      
+        // After grouping, calculate GPA (if needed) and return as an array
+        Object.values(grouped).forEach((studentData) => {
+          // Check if totalMaxMarks is greater than 0 to avoid division by zero
+          if (studentData.totalMaxMarks > 0) {
+            // Calculate percentage based GPA (assuming max GPA is 4)
+            const percentage = (studentData.totalMarks / studentData.totalMaxMarks) * 100;
+      
+            // Calculate GPA using a scale of 4.0
+            const maxGPA = 4.0;
+            studentData.totalGPA = ((percentage / 100) * maxGPA).toFixed(2); // GPA out of 4.0
+          } else {
+            studentData.totalGPA = 0; // Set GPA to 0 if totalMaxMarks is 0
+          }
+        });
+      
+        return Object.values(grouped); // Return grouped students as an array
+      };
+      
+
     const YearSelect = async () => {
       try {
         const response = await fetch(`http://localhost:4000/api/auth/year?status=${state}`, {
@@ -173,108 +203,145 @@ export default function Ledgertable() {
   },[selectedYear]);
 
 
-  
-
-
-  
-
-
-
-
-  const handleInputChange = (index, subjectIndex, field, value) => {
-    const updatedStudents = students.map((student, i) => {
-      if (i === index) {
+  const handleInputChange = (studentIndex, subject, field, value) => {
+    const updatedStudents = students.map((student, index) => {
+      if (index === studentIndex) {
         const updatedStudent = { ...student };
   
-        // Ensure TH and PR are initialized as arrays if they are undefined
-        updatedStudent.TH = updatedStudent.TH || [];
-        updatedStudent.PR = updatedStudent.PR || [];
+        // Ensure subjects exist in the student object
+        updatedStudent.subjects = updatedStudent.subjects || {};
   
-        // Update the specific field based on the input
-        if (field === "TH") {
-          updatedStudent.TH[subjectIndex] = value; // Update Theory score
-        } else if (field === "PR") {
-          updatedStudent.PR[subjectIndex] = value; // Update Practical score
+        // Ensure the selected subject exists with default values
+        const subjectData = updatedStudent.subjects[subject] || { theory: 0, practical: 0, total: 0 };
+  
+        // Update the selected field (theory or practical)
+        const updatedValue = value ? parseFloat(value) : 0;  // Use a simple check for invalid input
+  
+        if (field === "theory") {
+          // Ensure total theory and practical don't exceed 100
+          if (updatedValue + subjectData.practical <= 100) {
+            subjectData.theory = updatedValue;
+          } else {
+            // Prevent updating if the total exceeds 100
+            alert("The combined total of theory and practical cannot exceed 100!");
+            return student; // Don't update the student
+          }
         }
-
-         // Calculate total for the specific subject
-      const theoryScore = parseFloat(updatedStudent.TH[subjectIndex]) || 0; // Parse Theory score
-      const practicalScore = parseFloat(updatedStudent.PR[subjectIndex]) || 0; // Parse Practical score
-      const totalScores = theoryScore + practicalScore; // Total marks for the subject
   
-        // Calculate totals and GPA based on arrays for each subject
-        const totalTheory = updatedStudent.TH.reduce((acc, curr) => acc + parseFloat(curr || 0), 0);
-        const totalPractical = updatedStudent.PR.reduce((acc, curr) => acc + parseFloat(curr || 0), 0);
-        const total = totalTheory + totalPractical; // Total marks
-        const gpa = (total / (updatedStudent.TH.length + updatedStudent.PR.length)).toFixed(2); // Calculate GPA
+        if (field === "practical") {
+          // Ensure total theory and practical don't exceed 100
+          if (updatedValue + subjectData.theory <= 100) {
+            subjectData.practical = updatedValue;
+          } else {
+            // Prevent updating if the total exceeds 100
+            alert("The combined total of theory and practical cannot exceed 100!");
+            return student; // Don't update the student
+          }
+        }
   
-        return { ...updatedStudent,totalScores, total, gpa }; // Return updated student object
+        // Recalculate the total for the subject (theory + practical)
+        subjectData.total = subjectData.theory + subjectData.practical;
+  
+        updatedStudent.subjects[subject] = subjectData;
+  
+        // Recalculate total marks for the student
+        const totalMarks = Object.values(updatedStudent.subjects).reduce(
+          (sum, subj) => sum + (subj.theory || 0) + (subj.practical || 0),
+          0
+        );
+  
+        // GPA calculation
+        const gpa = (totalMarks / (Object.keys(updatedStudent.subjects).length * 2)).toFixed(2);
+  
+        return {
+          ...updatedStudent,
+          totalMarks,
+          gpa: parseFloat(gpa)  // Ensure GPA is a float
+        };
       }
+  
       return student; // Return unchanged student
     });
-    setStudents(updatedStudents); // Update state with new students array
+  
+    setStudents(updatedStudents); // Update state with new data
   };
+  
+  
+  
+  
+  
 
   const gradesheetRef = useRef(null);
 
   const handlePrint = () => {
     const printWindow = window.open('', '', 'width=800,height=600');
     
+    // Get all unique subjects from the first student
+    const subjects = students.length > 0 ? Object.keys(students[0].subjects) : [];
+    
     const printContent = `
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Ledger Table</title>
+        <title>Ledger Table - ${selectedClass} ${selectedExamType} ${selectedYear}</title>
         <style>
+          @page { size: landscape; }
           body {
             font-family: Arial, sans-serif;
             padding: 20px;
+            margin: 0;
           }
           .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+          }
+          .school-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+          }
+          .school-info {
+            font-size: 14px;
+            margin-bottom: 5px;
+          }
+          .exam-info {
+            font-size: 18px;
+            margin: 15px 0;
           }
           .class-info {
             text-align: left;
-            margin-bottom: 15px;
+            margin: 15px 0;
+            font-weight: bold;
           }
           table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            font-size: 12px;
           }
           th, td {
             border: 1px solid black;
-            padding: 8px;
+            padding: 6px;
             text-align: center;
           }
-          .subject-header {
-            text-align: center;
-            border-bottom: 1px solid black;
+          .subject-column {
+            min-width: 120px;
           }
-          .subject-subheader {
+          .marks-container {
             display: flex;
             justify-content: space-between;
-            padding: 4px;
-            font-size: 0.9em;
           }
-          .edit-button {
-            display: none;
-          }
-          @media print {
-            .no-print {
-              display: none;
-            }
+          .marks-cell {
+            width: 33%;
           }
         </style>
       </head>
       <body>
         <div class="header">
-          <p>Estd: ${establishmentYear || students[0]?.estdYear || ''}</p>
-          <h2>${selectedExamType}-${selectedYear}</h2>
-        </div>
-        <div class="class-info">
-          <p>Class: ${selectedClass}</p>
+          <div class="school-name">${schoolName || 'School Name'}</div>
+          <div class="school-info">${schoolAddress || 'School Address'}</div>
+          <div class="school-info">Estd: ${establishmentYear || ''}</div>
+          <div class="exam-info">${selectedExamType} - ${selectedYear}</div>
+          <div class="class-info">Class: ${selectedClass}</div>
         </div>
         
         <table>
@@ -282,32 +349,35 @@ export default function Ledgertable() {
             <tr>
               <th rowspan="2">Roll No</th>
               <th rowspan="2">Name</th>
-              ${students[0]?.subjects.split(', ').map(subject => `
-                <th colspan="3" class="subject-column">
-                  <div class="subject-header">${subject}</div>
-                  <div class="subject-subheader">
-                    <span>Theory</span>
-                    <span>Practical</span>
-                    <span>Total</span>
-                  </div>
-                </th>
+              ${subjects.map(subject => `
+                <th colspan="3" class="subject-column">${subject}</th>
               `).join('')}
-              <th rowspan="2">Total Marks</th>
+              <th rowspan="2">Total</th>
               <th rowspan="2">GPA</th>
+            </tr>
+            <tr>
+              ${subjects.map(() => `
+                <th>TH</th>
+                <th>PR</th>
+                <th>Total</th>
+              `).join('')}
             </tr>
           </thead>
           <tbody>
             ${students.map(student => `
               <tr>
                 <td>${student.rollNo}</td>
-                <td>${student.students}</td>
-                ${student.subjects.split(', ').map((_, index) => `
-                  <td>${student.TH[index] || ''}</td>
-                  <td>${student.PR[index] || ''}</td>
-                  <td>${student.totalScores[index] || ''}</td>
-                `).join('')}
-                <td>${student.total || ''}</td>
-                <td>${student.gpa || ''}</td>
+                <td>${student.name}</td>
+                ${subjects.map(subject => {
+                  const subjectData = student.subjects[subject] || { theory: 0, practical: 0, total: 0 };
+                  return `
+                    <td>${subjectData.theory || 0}</td>
+                    <td>${subjectData.practical || 0}</td>
+                    <td>${subjectData.total || 0}</td>
+                  `;
+                }).join('')}
+                <td>${student.totalMarks || 0}</td>
+                <td>${student.totalGPA || 0}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -321,14 +391,16 @@ export default function Ledgertable() {
     printWindow.focus();
     
     // Wait for content to load before printing
-    printWindow.onload = function() {
+    setTimeout(() => {
       printWindow.print();
       printWindow.close();
-    };
+    }, 500);
   };
+  
 
   const handlePublishResult = async () => {
     try {
+      console.log("Students:", students);
       // Validate if we have all required data
       if (!selectedYear || !selectedClass || !selectedExamType || !students.length) {
         alert('Please ensure all fields are filled and students data is available');
@@ -357,7 +429,6 @@ export default function Ledgertable() {
       if (!response.ok) {
         throw new Error(data.error || 'Failed to publish result');
       }
-
       alert('Result Published Successfully!');
     } catch (error) {
       console.error('Error:', error);
@@ -376,29 +447,32 @@ export default function Ledgertable() {
     schoolAddress: schoolAddress,
     establishmentYear: establishmentYear,
     studentsData: students.map(student => ({
-        students: student.students,
-        dateOfBirth: student.dateOfBirth, // Assuming you have this data
-        dateOfBirthAD: student.dateOfBirthAD, // Assuming you have this data
+        students: student.name,
+        dateOfBirthAD: student.dateOfBirth,
+        dateOfBirth: student.dateOfBirth ? adbs.ad2bs(student.dateOfBirth).en.date : '',
         rollNo: student.rollNo,
         examType: selectedExamType,
         year: selectedYear,
-        subjects: student.subjects.split(', ').map((subject, index) => ({
+        subjects: Object.keys(student.subjects).map((subject, index) => ({
             name: subject,
             th: {
-                creditHour: 3, // Example value, adjust as needed
-                gpa: student.gpa, // Assuming GPA is calculated for the student
-                grade: student.gpa >= 3.5 ? 'A' : student.gpa >= 2.5 ? 'B' : 'C' // Example grading logic
+                creditHour: 3, // Add default credit hour for theory
+                gpa: student.totalGPA,
+                grade: student.totalGPA >= 3.5 ? 'A' : student.totalGPA >= 2.5 ? 'B' : 'C',
+                marks: student.subjects[subject].theory
             },
             pr: {
-                creditHour: 1, // Example value, adjust as needed
-                gpa: student.gpa, // Assuming GPA is calculated for the student
-                grade: student.gpa >= 3.5 ? 'A' : student.gpa >= 2.5 ? 'B' : 'C' // Example grading logic
+                creditHour: 1, // Add default credit hour for practical
+                gpa: student.totalGPA,
+                grade: student.totalGPA >= 3.5 ? 'A' : student.totalGPA >= 2.5 ? 'B' : 'C',
+                marks: student.subjects[subject].practical
             },
-            finalGrade: student.gpa >= 3.5 ? 'A' : student.gpa >= 2.5 ? 'B' : 'C', // Example final grade logic
-            remarks: 'Good' // Example remarks, adjust as needed
+            finalGrade: student.totalGPA >= 3.5 ? 'A' : student.totalGPA >= 2.5 ? 'B' : 'C',
+            remarks: 'Good'
         }))
     }))
-  };
+};
+
 
 
   const isFormComplete = selectedYear && selectedClass && selectedExamType;
@@ -465,19 +539,22 @@ export default function Ledgertable() {
       </div>
 
       {isFormComplete && (
-        <div ref={gradesheetRef} className="border border-gray-300 rounded-lg p-4 ">
-          <div className="mb-8 text-center">
-          <h2 className="text-4xl font-semibold">{schoolName || students.schoolName}</h2>
-      <p>{schoolAddress|| students.schoolAddress}</p>
-      <p>Estd: {establishmentYear||students.estdYear}</p>
-            <p className="text-3xl">
-              {selectedExamType}-{selectedYear}
-            </p>
-            <p className="text-left text-2xl">Class: {selectedClass}</p>
-            <button onClick={() => setIsEditing(true)} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
-          Edit
-        </button>
-          </div>
+        <div ref={gradesheetRef} className="border border-gray-300 rounded-lg p-4 min-h-fit w-full overflow-auto">
+     <div className="mb-8 flex flex-col items-center justify-center w-full">
+  <h2 className="text-4xl font-semibold text-center">{schoolName || students.schoolName}</h2>
+  <p className="text-center">{schoolAddress|| students.schoolAddress}</p>
+  <p className="text-center">Estd: {establishmentYear||students.estdYear}</p>
+  <p className="text-3xl text-center">
+    {selectedExamType}-{selectedYear}
+  </p>
+  <div className="w-full px-4">
+    <p className="text-2xl text-left">Class: {selectedClass}</p>
+  </div>
+  <button onClick={() => setIsEditing(true)} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
+    Edit
+  </button>
+</div>
+
 
           {isEditing && (
         <div className="mb-8 text-center">
@@ -519,18 +596,26 @@ export default function Ledgertable() {
                 <th className="border border-gray-300 p-2" rowSpan="2">
                   Name
                 </th>
-                
-                {students[0] && students[0].subjects.split(', ').map((subject, subjectIndex) => (
-                  <th key={subjectIndex} className=" border border-gray-300 border-r-slate-400  p-2">
-                    {subject}
-                    <hr className="border border-slate-200"></hr>
-                    <tr className="flex justify-between ">
-                <td className=" text-gray-700  ">Theory</td>
-                <td className=" text-gray-700  ">Practical</td>
-                <td className=" text-gray-700 ">Total</td>
-              </tr>
-                  </th>
-                ))}
+                {/* Render subject headers dynamically */}
+                {students.length > 0 &&
+                    Object.keys(students[0].subjects).map(
+                      (subject, subjectIndex) => (
+                        <th
+                          key={subjectIndex}
+                          className="border border-gray-300  border-r-slate-400  p-2"
+                        >
+                          {subject}
+                          <hr className="border border-slate-200"></hr>
+                          <div className="flex justify-between">
+                            <span className="text-gray-700 px-2">Theory</span>
+                            <span className="text-gray-700 px-2">
+                              Practical
+                            </span>
+                            <span className="text-gray-700 px-2">Total</span>
+                          </div>
+                        </th>
+                      )
+                    )}
 
                 <th className="border border-gray-300 p-2" rowSpan="2">
                   Total Marks
@@ -541,58 +626,76 @@ export default function Ledgertable() {
               </tr>
             </thead>
             <tbody>
-            {students.length === 0 ?(
-              <tr>
-                <td colSpan="10" className="text-center text-red-600">
-                  No students found.
-                </td>
-              </tr>
-            ) :students.map((student, index) => (
-    <tr key={student.rollNo}>
-      <td className="border border-gray-300 p-2">{student.rollNo}</td>
-      <td className="border border-gray-300 p-2">{student.students}</td>
-      
-      {students[0] && students[0].subjects.split(', ').map((subject, subjectIndex) => (
-        <td className="w-72 border border-r-slate-400 " key={subjectIndex}>
-          <td className="w-24 border border-gray-300 p-2">
-            <input
-              type="number"
-              placeholder="TH"
-              value={student.TH[subjectIndex] || ""}
-              onChange={(e) =>
-                handleInputChange(index, subjectIndex, "TH", e.target.value)
-              }
-              className="w-full p-1 border border-gray-300 rounded-md"
-            />
-          </td>
-          <td className="w-24 border border-gray-300 p-2">
-            <input
-              type="number"
-              placeholder="PR"
-              value={student.PR[subjectIndex] || ""}
-              onChange={(e) =>
-                handleInputChange(index, subjectIndex, "PR", e.target.value)
-              }
-              className="w-full p-1 border border-gray-300 rounded-md"
-            />
-          </td>
-          <td className="w-24 border border-gray-300 p-2 text-center">
-            {student.totalScores[subjectIndex] || student.totalScores}
-          </td>
-        </td>
-      ))}
-
-      <td className="border border-gray-300 p-2 text-center">
-        {student.total}
-      </td>
-      <td className="border border-gray-300 p-2 text-center">
-        {student.gpa}
+  {students.length === 0 ? (
+    <tr>
+      <td colSpan="10" className="text-center text-red-600">
+        No students found.
       </td>
     </tr>
-))}
+  ) : (
+    students.map((student, studentIndex) => (
+      <tr key={student.rollNo}>
+        <td className="border border-gray-300 p-2">{student.rollNo}</td>
+        <td className="border border-gray-300 p-2">{student.name}</td>
+
+        {Object.keys(students[0].subjects).map((subject, subjectIndex) => {
+  const marks = student.subjects[subject] || {
+    theory: 0,
+    practical: 0,
+    total: 0,
+  };
+
+  return (
+    <td key={subjectIndex} className="border border-gray-300 p-2">
+      <div className="flex justify-between">
+        {/* Theory Marks */}
+        <input
+          type="number"
+          value={marks.theory||0}
+          onChange={(e) =>
+            handleInputChange(studentIndex, subject, "theory", e.target.value)
+          }
+          className="w-16 text-center"
+        />
+
+        {/* Practical Marks */}
+        <input
+          type="number"
+          value={marks.practical}
+          onChange={(e) =>
+            handleInputChange(studentIndex, subject, "practical", e.target.value)
+          }
+          className="w-16 text-center"
+        />
+
+        {/* Total Marks */}
+        <input
+          type="number"
+          value={marks.total}
+          readOnly
+          className="w-16 text-center font-semibold"
+        />
+      </div>
+    </td>
+  );
+})}
 
 
+
+
+
+
+        <td className="border border-gray-300 p-2 text-center">
+          {student.totalMarks}
+        </td>
+        <td className="border border-gray-300 p-2 text-center">
+          {student.totalGPA}
+        </td>
+      </tr>
+    ))
+  )}
 </tbody>
+
           </table>
         </div>
       )}
