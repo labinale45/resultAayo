@@ -26,6 +26,7 @@ export default function Dnav({ currentPath }) {
   const menuRef = useRef(null);
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -41,30 +42,54 @@ export default function Dnav({ currentPath }) {
   }, []);
 
   useEffect(() => {
-  
+    const fetchSchoolSettings = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:4000/api/auth/school-settings"
+        );
+        const data = await response.json();
+        console.log("Fetched school settings:", data);
+
+        const logoUrlWithTimestamp = `${
+          data.logo_url
+        }?t=${new Date().getTime()}`;
+        setPreviewUrl(logoUrlWithTimestamp);
+      } catch (error) {
+        console.error("Error fetching school settings:", error);
+        toast.error("Failed to load school settings");
+      }
+    };
+
+    fetchSchoolSettings();
+  }, []);
+
+  useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const userData = JSON.parse(localStorage.getItem('userData'));
+        const userData = JSON.parse(localStorage.getItem("userData"));
 
         if (!userData?.username) {
-          throw new Error('No user data found');
+          throw new Error("No user data found");
         }
 
-        const response = await fetch(`http://localhost:4000/api/auth/profile/${userData.username}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        const response = await fetch(
+          `http://localhost:4000/api/auth/profile/${userData.username}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
           }
-        });
+        );
 
         if (!response.ok) {
-          throw new Error('Failed to fetch profile');
+          throw new Error("Failed to fetch profile");
         }
 
         const data = await response.json();
         setUserData(data);
       } catch (err) {
         setError(err.message);
-      } 
+      }
     };
     fetchUserProfile();
   }, []);
@@ -89,8 +114,6 @@ export default function Dnav({ currentPath }) {
     setShowLogoutConfirmation(false);
   };
 
-  
-
   const handleMenuItemClick = (path) => {
     if (path !== currentPath) {
       router.push(path);
@@ -101,7 +124,28 @@ export default function Dnav({ currentPath }) {
   return (
     <div className="fixed bg-[#437FC7] dark:bg-[#253553] dark:text-white text-black w-full h-20 shadow-xl z-[100]">
       <div className="flex justify-between items-center w-full h-full px-2 2xl:px-16">
-        <Image src="/assets/Logo.png" width={135} height={55} alt="Logo" />
+      <div className="bg-transparent w-52 h-20 overflow-hidden flex items-center justify-start"> 
+         {previewUrl ? (
+    <Image
+      src={previewUrl}
+      width={135}
+      height={55}
+      alt="School logo preview"
+      className="py-4 px-4 bg-transparent w-full h-full object-contain"
+      priority
+    />
+  ) : (
+    <Image 
+      src="/assets/Logo.png" 
+      width={135} 
+      height={55} 
+      alt="Logo"
+      className="max-w-full max-h-full object-contain"
+      priority
+    />
+  )}
+</div>
+
         {/* <Search /> */}
         <div className="flex items-center space-x-4">
           <Darklightmode />
@@ -111,7 +155,11 @@ export default function Dnav({ currentPath }) {
               className="flex items-center space-x-2"
             >
               <Image
-                src={ userData?.role === "Admin" ? "/assets/Admin.png" :  userData?.img_url || "/assets/profile.png"}
+                src={
+                  userData?.role === "Admin"
+                    ? "/assets/Admin.png"
+                    : userData?.img_url || "/assets/profile.png"
+                }
                 width={40}
                 height={50}
                 alt={userData?.first_name + " " + userData?.last_name}
@@ -130,28 +178,29 @@ export default function Dnav({ currentPath }) {
                 >
                   <FaUser className="mr-2" /> View Profile
                 </button>
-                { userData?.role=== "Admin" && ( <button
-                  onClick={() => {
-                    setShowEditProfile(true);
-                    setShowProfileMenu(false);
-                  }}
-                  className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  <FaEdit className="mr-2" /> Edit Profile
-                </button>)
-                }
-                
+                {userData?.role === "Admin" && (
                   <button
-                    onClick={()=>{
-                      setShowSetting(true);
+                    onClick={() => {
+                      setShowEditProfile(true);
                       setShowProfileMenu(false);
                     }}
                     className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <FaUserCog className="mr-2" /> Setting
+                    <FaEdit className="mr-2" /> Edit Profile
                   </button>
-                  <hr className="shadow-slate-500"></hr>
-                  <button
+                )}
+
+                <button
+                  onClick={() => {
+                    setShowSetting(true);
+                    setShowProfileMenu(false);
+                  }}
+                  className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  <FaUserCog className="mr-2" /> Setting
+                </button>
+                <hr className="shadow-slate-500"></hr>
+                <button
                   onClick={handleLogoutClick}
                   className="flex justify-center items-center w-full text-left px-4 py-2 text-sm  hover:text-red-400 text-gray-700 hover:bg-gray-200"
                 >
@@ -202,7 +251,10 @@ export default function Dnav({ currentPath }) {
       )}
       {showSetting && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[101]">
-          <Setting onClose={() => setShowSetting(false)} role={userData?.role} />
+          <Setting
+            onClose={() => setShowSetting(false)}
+            role={userData?.role}
+          />
         </div>
       )}
     </div>

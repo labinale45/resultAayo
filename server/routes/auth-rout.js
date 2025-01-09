@@ -17,7 +17,9 @@ router.put('/teacher/:id', updateTeacher);
 router.get('/teacher/:id', getTeacher);
 router.put('/teacher/status/:id', authController.updateTeacherStatus);
 
-//router.put('/settings/logo', authController.updateLogo);
+router.put('/settings/logo', authController.updateLogo);
+router.put('/settings/schoolDetails', authController.updateSchoolDetails);
+router.get('/school-settings', authController.getSchoolSettings);
 
 //notice
 router.delete('/notice/:id', deleteNotice);
@@ -83,7 +85,7 @@ router.post('/generate-ledger-sheet', authController.generateLedgerSheet);
 
 // Add this route to fetch classes assigned to a specific teacher
 router.get('/assigned-class/:teacherId/:year', classController.getClassesByTeacher);
-router.get('/teacher/:teacherId/class-teacher/:year', classController.getClassByTeacher);
+router.get('/teacher-class/:teacherId/:selectedYear', classController.getClassByTeacher);
 router.get('/teacher/:teacherId/subjects', examController.getAssignedSubjects);
 
 router.get('/class/:classId/:sec/:year', classController.getClassTeacherInfo);

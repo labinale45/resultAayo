@@ -598,8 +598,146 @@ const upgradeStudents = async (req, res) => {
   }
 };
 
+updateLogo = async (req, res) => {
+  const supabase = await connectdb();
+  try {
+    const { logo } = req.body;
+    console.log(req.body);
+
+    // Check if settings record exists
+    const { data: existingSettings, error: checkError } = await supabase
+      .from('adminsettings')
+      .select('SN,img_url')
+      .eq('SN', 1)
+      .single();
+
+    let logoUrl = null;
+    if (logo) {
+      const buffer = Buffer.from(
+        logo.replace(/^data:image\/\w+;base64,/, ''),
+        'base64'
+      );
+
+      const matches = logo.match(/^data:image\/([A-Za-z-+\/]+);base64,/);
+      const fileExtension = matches ? matches[1].replace('+', '') : 'jpg';
+      const fileName = `logo.${fileExtension}`;
+      const filePath = `settings/${fileName}`;
+
+      // Delete existing logo if present
+      if (existingSettings?.img_url) {
+        const desiredPath = existingSettings.img_url.split("users/")[1];
+        await supabase.storage.from('settings').remove([desiredPath]);
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('users')
+        .upload(filePath, buffer, {
+          contentType: `image/${fileExtension}`,
+          upsert: true
+        });
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('users')
+        .getPublicUrl(filePath);
+
+      logoUrl = urlData.publicUrl;
+
+      if (!existingSettings) {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('adminsettings')
+          .insert({ SN: 1, img_url: logoUrl });
+        if (insertError) throw insertError;
+      } else {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('adminsettings')
+          .update({ img_url: logoUrl})
+          .eq('SN', 1);
+        if (updateError) throw updateError;
+      }
+    }
+
+    res.status(200).json({
+      message: 'Logo updated successfully',
+      logo_url: logoUrl
+    });
+
+  } catch (error) {
+    console.error('Error updating logo:', error);
+    res.status(500).json({ message: 'Failed to update logo' });
+  }
+}
+
+updateSchoolDetails = async (req, res) => {
+  const supabase = await connectdb();
+  try {
+    const { schoolName, schoolLocation, estd } = req.body;
+    console.log(req.body);
+    // Check if settings record exists
+    const { data: existingSettings, error: checkError } = await supabase
+      .from('adminsettings')
+      .select('*')
+      .eq('SN', 1)
+      .single();
+
+    if (!existingSettings) {
+      // Insert new record
+      const { error: insertError } = await supabase
+        .from('adminsettings')
+        .insert({ SN: 1, schoolName: schoolName, schoolAddress: schoolLocation, estdYear: estd });
+      if (insertError) throw insertError;
+    } else {
+      // Update existing record
+      const { error: updateError } = await supabase
+        .from('adminsettings')
+        .update({ schoolName: schoolName, schoolAddress: schoolLocation, estdYear: estd })
+        .eq('SN', 1);
+      if (updateError) throw updateError;
+    }
+
+    res.status(200).json({
+      message: 'School details updated successfully',
+      schoolName: schoolName,
+      schoolLocation: schoolLocation,
+      estd: estd
+    });
+  } catch (error) {
+    console.error('Error updating school details:', error);
+    res.status(500).json({ message: 'Failed to update school details' });
+  }
+}
+
+const getSchoolSettings = async (req, res) => {
+  const supabase = await connectdb();
+  try {
+    const { data: settings, error } = await supabase
+      .from('adminsettings')
+      .select('*')
+      .eq('SN', 1)
+      .single();
+
+    if (error) throw error;
+
+    res.status(200).json({
+      logo_url: settings?.img_url || null,
+      schoolName: settings?.schoolName || '',
+      schoolLocation: settings?.schoolAddress || '',
+      estd: settings?.estdYear || '',
+    });
+
+  } catch (error) {
+    console.error('Error fetching school settings:', error);
+    res.status(500).json({ message: 'Failed to fetch school settings' });
+  }
+}
+
 
 module.exports = {
+  getSchoolSettings,
+  updateLogo,
+  updateSchoolDetails,
   upgradeStudents,
   login,
   register,

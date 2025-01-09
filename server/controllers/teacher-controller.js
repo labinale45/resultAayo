@@ -135,9 +135,9 @@ const updateTeacher = async (req, res) => {
          
   
           // Get public URL with complete URL path
-          const { data: urlData } = await supabase.storage
-              .from('users')
-              .getPublicUrl(filePath);
+          const { data: urlData } = supabase.storage
+            .from('users')
+            .getPublicUrl(filePath);
   
           // Make sure we have the complete URL from Supabase
           imageUrl = urlData.publicUrl;

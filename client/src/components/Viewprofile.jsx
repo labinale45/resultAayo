@@ -68,8 +68,8 @@ export default function Viewprofile({ onClose }) {
       <div className="mb-6 md:mr-8">
           <Image
             src={profile.role === 'Admin' ? "/assets/Admin.png" : (profile.img_url || "/assets/profile.png")}
-            width={150}
-            height={150}
+            width={200}
+            height={200}
             alt={profile.role==='Admin'?"Admin":profile.first_name + " " + profile.last_name}
             className="rounded-full"
           />

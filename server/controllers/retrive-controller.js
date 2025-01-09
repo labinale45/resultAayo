@@ -246,6 +246,9 @@ const  getRecordsByYear = async (req, res) => {
             PR: record.PR,
             created_at: new Date(record.created_at).toLocaleDateString(),
             dob: record.student_id.dob || "",
+            schoolName: record.schoolName || "",
+            schoolAddress: record.schoolAddress || "",
+            estdYear: record.estdYear || "",
           };
         default:
           return baseFormat;

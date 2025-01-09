@@ -286,6 +286,8 @@ const getClassByTeacher = async (teacherId, year) => {
         .select('id')
         .eq('teacher_id', teacherId)
 
+        console.log("teacherstableid: ", teacherData.id);
+
         if (teacherError) {
             console.error("Teacher Query Error: ", teacherError);
             throw teacherError;
@@ -294,6 +296,8 @@ const getClassByTeacher = async (teacherId, year) => {
             console.warn("No teacher data found.");
             return [];
         }
+
+       
 
         const { data: assignedClass, error: assignedClassError } = await createClient
             .from('class')
@@ -304,8 +308,8 @@ const getClassByTeacher = async (teacherId, year) => {
                 updated_at
             `)
             .eq('classTeacher', teacherData[0].id)
-            .gte('updated_at', `${year}-01-01`)
-            .lte('updated_at', `${year}-12-31`);
+            .gte('created_at', `${year}-01-01`)
+            .lte('created_at', `${year}-12-31`);
 
         if (assignedClassError) {
             console.error("Query Error: ", assignedClassError);

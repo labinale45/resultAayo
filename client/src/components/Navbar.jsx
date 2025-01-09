@@ -9,10 +9,36 @@ import { FaGithub, FaLinkedinIn } from "react-icons/fa";
 import Darklightmode from "./Mini Component/Darklightmode";
 import Login from "./Login";
 
+
 export default function Navbar() {
   const [nav, setNav] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+
+  useEffect(() => {
+    const fetchSchoolSettings = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:4000/api/auth/school-settings"
+        );
+        const data = await response.json();
+        console.log("Fetched school settings:", data);
+
+        const logoUrlWithTimestamp = `${
+          data.logo_url
+        }?t=${new Date().getTime()}`;
+        setPreviewUrl(logoUrlWithTimestamp);
+      } catch (error) {
+        console.error("Error fetching school settings:", error);
+        toast.error("Failed to load school settings");
+      }
+    };
+
+    fetchSchoolSettings();
+  }, []);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,7 +65,27 @@ export default function Navbar() {
       } transition-all duration-300`}
     >
       <div className="flex justify-between items-center w-full h-full px-2 2xl:px-16 pl-12 pr-12">
-        <Image src="/assets/Logo.png" width="135" height="55" alt="Logo" />
+      <div className="bg-transparent w-52 h-20 overflow-hidden flex items-center justify-start"> 
+         {previewUrl ? (
+    <Image
+      src={previewUrl}
+      width={135}
+      height={55}
+      alt="School logo preview"
+      className="py-4 px-4 bg-transparent w-full h-full object-contain"
+      priority
+    />
+  ) : (
+    <Image 
+      src="/assets/Logo.png" 
+      width={135} 
+      height={55} 
+      alt="Logo"
+      className="max-w-full max-h-full object-contain"
+      priority
+    />
+  )}
+</div>
         <div className="flex-grow flex justify-center">
           <ul className="hidden md:flex items-center space-x-20">
             <Link href="Home">

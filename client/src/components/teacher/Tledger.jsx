@@ -162,7 +162,7 @@ const TLedger = () => {
     const grouped = {};
 
     students.forEach((student) => {
-      const { rollNo, students: studentName, subjects, TH, PR } = student;
+      const { rollNo,schoolName,schoolAddress,estdYear, students: studentName, subjects, TH, PR } = student;
 
       // Ensure we have a student record for this rollNo
       if (!grouped[rollNo]) {
@@ -172,6 +172,9 @@ const TLedger = () => {
           subjects: {}, // Store subjects as keys
           totalMarks: 0,
           totalGPA: 0,
+          schoolName:schoolName,
+          schoolAddress:schoolAddress,
+          estdYear:estdYear,
         };
       }
 
@@ -343,18 +346,16 @@ const TLedger = () => {
         >
           <div id="ledger" className="overflow-x-auto">
             <div className="mb-8 text-center">
-              <h2 className="text-4xl font-semibold">
-                {students.length > 0 ? students.schoolName : "School Name"}
-              </h2>
-              <p>
-                {students.length > 0
-                  ? students.schoolAddress
-                  : "School Address"}
-              </p>
-              <p>
-                Estd:{" "}
-                {students.length > 0 ? students.estdYear : "Year Established"}
-              </p>
+            <h2 className="text-4xl font-semibold">
+  {students[0]?.schoolName || "School Name"}
+</h2>
+<p>
+  {students[0]?.schoolAddress || "School Address"}
+</p>
+<p>
+  Estd: {students[0]?.estdYear || "Year Established"}
+</p>
+
 
               <p className="text-3xl"></p>
               <p className="text-3xl mt-4">
@@ -464,8 +465,8 @@ const TLedger = () => {
                 )}
               </tbody>
             </table>
-
-            <div className="mt-6 flex justify-start">
+          </div>
+          <div className="mt-6 flex justify-start">
               <button
                 onClick={handlePrint}
                 className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs"
@@ -473,7 +474,6 @@ const TLedger = () => {
                 Print Ledger
               </button>
             </div>
-          </div>
         </motion.div>
       )}
 

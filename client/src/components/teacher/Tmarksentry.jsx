@@ -115,7 +115,7 @@ export default function Tmarksentry() {
               examType: selectedExamType
             }
           });
-    
+
         console.log("Response Data:", response.data);
     
         // Extracting the marks and other necessary details
@@ -140,6 +140,8 @@ export default function Tmarksentry() {
     
         console.log("Final Retrieved Data:", classStudents);
         setStudents(classStudents);
+
+
     
       } catch (error) {
         console.error("Error fetching students:", error);
@@ -305,7 +307,7 @@ export default function Tmarksentry() {
                 {students.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="text-center py-4 text-red-500">
-                      Student Not Found.
+                      Full Marks Not Set Yet, Contact to Admin !
                     </td>
                   </tr>
                 ) : (
