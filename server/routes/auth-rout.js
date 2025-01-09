@@ -87,13 +87,15 @@ router.post('/generate-ledger-sheet', authController.generateLedgerSheet);
 router.get('/assigned-class/:teacherId/:year', classController.getClassesByTeacher);
 router.get('/teacher-class/:teacherId/:selectedYear', classController.getClassByTeacher);
 router.get('/teacher/:teacherId/subjects', examController.getAssignedSubjects);
-
 router.get('/class/:classId/:sec/:year', classController.getClassTeacherInfo);
-
-
-
 // Add this route to fetch classes enrolled to a specific student
 router.get('/student/:studentId/classes', classController.getClassesByStudent);
+
+//student portal routes
+
+router.get('/student-exams/:studentId/:selectedYear', examController.getStudentExams);
+router.get('/student-subjects/:studentId/:selectedYear', examController.getStudentSubjects);
+
 
 
 // New route for fetching teacher dashboard data

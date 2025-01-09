@@ -679,9 +679,116 @@ const getUpcomingExamsByTeacher = async (teacherId) => {
     return data; // Return the upcoming exams
 };
 
+const getStudentExams = async (req, res) => {
+    try {
+        const { studentId, selectedYear } = req.params;
+        const createClient = await connectdb();
+        console.log("received data for Exams:", studentId, selectedYear);
+
+        const { data: studentData, error: studentError } = await createClient
+        .from('students')
+        .select('id')
+        .eq('student_id', studentId)
+        .single();
+
+        console.log("studentData: ",studentData);
+
+        // Get completed exams
+        const { data: completedExams, error: completedError } = await createClient
+            .from('marksheets')
+            .select(`
+                exam_id,
+                subjects(subject_name),
+                TH,
+                PR,
+                exams(exam_type, resultDate)
+            `)
+            .eq('student_id', studentData.id)
+            .gte('created_at', `${selectedYear}-01-01`)
+            .lte('created_at', `${selectedYear}-12-31`);
+
+        if (completedError) throw completedError;
+
+        // Get upcoming exams
+        const { data: upcomingExams, error: upcomingError } = await createClient
+            .from('exams')
+            .select('*')
+            .gte('deadline_date', new Date().toISOString())
+            .order('deadline_date', { ascending: true });
+
+        if (upcomingError) throw upcomingError;
+
+        console.log("Completed Exams:", completedExams, "Upcoming Exams:", upcomingExams);
+
+        return res.status(200).json({
+            completedExams: completedExams || [],
+            upcomingExams: upcomingExams || []
+        });
+
+    } catch (error) {
+        console.error("Error fetching student exams:", error);
+        return res.status(500).json({ 
+            message: "Failed to fetch student exams", 
+            error: error.message 
+        });
+    }
+};
+
+const getStudentSubjects = async (req, res) => {
+    try {
+        const { studentId, selectedYear } = req.params;
+        const createClient = await connectdb();
+        console.log("received data for Subject:", studentId, selectedYear);
+
+        // Get student's class first
+        const { data: studentData, error: studentError } = await createClient
+            .from('students')
+            .select('class_id')
+            .eq('student_id', studentId)
+            .single();
+
+        if (studentError) throw studentError;
+
+        // Get subjects for the student's class
+        const { data: subjects, error: subjectsError } = await createClient
+            .from('subjects')
+            .select(`
+                id,
+                subject_name,
+                marksheets(TH, PR)
+            `)
+            .eq('class_id', studentData.class_id)
+            .gte('created_at', `${selectedYear}-01-01`)
+            .lte('created_at', `${selectedYear}-12-31`);
+
+        if (subjectsError) throw subjectsError;
+
+        const processedSubjects = subjects.map(subject => ({
+            id: subject.id,
+            name: subject.subject_name,
+            theoryMarks: subject.marksheets?.[0]?.TH || 0,
+            practicalMarks: subject.marksheets?.[0]?.PR || 0
+        }));
+
+        return res.status(200).json(processedSubjects);
+
+    } catch (error) {
+        console.error("Error fetching student subjects:", error);
+        return res.status(500).json({ 
+            message: "Failed to fetch student subjects", 
+            error: error.message 
+        });
+    }
+};
+
+
+
+
 
 
 module.exports = { 
+    getStudentExams,
+    getStudentSubjects,
     getUpcomingExamsByTeacher,
     retrieveMarks,
     getAssignedSubjects,

@@ -411,11 +411,11 @@ useEffect(()=>{
           </span>
           {" "}DATE OF BIRTH:{"  "}
           <span className="inline-block text-center font-semibold border-b border-black pb-1 w-32 dark:border-white">
-            {students?.dateOfBirth || "N/A"}
+            {students?.dateOfBirthAD || "N/A"}
           </span>{"  "}
           B.S (
           <span className="inline-block text-center font-semibold border-b border-black pb-1 w-32 dark:border-white">
-            {students?.dateOfBirthAD || "N/A"}
+            {students?.dateOfBirth || "N/A"}
           </span>{" "}
           A.D) ROLL NO:{" "}
           <span className="inline-block text-center font-semibold border-b border-black pb-1 w-16 dark:border-white">
