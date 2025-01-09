@@ -440,7 +440,7 @@ const { data: examData, error: examError } = await supabaseClient
 
   const { data: ledgerData, error: ledgerError } = await supabaseClient
     .from('marksheets')
-    .select('*')
+    .select(`*,students(rollNo)`)
     .eq('class', className)
     .eq('exam_id', examData.id)
     .gte('created_at', `${year}-01-01`)

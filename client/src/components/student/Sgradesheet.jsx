@@ -141,7 +141,7 @@ useEffect(()=>{
         setIsPublished(data.isPublished);
   
         if (data.isPublished) {
-        
+          console.log("Publication status ok retriving data:");
   
           const gradesheetResponse = await fetch(
             `http://localhost:4000/api/auth/gradesheet/${selectedYear}?status=${state}&class=${selectedClass}&examType=${selectedExamType}&studentId=${studentId}`
@@ -152,8 +152,10 @@ useEffect(()=>{
           }
     
           const gradesheetData = await gradesheetResponse.json();
-          setStudents(gradesheetData);
           console.log("Gradesheet data:", gradesheetData);
+          const groupedData = groupStudentsByRollNo(gradesheetData);
+          console.log("Grouped data:", groupedData);
+          setStudents(groupedData[0]);
         }
       } catch (error) {
         console.error("Error:", error);
@@ -167,167 +169,215 @@ useEffect(()=>{
     }
   }, [studentId,state,selectedYear, selectedClass, selectedExamType]);
 
+// Update the groupStudentsByRollNo function to handle single student object
+const groupStudentsByRollNo = (studentData) => {
+  if (!studentData || typeof studentData !== 'object') {
+      console.error("Invalid student data:", studentData);
+      return [];
+  }
 
+  const { dateOfBirth,rollNo, schoolName, schoolAddress, estdYear, students: studentName, subjects } = studentData;
   
-
-  const handlePrint = () => {
-    // Create a new window for printing
-    const printWindow = window.open('', '', 'width=800,height=600');
+  const processedStudent = {
+      rollNo,
+      name: studentName,
+      subjects: subjects.map(subject => {
+        const theoryGPA = (subject.th / 100) * 4;
+        const practicalGPA = (subject.pr / 100) * 4;
+        
+        // Calculate weighted GPA
+        const finalGPA = ((theoryGPA * 3) + (practicalGPA * 1)) / 4;
+        
+        // Calculate final grade based on weighted GPA
+        const finalGrade = finalGPA >= 3.2 ? 'A' : 
+                          finalGPA >= 2.4 ? 'B' : 
+                          finalGPA >= 1.6 ? 'C' : 
+                          finalGPA >= 0.8 ? 'D' : 'F';
     
-    // Generate the print content
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Gradesheet</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
-            margin: 0;
-          }
-          .container {
-            border: 2px solid black;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 20px;
-          }
-          .school-name {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 0;
-          }
-          .exam-title {
-            font-size: 20px;
-            margin: 15px 0;
-          }
-          .student-info {
-            margin: 20px 0;
-            line-height: 2;
-          }
-          .underline {
-            border-bottom: 1px solid black;
-            padding: 0 10px;
-            display: inline-block;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-          }
-          th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-          }
-          th {
-            background-color: #f0f0f0;
-          }
-          .signatures {
-            margin-top: 100px;
-            display: flex;
-            justify-content: space-between;
-          }
-          .signature-line {
-            border-top: 1px solid black;
-            width: 200px;
-            text-align: center;
-            padding-top: 5px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <p class="school-name">${students.schoolName || "ABC"}</p>
-            <p>${students.schoolAddress || "XYZ"}</p>
-            <p>Estd: ${students.estdYear || "1665"}</p>
-            <p class="exam-title">${selectedExamType}-${selectedYear}</p>
-          </div>
+        return {
+            name: subject.name,
+            theory: {
+                creditHour: 3,
+                gpa: theoryGPA,
+                grade: subject.th >= 80 ? 'A' : subject.th >= 60 ? 'B' : 'C',
+                marks: subject.th || 0,
+                remarks: subject.th >= 80 ? 'Excellent' : subject.th >= 60 ? 'Good' : 'Needs Improvement'
+            },
+            practical: {
+                creditHour: 1,
+                gpa: practicalGPA,
+                grade: subject.pr >= 80 ? 'A' : subject.pr >= 60 ? 'B' : 'C',
+                marks: subject.pr || 0,
+                remarks: subject.pr >= 80 ? 'Excellent' : subject.pr >= 60 ? 'Good' : 'Needs Improvement'
+            },
+            finalGPA,
+            finalGrade
+        };
+    }),    
+      schoolName,
+      schoolAddress,
+      estdYear,
+      dob:dateOfBirth
+  };
+
+  return [processedStudent];
+};
+
   
-          <div class="student-info">
-            THE GRADE OBTAINED BY: <span class="underline">${students?.students || "Manita Thapa"}</span>
-            DATE OF BIRTH: <span class="underline">${students?.dateOfBirth || "2000-12-18"}</span>
-            B.S ( <span class="underline">${students?.dateOfBirthAD || "N/A"}</span> A.D)
-            ROLL NO: <span class="underline">${students?.rollNo || "3"}</span>
-            IN THE <span class="underline">${selectedExamType}</span>
-            CONDUCTED BY THE SCHOOL IN THE ACADEMIC YEAR <span class="underline">${selectedYear}</span>
-            ARE GIVEN BELOW:
-          </div>
+
+const handlePrint = () => {
+  const printWindow = window.open('', '', 'width=800,height=600');
   
-          <table>
-            <thead>
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Gradesheet</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          padding: 40px;
+          margin: 0;
+        }
+        .container {
+          border: 2px solid black;
+          padding: 20px;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        .school-name {
+          font-size: 24px;
+          font-weight: bold;
+          margin: 0;
+        }
+        .exam-title {
+          font-size: 20px;
+          margin: 15px 0;
+        }
+        .student-info {
+          margin: 20px 0;
+          line-height: 2;
+        }
+        .underline {
+          border-bottom: 1px solid black;
+          padding: 0 10px;
+          display: inline-block;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 20px 0;
+        }
+        th, td {
+          border: 1px solid black;
+          padding: 8px;
+          text-align: left;
+        }
+        th {
+          background-color: #f0f0f0;
+        }
+        .signatures {
+          margin-top: 100px;
+          display: flex;
+          justify-content: space-between;
+        }
+        .signature-line {
+          border-top: 1px solid black;
+          width: 200px;
+          text-align: center;
+          padding-top: 5px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <p class="school-name">${students?.schoolName || "School Name"}</p>
+          <p>${students?.schoolAddress || "School Address"}</p>
+          <p>Estd: ${students?.estdYear || "Year Established"}</p>
+          <p class="exam-title">${selectedExamType}-${selectedYear}</p>
+        </div>
+
+        <div class="student-info">
+          THE GRADE OBTAINED BY: <span class="underline">${students?.name || "N/A"}</span>
+          DATE OF BIRTH: <span class="underline">${students?.dob || "N/A"}</span>
+          ROLL NO: <span class="underline">${students?.rollNo || "N/A"}</span>
+          IN THE <span class="underline">${selectedExamType}</span>
+          CONDUCTED BY THE SCHOOL IN THE ACADEMIC YEAR <span class="underline">${selectedYear}</span>
+          ARE GIVEN BELOW:
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>S.N</th>
+              <th>SUBJECT</th>
+              <th>CREDIT HOUR</th>
+              <th>GPA</th>
+              <th>GRADE</th>
+              <th>FINAL GRADE</th>
+              <th>REMARKS</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${students?.subjects?.map((subject, index) => `
               <tr>
-                <th>S.N</th>
-                <th>SUBJECT</th>
-                <th>CREDIT HOUR</th>
-                <th>GPA</th>
-                <th>GRADE</th>
-                <th>FINAL GRADE</th>
-                <th>REMARKS</th>
+                <td>${index + 1}</td>
+                <td>${subject.name} (TH)</td>
+                <td>${subject.theory.creditHour}</td>
+                <td>${subject.theory.gpa.toFixed(2)}</td>
+                <td>${subject.theory.grade}</td>
+                <td rowspan="2">${subject.finalGrade}</td>
+                <td>${subject.theory.remarks}</td>
               </tr>
-            </thead>
-            <tbody>
-              ${students?.subjects?.map((subject, index) => `
-                <tr>
-                  <td>${index + 1}</td>
-                  <td>${subject.name} (TH)</td>
-                  <td>${subject.th?.creditHour || ''}</td>
-                  <td>${subject.th?.gpa || ''}</td>
-                  <td>${subject.th?.grade || ''}</td>
-                  <td>${subject.finalGrade || ''}</td>
-                  <td>${subject.remarks || ''}</td>
-                </tr>
-                <tr>
-                  <td></td>
-                  <td>${subject.name} (PR)</td>
-                  <td>${subject.pr?.creditHour || ''}</td>
-                  <td>${subject.pr?.gpa || ''}</td>
-                  <td>${subject.pr?.grade || ''}</td>
-                  <td></td>
-                  <td></td>
-                </tr>
-              `).join('') || `
-                <tr>
-                  <td colspan="7" style="text-align: center; color: red;">
-                    No subjects available
-                  </td>
-                </tr>
-              `}
-            </tbody>
-          </table>
-  
-          <div class="signatures">
-            <div>
-              <p>Date: ................................</p>
-            </div>
-            <div>
-              <div class="signature-line">Class Teacher's Signature</div>
-            </div>
-            <div>
-              <div class="signature-line">Principal's Signature</div>
-            </div>
+              <tr>
+                <td></td>
+                <td>${subject.name} (PR)</td>
+                <td>${subject.practical.creditHour}</td>
+                <td>${subject.practical.gpa.toFixed(2)}</td>
+                <td>${subject.practical.grade}</td>
+                <td>${subject.practical.remarks}</td>
+              </tr>
+            `).join('') || `
+              <tr>
+                <td colspan="7" style="text-align: center; color: red;">
+                  No subjects available
+                </td>
+              </tr>
+            `}
+          </tbody>
+        </table>
+
+        <div class="signatures">
+          <div>
+            <p>Date: ................................</p>
+          </div>
+          <div>
+            <div class="signature-line">Class Teacher's Signature</div>
+          </div>
+          <div>
+            <div class="signature-line">Principal's Signature</div>
           </div>
         </div>
-      </body>
-      </html>
-    `;
+      </div>
+    </body>
+    </html>
+  `;
+
+  printWindow.document.write(printContent);
+  printWindow.document.close();
+  printWindow.focus();
   
-    // Write the content to the new window and print it
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.focus();
-    
-    // Wait for content to load before printing
-    printWindow.onload = function() {
-      printWindow.print();
-      printWindow.close();
-    };
+  printWindow.onload = function() {
+    printWindow.print();
+    printWindow.close();
   };
+};
+
   
 
   const showTable =
@@ -395,11 +445,11 @@ useEffect(()=>{
   >
     <div id="ledger" className="border-8 border-black p-8 mb-4">
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold">{students.schoolName || "School Name"}</h1>
-        <p>{ students.schoolAddress || "School Address"}</p>
-        <p>Estd: { students.estdYear || "Year Established"}</p>
+        <h1 className="text-2xl font-bold">{students?.schoolName || "School Name"}</h1>
+        <p>{students?.schoolAddress || "School Address"}</p>
+        <p>Estd: {students?.estdYear || "Year Established"}</p>
         <p className="mt-2 text-3xl">
-          {selectedExamType}-{selectedYear}
+          {selectedExamType || "N/A"} - {selectedYear || "N/A"}
         </p>
       </div>
 
@@ -407,24 +457,21 @@ useEffect(()=>{
         <p className="mb-4">
           THE GRADE OBTAINED BY: {"  "}
           <span className="text-black text-center font-semibold inline-block border-b border-black dark:border-white pb-1 w-48">
-            {students?.students || "N/A"}
+            {students?.name || "N/A"}
           </span>
           {" "}DATE OF BIRTH:{"  "}
           <span className="inline-block text-center font-semibold border-b border-black pb-1 w-32 dark:border-white">
-            {students?.dateOfBirthAD || "N/A"}
-          </span>{"  "}
-          B.S (
-          <span className="inline-block text-center font-semibold border-b border-black pb-1 w-32 dark:border-white">
-            {students?.dateOfBirth || "N/A"}
-          </span>{" "}
-          A.D) ROLL NO:{" "}
+            {students?.dob || "N/A"}
+          </span>
+          {" "}ROLL NO:{" "}
           <span className="inline-block text-center font-semibold border-b border-black pb-1 w-16 dark:border-white">
             {students?.rollNo || "N/A"}
           </span>
           {" "}IN THE{" "}
-          <span className="inline-block  text-center font-semibold border-b border-black pb-1 w-48 dark:border-white">
-            {selectedExamType || "N/A"}
-          </span>
+          <span className="inline-block text-center font-semibold border-b border-black pb-1 w-56 dark:border-white whitespace-nowrap">
+  {selectedExamType || "N/A"}
+</span>
+
           {" "}CONDUCTED BY THE SCHOOL IN THE ACADEMIC YEAR{"  "}
           <span className="inline-block text-center font-semibold border-b border-black pb-1 w-12 dark:border-white">
             {selectedYear || "N/A"}
@@ -445,36 +492,27 @@ useEffect(()=>{
             </tr>
           </thead>
           <tbody>
-            {students?.subjects ? (
-              students.subjects.map((subject, index) => (
-                <React.Fragment key={index}>
-                  <tr>
-                    <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
-                    <td className="border border-gray-300 px-4 py-2">{subject.name} (TH)</td>
-                    <td className="border border-gray-300 px-4 py-2">{subject.th?.creditHour}</td>
-                    <td className="border border-gray-300 px-4 py-2">{subject.th?.gpa}</td>
-                    <td className="border border-gray-300 px-4 py-2">{subject.th?.grade}</td>
-                    <td className="border border-gray-300 px-4 py-2">{subject.finalGrade}</td>
-                    <td className="border border-gray-300 px-4 py-2">{subject.remarks}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-4 py-2"></td>
-                    <td className="border border-gray-300 px-4 py-2">{subject.name} (PR)</td>
-                    <td className="border border-gray-300 px-4 py-2">{subject.pr?.creditHour}</td>
-                    <td className="border border-gray-300 px-4 py-2">{subject.pr?.gpa}</td>
-                    <td className="border border-gray-300 px-4 py-2">{subject.pr?.grade}</td>
-                    <td className="border border-gray-300 px-4 py-2"></td>
-                    <td className="border border-gray-300 px-4 py-2"></td>
-                  </tr>
-                </React.Fragment>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" className=" border border-gray-300 px-4 py-2 text-red-500 text-center">
-                  No subjects available
-                </td>
-              </tr>
-            )}
+            {students?.subjects?.map((subject, index) => (
+              <React.Fragment key={index}>
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
+                  <td className="border border-gray-300 px-4 py-2">{subject.name} (TH)</td>
+                  <td className="border border-gray-300 px-4 py-2">{subject.theory.creditHour}</td>
+                  <td className="border border-gray-300 px-4 py-2">{subject.theory.gpa.toFixed(2)}</td>
+                  <td className="border border-gray-300 px-4 py-2">{subject.theory.grade}</td>
+                  <td className="border border-gray-300 px-4 py-2" rowSpan="2">{subject.finalGrade}</td>
+                  <td className="border border-gray-300 px-4 py-2">{subject.theory.remarks}</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2"></td>
+                  <td className="border border-gray-300 px-4 py-2">{subject.name} (PR)</td>
+                  <td className="border border-gray-300 px-4 py-2">{subject.practical.creditHour}</td>
+                  <td className="border border-gray-300 px-4 py-2">{subject.practical.gpa.toFixed(2)}</td>
+                  <td className="border border-gray-300 px-4 py-2">{subject.practical.grade}</td>
+                  <td className="border border-gray-300 px-4 py-2">{subject.practical.remarks}</td>
+                </tr>
+              </React.Fragment>
+            ))}
           </tbody>
         </table>
       </div>
@@ -484,13 +522,11 @@ useEffect(()=>{
           <div>
             <p>Date: ................................</p>
           </div>
-
           <div className="text-center">
             <div className="border-t border-black pt-2 inline-block dark:border-white">
               Class Teacher&apos;s Signature
             </div>
           </div>
-
           <div className="text-center">
             <div className="border-t border-black pt-2 inline-block dark:border-white">
               Principal&apos;s Signature
@@ -510,6 +546,7 @@ useEffect(()=>{
     </div>
   </motion.div>
 )}
+
 
       {!isPublished && selectedYear && selectedClass && selectedExamType && (
           <motion.div

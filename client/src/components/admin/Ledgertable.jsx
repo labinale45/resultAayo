@@ -82,18 +82,19 @@ export default function Ledgertable() {
         const grouped = {};
       
         students.forEach((student) => {
-          const { rollNo, dob, students: studentName, subjects, TH, PR } = student;
-      
+          const { rollNo,schoolName,schoolAddress,estdYear, students: studentName, subjects, TH, PR } = student;
+    
           // Ensure we have a student record for this rollNo
           if (!grouped[rollNo]) {
             grouped[rollNo] = {
               rollNo: rollNo,
-              dateOfBirth: dob,
               name: studentName,
               subjects: {}, // Store subjects as keys
-              totalMarks: 0, // Total marks obtained by student
-              totalMaxMarks: 0, // Total maximum marks (assuming 100 marks per subject)
-              totalGPA: 0, // Placeholder for GPA
+              totalMarks: 0,
+              totalGPA: 0,
+              schoolName:schoolName,
+              schoolAddress:schoolAddress,
+              estdYear:estdYear,
             };
           }
       

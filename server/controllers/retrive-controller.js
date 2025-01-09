@@ -507,7 +507,7 @@ const getGradesheet = async (req, res) => {
 
     const { data: studentData, error: studentError } = await supabaseClient
     .from('students')
-    .select('id')
+    .select('id,rollNo')
     .eq('student_id', studentId)
     .single();
 
@@ -564,22 +564,11 @@ const getGradesheet = async (req, res) => {
       estdYear: data[0]?.estdYear || "Established Year",
       students: data[0]?.student_id.first_name + " " + data[0]?.student_id.last_name,
       dateOfBirth: data[0]?.student_id.dob,
-      dateOfBirthAD: data[0]?.student_id.dateOfBirthAD,
       rollNo: data[0]?.student_id.rollNo,
       subjects: data.map(mark => ({
         name: mark.subject_id.subject_name,
-        th: {
-          creditHour: mark.TH_credit_hour,
-          gpa: mark.TH_gpa,
-          grade: mark.TH_grade
-        },
-        pr: {
-          creditHour: mark.PR_credit_hour,
-          gpa: mark.PR_gpa,
-          grade: mark.PR_grade
-        },
-        finalGrade: mark.final_grade,
-        remarks: mark.remarks
+        th: mark.TH,
+        pr: mark.PR,
       }))
     };
 
