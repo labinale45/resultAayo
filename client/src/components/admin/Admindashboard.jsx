@@ -59,7 +59,6 @@ export default function Admindashboard() {
     endDate: new Date().toISOString().split("T")[0],
   });
   const [selectedClass, setSelectedClass] = useState("");
-  const [classes, setClasses] = useState([]);
 
   useEffect(() => {
     // Register ChartJS components only on client-side
@@ -215,17 +214,6 @@ export default function Admindashboard() {
     },
   };
 
-  const fetchClasses = async () => {
-    try {
-      const response = await fetch("http://localhost:4000/api/auth/classes");
-      if (!response.ok) throw new Error("Failed to fetch classes");
-      const data = await response.json();
-      setClasses(data);
-    } catch (error) {
-      console.error("Error fetching classes:", error);
-    }
-  };
-
   // New helper function to process chart data
   const processChartData = (historicalData) => {
     const labels = [];
@@ -276,13 +264,6 @@ export default function Admindashboard() {
     setDateRange((prev) => ({ ...prev, [type]: value }));
   };
 
-  useEffect(() => {
-    const fetchAllData = async () => {
-      await Promise.all([fetchClasses()]);
-    };
-    fetchAllData();
-  }, [dateRange, selectedClass]);
-
   return (
     <div className="flex flex-col min-h-screen bg-white  dark:bg-[#B3B4BE] dark:text-white">
       <header className="bg-white shadow dark:bg-[#B3B4BE]">
@@ -311,107 +292,58 @@ export default function Admindashboard() {
             <div className="mb-6 bg-white rounded-xl shadow-sm p-4 border border-gray-100">
               <div className="flex flex-wrap gap-6 items-center justify-between">
                 {/* Date Range Section */}
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <svg
-                        className="w-4 h-4 text-gray-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                    <input
-                      type="date"
-                      value={dateRange.startDate}
-                      onChange={(e) =>
-                        handleDateRangeChange("startDate", e.target.value)
-                      }
-                      max={new Date().toISOString().split("T")[0]}
-                      className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
-                    />
-                  </div>
-                  <span className="text-gray-500">to</span>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <svg
-                        className="w-4 h-4 text-gray-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                    <input
-                      type="date"
-                      value={dateRange.endDate}
-                      onChange={(e) =>
-                        handleDateRangeChange("endDate", e.target.value)
-                      }
-                      max={new Date().toISOString().split("T")[0]}
-                      className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
-                    />
-                  </div>
-                </div>
+                <div className="flex justify-between w-full items-center gap-4">
+  <div className="relative">
+    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+      <svg
+        className="w-4 h-4 text-gray-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+        />
+      </svg>
+    </div>
+    <input
+      type="date"
+      value={dateRange.startDate}
+      onChange={(e) => handleDateRangeChange("startDate", e.target.value)}
+      max={new Date().toISOString().split("T")[0]}
+      className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
+    />
+  </div>
+  <span className="text-gray-500">T O</span>
+  <div className="relative">
+    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+      <svg
+        className="w-4 h-4 text-gray-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+        />
+      </svg>
+    </div>
+    <input
+      type="date"
+      value={dateRange.endDate}
+      onChange={(e) => handleDateRangeChange("endDate", e.target.value)}
+      max={new Date().toISOString().split("T")[0]}
+      className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
+    />
+  </div>
+</div>
 
-                {/* Class Selection Section */}
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg
-                      className="w-4 h-4 text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                      />
-                    </svg>
-                  </div>
-                  <select
-                    value={selectedClass}
-                    onChange={(e) => setSelectedClass(e.target.value)}
-                    className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
-                  >
-                    <option value="">All Classes</option>
-                    {classes.map((cls) => (
-                      <option key={cls.grade} value={cls.grade}>
-                        Class {cls.grade}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                    <svg
-                      className="w-4 h-4 text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
-                </div>
               </div>
             </div>
             <div className="h-[400px]">

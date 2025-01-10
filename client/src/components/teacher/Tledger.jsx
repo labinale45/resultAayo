@@ -162,7 +162,16 @@ const TLedger = () => {
     const grouped = {};
 
     students.forEach((student) => {
-      const { rollNo,schoolName,schoolAddress,estdYear, students: studentName, subjects, TH, PR } = student;
+      const {
+        rollNo,
+        schoolName,
+        schoolAddress,
+        estdYear,
+        students: studentName,
+        subjects,
+        TH,
+        PR,
+      } = student;
 
       // Ensure we have a student record for this rollNo
       if (!grouped[rollNo]) {
@@ -172,9 +181,9 @@ const TLedger = () => {
           subjects: {}, // Store subjects as keys
           totalMarks: 0,
           totalGPA: 0,
-          schoolName:schoolName,
-          schoolAddress:schoolAddress,
-          estdYear:estdYear,
+          schoolName: schoolName,
+          schoolAddress: schoolAddress,
+          estdYear: estdYear,
         };
       }
 
@@ -214,10 +223,10 @@ const TLedger = () => {
       console.error("Ledger element not found");
       return;
     }
-  
+
     // Open a new window for printing
     const printWindow = window.open("", "_blank");
-  
+
     // Add necessary styles
     const styles = `
       <style>
@@ -257,7 +266,7 @@ const TLedger = () => {
         }
       </style>
     `;
-  
+
     // Write the ledger content to the new window
     printWindow.document.write(`
       <html>
@@ -270,17 +279,16 @@ const TLedger = () => {
         </body>
       </html>
     `);
-  
+
     // Close the document to apply styles
     printWindow.document.close();
-  
+
     // Wait for content to load, then print and close the window
     printWindow.onload = () => {
       printWindow.print();
       printWindow.close();
     };
   };
-  
 
   const showTable =
     selectedYear && selectedExamType && selectedClass && isPublished;
@@ -346,18 +354,11 @@ const TLedger = () => {
         >
           <div id="ledger" className="overflow-x-auto">
             <div className="mb-8 text-center">
-            <h2 className="text-4xl font-semibold">
-  {students[0]?.schoolName || "School Name"}
-</h2>
-<p>
-  {students[0]?.schoolAddress || "School Address"}
-</p>
-<p>
-  Estd: {students[0]?.estdYear || "Year Established"}
-</p>
-
-
-              <p className="text-3xl"></p>
+              <h2 className="text-4xl font-semibold">
+                {students[0]?.schoolName || "School Name"}
+              </h2>
+              <p>{students[0]?.schoolAddress || "School Address"}</p>
+              <p>Estd: {students[0]?.estdYear || "Year Established"}</p>
               <p className="text-3xl mt-4">
                 {selectedExamType} {selectedYear}
               </p>
@@ -467,13 +468,13 @@ const TLedger = () => {
             </table>
           </div>
           <div className="mt-6 flex justify-start">
-              <button
-                onClick={handlePrint}
-                className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs"
-              >
-                Print Ledger
-              </button>
-            </div>
+            <button
+              onClick={handlePrint}
+              className="bg-[#7ba0e4] dark:bg-[#8AA4D6] hover:bg-[#4c94ec] dark:hover:bg-[#253553] hover:text-white  text-center py-2 px-4 rounded text-xs"
+            >
+              Print Ledger
+            </button>
+          </div>
         </motion.div>
       )}
 

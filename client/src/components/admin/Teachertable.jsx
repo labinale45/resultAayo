@@ -662,7 +662,9 @@ export default function Teachertable() {
                       </td>
                       <td className="px-6 py-4">{teacher.contact}</td>
                       <td className="px-6 py-4">{teacher.address}</td>
-                      <td className="px-6 py-4">{teacher.dateOfBirth}</td>
+                      <td className="px-6 py-4">
+                       {teacher.dob}
+                      </td>
                       <td className="px-6 py-4">{teacher.username}</td>
                       {/* <td className="px-6 py-4">{teacher.password}</td>  */}
                       <ActionCell teacher={teacher} />

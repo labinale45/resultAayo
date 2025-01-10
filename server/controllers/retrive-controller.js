@@ -196,6 +196,7 @@ const  getRecordsByYear = async (req, res) => {
             username: record.teacher_id.username,
              tstatus: record.status,
              gender: record.teacher_id.gender,
+             dob: record.dob,
           };
         case "students":
           return {
@@ -210,7 +211,7 @@ const  getRecordsByYear = async (req, res) => {
             username: record.student_id.username,
             rollNo: record.rollNo,
             gender: record.student_id.gender,
-            
+            dob: record.dob,
           };
         case "notices":
           return {

@@ -276,7 +276,7 @@ fetchClasses();
                   if (isValidAge) {
                     setDob(e.target.value);
                   } else {
-                    alert("You must be at least 1 year old.");
+                    alert("You must be at least 2 year old.");
                     setDob(""); // Optionally clear the input if the age is invalid
                   }
                 }}

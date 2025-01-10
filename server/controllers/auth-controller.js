@@ -56,7 +56,7 @@ const register = async (req, res) => {
          const randomNum = Math.floor(Math.random() * 10); // Generate a random digit (0-9)
          rollNo = `${year.toString().slice(-2)}${class_id}${randomNum}`; // Format: YYClassR
           const { data: existingRollNo, error } = await supabaseClient
-           .from('users') // Assuming 'users' table contains roll numbers
+           .from('students') // Assuming 'users' table contains roll numbers
            .select('rollNo')
            .eq('rollNo', rollNo)
            .single();
@@ -250,8 +250,8 @@ const publishResult = async (req, res) => {
       .from('class')
       .select('id')
       .eq('class', className)
-      .gte('updated_at', `${year}-01-01`)
-      .lte('updated_at', `${year}-12-31`)
+      .gte('created_at', `${year}-01-01`)
+      .lte('created_at', `${year}-12-31`)
       .single();
 
     if (classError) {

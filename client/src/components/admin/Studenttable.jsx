@@ -107,6 +107,7 @@ export default function Studenttable() {
         }
 
         const data = await response.json();
+        console.log(data);
         setStudents(data);
       } catch (error) {
         setError(error.message);
@@ -119,9 +120,6 @@ export default function Studenttable() {
     }
   }, [state, selectedYear, selectedClass]);
 
-  // Select the Year
-
-  // Fetch Students
 
   console.log(students);
   // Handle Edit
@@ -615,9 +613,8 @@ export default function Studenttable() {
                   <th scope="col" className="px-6 py-3">
                     Address
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Date of Birth
-                  </th>
+                  <th scope="col" className="px-6 py-3">Date of Birth</th>
+
                   <th scope="col" className="px-6 py-3">
                     Username
                   </th>
@@ -671,7 +668,7 @@ export default function Studenttable() {
                       <td className="px-6 py-4">{student.parentName}</td>
                       <td className="px-6 py-4">{student.contact}</td>
                       <td className="px-6 py-4">{student.address}</td>
-                      <td className="px-6 py-4">{student.dateOfBirth}</td>
+                      <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{student.dob}</td>
                       <td className="px-6 py-4">{student.username}</td>
                       {/* <td className="px-6 py-4">{student.password}</td> */}
                       <td className="px-6 py-4">
