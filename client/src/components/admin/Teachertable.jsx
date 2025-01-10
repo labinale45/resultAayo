@@ -154,6 +154,43 @@ export default function Teachertable() {
   //update Teacher
   const handleSaveChanges = async () => {
     try {
+       // Password validation - only check if password is set
+if (changePassword?.trim()) {
+  if (changePassword.length < 8) {
+    alert("Password must be at least 8 characters long");
+    return;
+  }
+}
+   // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(selectedTeacher.email)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
+ // Nepal Phone number validation
+ const phoneRegex = /(\+977?)?[9][6-9]\d{8}/;
+ if (!phoneRegex.test(selectedTeacher.phone_number)) {
+   alert("Please enter a valid Nepal phone number starting with 9");
+   return;
+ }
+
+   // Date of birth validation
+const birthDate = new Date(selectedTeacher.dob);
+const today = new Date();
+let age = today.getFullYear() - birthDate.getFullYear();
+const monthDiff = today.getMonth() - birthDate.getMonth();
+
+if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+  age--;
+}
+
+if (age < 18 || age > 50) {
+  alert("Age must be between 2 and 50 years");
+  return;
+}
+
+
       let imageBase64 = "";
       if (image) {
         const reader = new FileReader();
@@ -195,6 +232,8 @@ export default function Teachertable() {
       setChangePassword(null);
       setIsEditing(false);
       setSelectedTeacher(null);
+      alert("Teacher updated successfully!");
+      window.location.reload();
       // Show success message
     } catch (error) {
       console.error("Error saving changes:", error);
@@ -535,14 +574,22 @@ export default function Teachertable() {
                </label>
              </div> */}
               <div id="input" className="relative">
-                <input
-                  type="password"
-                  id="password"
-                  className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
-                  placeholder=""
-                  value={changePassword || ""}
-                  onChange={(e) => setChangePassword(e.target.value)}
-                />
+              <input
+  type="password"
+  id="password"
+  autoComplete="new-password"
+  className="border-b border-gray-300 py-1 focus:border-b-2 focus:border-blue-700 transition-colors focus:outline-none peer bg-inherit"
+  placeholder=""
+  value={changePassword ?? ""}
+  onChange={(e) => {
+    setChangePassword(e.target.value);
+  }}
+  onBlur={(e) => {
+    if (e.target.value && e.target.value.length < 8) {
+      alert("Password must be at least 8 characters long");
+    }
+  }}
+/>
                 <label
                   htmlFor="password"
                   className="absolute text-gray-400 -top-4 text-xs left-0 cursor-text peer-focus:text-xs peer-focus:-top-4 transition-all peer-focus:text-blue-700 peer-placeholder-shown:top-1 peer-placeholder-shown:text-sm"

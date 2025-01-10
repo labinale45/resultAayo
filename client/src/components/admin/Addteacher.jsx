@@ -171,7 +171,24 @@ function Addteacher({ onClose, teacher, onSave }) {
                 className="txt p-2 mt-1 w-full rounded-xl border shadow-xl text-black"
                 type="date"
                 value={dob}
-                onChange={(e) => setDob(e.target.value)}
+                onChange={(e) => {
+                  const selectedDate = new Date(e.target.value);
+                  const today = new Date();
+                  const age = today.getFullYear() - selectedDate.getFullYear();
+                  const isValidAge =
+                    age > 18 ||
+                    (age === 18 &&
+                      (today.getMonth() > selectedDate.getMonth() ||
+                        (today.getMonth() === selectedDate.getMonth() &&
+                          today.getDate() >= selectedDate.getDate())));
+
+                  if (isValidAge) {
+                    setDob(e.target.value);
+                  } else {
+                    alert("You must be at least 18 year old.");
+                    setDob(""); // Optionally clear the input if the age is invalid
+                  }
+                }}
                 required
               />
             </div>
