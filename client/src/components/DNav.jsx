@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Darklightmode from "./Mini Component/Darklightmode";
+import toast, { Toaster } from "react-hot-toast";
+
 //import Search from "./Mini Component/Search";
 import Viewprofile from "./Viewprofile";
 import Editprofile from "./Editprofile";

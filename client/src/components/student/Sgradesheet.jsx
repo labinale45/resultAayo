@@ -182,33 +182,45 @@ const groupStudentsByRollNo = (studentData) => {
       rollNo,
       name: studentName,
       subjects: subjects.map(subject => {
-        const theoryGPA = (subject.th / 100) * 4;
-        const practicalGPA = (subject.pr / 100) * 4;
+        // Ensure missing marks are handled as 0
+        const theoryMarks = subject.th || 0; // Default to 0 if missing
+        const practicalMarks = subject.pr || 0; // Default to 0 if missing
+    
+        // Calculate theory and practical GPAs
+        const theoryGPA = (theoryMarks / 50) * 4;
+        const practicalGPA = (practicalMarks / 50) * 4;
         
-        // Calculate weighted GPA
-        const finalGPA = ((theoryGPA * 3) + (practicalGPA * 1)) / 4;
-        
+        // Calculate weighted GPA (assuming 3 credit hours for theory and 1 for practical)
+        const finalGPA = (parseFloat(theoryGPA) + parseFloat(practicalGPA)) / 2;
+           
         // Calculate final grade based on weighted GPA
-        const finalGrade = finalGPA >= 3.2 ? 'A' : 
-                          finalGPA >= 2.4 ? 'B' : 
-                          finalGPA >= 1.6 ? 'C' : 
-                          finalGPA >= 0.8 ? 'D' : 'F';
+        const finalGrade =
+          finalGPA >= 3.6 ? "A+" :
+          finalGPA >= 3.2 ? "A" :
+          finalGPA >= 2.8 ? "B+" :
+          finalGPA >= 2.5 ? "B" :
+          finalGPA >= 2.0 ? "C+" :
+          finalGPA >= 1.6 ? "C" :
+          finalGPA >= 1.2 ? "D+" :
+          finalGPA >= 0.8 ? "D" : "NG";
     
         return {
             name: subject.name,
             theory: {
-                creditHour: 3,
+                creditHour: 2,
                 gpa: theoryGPA,
-                grade: subject.th >= 80 ? 'A' : subject.th >= 60 ? 'B' : 'C',
+                grade:
+                theoryGPA >= 3.6 ? "A+":theoryGPA >= 3.2 ? "A":theoryGPA>= 2.8 ? "B+" : theoryGPA >= 2.5 ? "B" :theoryGPA >= 2.0 ? "C+":theoryGPA >= 1.6 ? "C":theoryGPA >= 1.2 ? "D+":theoryGPA >= 0.8 ? "D": "NG",
                 marks: subject.th || 0,
-                remarks: subject.th >= 80 ? 'Excellent' : subject.th >= 60 ? 'Good' : 'Needs Improvement'
+                remarks: theoryGPA >= 3.6 ? 'OutStanding' : theoryGPA >= 3.2 ? 'Excellent' :theoryGPA >= 2.8 ? 'Very Good' :theoryGPA >= 2.5 ? 'Good' :theoryGPA >= 2.0 ? 'Satisfactory' : theoryGPA >= 1.6 ? 'Acceptable' :theoryGPA >= 1.2 ? 'Basic' : 'Not Graded'
             },
             practical: {
-                creditHour: 1,
+                creditHour: 2,
                 gpa: practicalGPA,
-                grade: subject.pr >= 80 ? 'A' : subject.pr >= 60 ? 'B' : 'C',
-                marks: subject.pr || 0,
-                remarks: subject.pr >= 80 ? 'Excellent' : subject.pr >= 60 ? 'Good' : 'Needs Improvement'
+                grade:
+                practicalGPA >= 3.6 ? "A+":practicalGPA >= 3.2 ? "A":practicalGPA>= 2.8 ? "B+" : practicalGPA >= 2.5 ? "B" :practicalGPA >= 2.0 ? "C+":practicalGPA >= 1.6 ? "C":practicalGPA >= 1.2 ? "D+":practicalGPA >= 0.8 ? "D": "NG",
+                marks: subject.th || 0,
+                remarks: practicalGPA >= 3.6 ? 'OutStanding' : practicalGPA >= 3.2 ? 'Excellent' :practicalGPA >= 2.8 ? 'Very Good' :practicalGPA >= 2.5 ? 'Good' :practicalGPA >= 2.0 ? 'Satisfactory' : practicalGPA >= 1.6 ? 'Acceptable' :practicalGPA >= 1.2 ? 'Basic' : 'Not Graded'
             },
             finalGPA,
             finalGrade
