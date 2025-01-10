@@ -139,7 +139,7 @@ export default function Ledgertable() {
         grouped[rollNo].totalPracticalMarks += practicalMarks;
     
         // Update the total maximum marks for this student (100 for theory and 100 for practical per subject)
-        grouped[rollNo].totalMaxMarks += 200; // Each subject has 100 total marks for theory and 100 for practical
+        grouped[rollNo].totalMaxMarks += 100; // Each subject has 100 total marks for theory and 100 for practical
       });
     
       // After grouping, calculate GPA (if needed) and return as an array

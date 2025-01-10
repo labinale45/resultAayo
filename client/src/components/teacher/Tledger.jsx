@@ -160,7 +160,7 @@ const TLedger = () => {
   // Helper function to group students by roll number and aggregate marks by subject
   const groupStudentsByRollNo = (students) => {
     const grouped = {};
-
+  
     students.forEach((student) => {
       const {
         rollNo,
@@ -169,51 +169,88 @@ const TLedger = () => {
         estdYear,
         students: studentName,
         subjects,
+        dob,
         TH,
         PR,
       } = student;
-
+  
       // Ensure we have a student record for this rollNo
       if (!grouped[rollNo]) {
         grouped[rollNo] = {
           rollNo: rollNo,
           name: studentName,
-          subjects: {}, // Store subjects as keys
-          totalMarks: 0,
-          totalGPA: 0,
           schoolName: schoolName,
           schoolAddress: schoolAddress,
           estdYear: estdYear,
+          dob,
+          subjects: {}, // Store subjects as keys
+          totalMarks: 0,
+          totalMaxMarks: 0,
+          totalGPA: 0,
+          totalTheoryMarks: 0, // New field for total theory marks
+          totalPracticalMarks: 0, // New field for total practical marks
         };
       }
-
+  
       // Add the marks for the specific subject
       if (!grouped[rollNo].subjects[subjects]) {
         grouped[rollNo].subjects[subjects] = {
           theory: 0,
           practical: 0,
           total: 0,
+          theoryGPA: 0, // GPA per subject based on theory marks
+          practicalGPA: 0, // GPA per subject based on practical marks
         };
       }
-
+  
       // Ensure missing marks are handled as 0
       const theoryMarks = TH || 0; // Default to 0 if missing
       const practicalMarks = PR || 0; // Default to 0 if missing
-
+  
       // Aggregate marks for this subject
       grouped[rollNo].subjects[subjects].theory += theoryMarks;
       grouped[rollNo].subjects[subjects].practical += practicalMarks;
       grouped[rollNo].subjects[subjects].total += theoryMarks + practicalMarks;
-
+  
       // Update total marks for the student
       grouped[rollNo].totalMarks += theoryMarks + practicalMarks;
+  
+      // Update total theory and practical marks
+      grouped[rollNo].totalTheoryMarks += theoryMarks;
+      grouped[rollNo].totalPracticalMarks += practicalMarks;
+  
+      // Update the total maximum marks for this student (100 for theory and 100 for practical per subject)
+      grouped[rollNo].totalMaxMarks += 100; // Each subject has 100 total marks for theory and 100 for practical
     });
-
+  
     // After grouping, calculate GPA (if needed) and return as an array
     Object.values(grouped).forEach((studentData) => {
-      studentData.totalGPA = (studentData.totalMarks / 100).toFixed(2); // You can modify this logic based on your GPA calculation rules
+      // Check if totalMaxMarks is greater than 0 to avoid division by zero
+      if (studentData.totalMaxMarks > 0) {
+        // Calculate overall percentage based GPA (assuming max GPA is 4)
+        const percentage = (studentData.totalMarks / studentData.totalMaxMarks) * 100;
+        const maxGPA = 4.0;
+        studentData.totalGPA = ((percentage / 100) * maxGPA).toFixed(2); // GPA out of 4.0
+  
+        // Calculate GPA for each subject (Theory and Practical separately)
+        Object.keys(studentData.subjects).forEach((subject) => {
+          const subjectData = studentData.subjects[subject];
+  
+          // Theory GPA per subject (based on theory marks out of 100)
+          const theoryPercentage = (subjectData.theory /50) * 100; // Max for theory is 50
+          subjectData.theoryGPA = ((theoryPercentage / 100) * maxGPA).toFixed(2); // Theory GPA out of 4.0
+  
+          // Practical GPA per subject (based on practical marks out of 100)
+          const practicalPercentage = (subjectData.practical / 50) * 100; // Max for practical is 50
+          subjectData.practicalGPA = ((practicalPercentage / 100) * maxGPA).toFixed(2); // Practical GPA out of 4.0
+        });
+      } else {
+        studentData.totalGPA = 0; // Set GPA to 0 if totalMaxMarks is 0
+        studentData.theoryGPA = 0; // Set theory GPA to 0 if totalMaxMarks is 0
+        studentData.practicalGPA = 0; // Set practical GPA to 0 if totalMaxMarks is 0
+      }
     });
-
+  
     return Object.values(grouped); // Return grouped students as an array
   };
 
