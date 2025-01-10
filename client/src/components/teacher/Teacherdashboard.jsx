@@ -63,7 +63,7 @@ export default function Teacherdashboard() {
   const [progressRate, setProgressRate] = useState(0);
   const [examTypes, setExamTypes] = useState([]);
   const [pastExams, setPastExams] = useState([]);
-  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedYear, setSelectedYear] = useState('');
   const [startYear, setStartYear] = useState(null);
 
   const [stats, setStats] = useState({
@@ -93,6 +93,7 @@ export default function Teacherdashboard() {
   useEffect(() => {
     const fetchClasses = async (teacherId) => {
       try {
+        console.log("Fetching classes for teacher ID:", teacherId, "Year:", selectedYear);
         const currentYear = getCurrentYear();
         const response = await fetch(
           `http://localhost:4000/api/auth/assigned-class/${teacherId}/${selectedYear}`
@@ -185,13 +186,17 @@ export default function Teacherdashboard() {
   useEffect(() => {
     if (startYear) {
       const currentYear = new Date().getFullYear();
-      const years = Array.from(
-        { length: currentYear - startYear + 1 },
-        (_, i) => startYear + i
-      );
-      setAvailableYears(years); // Save available years to state
+      const years = [];
+      for (let year = currentYear; year >= startYear; year--) {
+        years.push(year);
+      }
+      setAvailableYears(years);
+      if (!selectedYear) {
+        setSelectedYear(currentYear.toString());
+      }
     }
   }, [startYear]);
+  
   
   const [availableYears, setAvailableYears] = useState([]);
 
@@ -436,19 +441,19 @@ export default function Teacherdashboard() {
           )}
           </div>
           <div className="flex items-center gap-2">
-          Year :{" "} <select
-      className="border rounded-md px-2 py-1 text-base"
-      onChange={(e) => setSelectedYear(e.target.value)}
-      value={selectedYear}
-    >
-      {availableYears.map((year) => (
-        <option key={year} value={year}>
-          {year}
-        </option>
-      ))}
-    </select>
-    </div>
-
+  <span>Academic Year:</span>
+  <select
+    className="border rounded-md px-3 py-1.5 text-base bg-white focus:ring-2 focus:ring-blue-500"
+    onChange={(e) => setSelectedYear(e.target.value)}
+    value={selectedYear}
+  >
+    {availableYears.map((year) => (
+      <option key={year} value={year}>
+        {year}
+      </option>
+    ))}
+  </select>
+</div>
         </div>        
       </header>
 
