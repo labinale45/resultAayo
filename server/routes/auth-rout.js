@@ -11,6 +11,7 @@ const { updateStudent, deleteStudent, getStudent } = require('../controllers/stu
 const aiController = require('../controllers/ai-controller');
 const aiAuthMiddleware = require('../middlewares/ai-middleware');
 
+
 // Teacher routes
 router.delete('/teacher/:id', deleteTeacher);
 router.put('/teacher/:id', updateTeacher);
@@ -95,6 +96,12 @@ router.get('/student/:studentId/classes', classController.getClassesByStudent);
 
 router.get('/student-exams/:studentId/:selectedYear', examController.getStudentExams);
 router.get('/student-subjects/:studentId/:selectedYear', examController.getStudentSubjects);
+
+//change password
+router.post('/verify-password', authController.verifyPassword);
+router.post('/send-otp', authController.sendOtp);
+router.post('/change-password', authController.changePassword);
+
 
 
 

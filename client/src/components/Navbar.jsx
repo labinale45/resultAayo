@@ -32,7 +32,7 @@ export default function Navbar() {
         setPreviewUrl(logoUrlWithTimestamp);
       } catch (error) {
         console.error("Error fetching school settings:", error);
-        toast.error("Failed to load school settings");
+        setPreviewUrl(null);
       }
     };
 

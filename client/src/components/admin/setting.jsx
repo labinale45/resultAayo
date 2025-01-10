@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FaTimes, FaCamera } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import Image from "next/image";
+import Otp from "@/components/Otp";
 
 const Setting = ({ onClose, role }) => {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -17,6 +18,8 @@ const Setting = ({ onClose, role }) => {
   const [logo, setLogo] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const router = useRouter();
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
+
 
   useEffect(() => {
     const fetchSchoolSettings = async () => {
@@ -47,7 +50,88 @@ const Setting = ({ onClose, role }) => {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData'));
+      if (!userData?.username) {
+        throw new Error('No user data found');
+      }
+      // First verify the current password
+      const verifyResponse = await fetch('http://localhost:4000/api/auth/verify-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            id: userData.id,
+            currentPassword,
+            userId: userData.id // Add user ID from context/state
+        }),
+    });
+  
+      if (!verifyResponse.ok) {
+        toast.error('Current password is incorrect');
+        return;
+      }
+  
+      // If current password is correct, send OTP
+      const otpResponse = await fetch('http://localhost:4000/api/auth/send-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: userData.email,
+      }),
+      });
+  
+      if (otpResponse.ok) {
+        // Show OTP verification component
+        setShowOtpVerification(true);
+      }
+    } catch (error) {
+      toast.error('Failed to initiate password change');
+    }
   };
+
+  const handleOtpVerification = async (otp) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData'));
+      if (!userData?.username) {
+        throw new Error('No user data found');
+      }
+
+      const response = await fetch('http://localhost:4000/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: userData.id,
+          email: userData.email,
+          otp,
+          newPassword
+        }),
+      });
+  
+      if (response.ok) {
+       
+        setShowOtpVerification(false);
+        // Reset form
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        onClose();
+        toast.success('Password changed successfully');
+      
+      } else {
+        toast.error('Invalid OTP');
+      }
+    } catch (error) {
+      toast.error('Failed to change password');
+    }
+  };
+  
+  
 
   const handleSaveSettings = async () => {
     try {
@@ -397,8 +481,13 @@ const Setting = ({ onClose, role }) => {
           </form>
         </div>
       </div>
+      {showOtpVerification && (
+  <Otp onVerify={handleOtpVerification} onClose={() => setShowOtpVerification(false)} />
+)}
     </>
   );
 };
 
 export default Setting;
+
+

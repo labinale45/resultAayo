@@ -195,7 +195,7 @@ export default function Teacherdashboard() {
         setSelectedYear(currentYear.toString());
       }
     }
-  }, [startYear]);
+  }, [startYear, selectedYear]);
   
   
   const [availableYears, setAvailableYears] = useState([]);

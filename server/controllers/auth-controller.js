@@ -1,8 +1,16 @@
 const connectdb = require('../utils/connectdb');
 const auth = require('../models/auth-model');
 const mail = require('../models/email-model');
+const nodemailer = require('nodemailer');
 const { verify } = require('jsonwebtoken');
 const { createImage } = require('../models/image-model');
+const { hashPassword } = require('../models/auth-model');
+
+const dotenv = require('dotenv');
+dotenv.config();
+
+const bcrypt = require('bcrypt');
+const salt = bcrypt.genSaltSync(10);
 
 const { v4: uuidv4 } = require('uuid');
 const { response } = require('express');
@@ -733,8 +741,156 @@ const getSchoolSettings = async (req, res) => {
   }
 }
 
+const verifyPassword = async (req, res) => {
+  const { currentPassword, userId } = req.body;
+  try {
+    const supabaseClient = await connectdb();
+    
+    // Get user's current password hash from database
+    const { data: user, error } = await supabaseClient
+      .from('users')
+      .select('password')
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+
+    const isValid = await auth.comparePassword(currentPassword, user.password);
+    
+    if (isValid) {
+      res.status(200).json({ message: 'Password verified' });
+    } else {
+      res.status(400).json({ message: 'Invalid password' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
+const sendOtp = async (req, res) => {
+  const { email } = req.body;
+  
+  try {
+    // Get Supabase client instance
+    const supabase = await connectdb();
+    const otp = Math.floor(1000 + Math.random() * 9000);
+    
+    // Set expiration time to 10 minutes from now
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    // Delete any existing OTP for this email
+    await supabase
+      .from('otp')
+      .delete()
+      .eq('email', email);
+
+    // Insert new OTP
+    const { error: insertError } = await supabase
+      .from('otp')
+      .insert([
+        {
+          email,
+          otp: otp.toString(),
+          expires_at: expiresAt.toISOString()
+        }
+      ]);
+
+    if (insertError) throw insertError;
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.Email_User,
+        pass: process.env.Email_Pass,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.Email_User,
+      to: email,
+      subject: 'Result आयो - Your OTP',
+      html: `
+        <p>Your OTP is: <strong>${otp}</strong></p>
+        <p>This OTP will expire in 10 minutes.</p>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('OTP email sent:', info.response);
+    
+    res.status(200).json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    res.status(500).json({ message: 'Failed to send OTP' });
+  }
+};
+
+
+
+
+const changePassword = async (req, res) => {
+  const { id,email, otp, newPassword } = req.body;
+
+  console.log('Received request to change password:', { email, otp, newPassword });
+
+  try {
+    const supabaseClient = await connectdb();
+    
+    // Verify OTP
+    const { data: otpData, error: otpError } = await supabaseClient
+      .from('otp')
+      .select('*')
+      .eq('email', email)
+      .eq('otp', otp)
+      .gte('expires_at', new Date().toISOString())
+      .single();
+
+    if (otpError || !otpData) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    console.log('OTP verified successfully, proceeding with password change...');
+
+    // Delete used OTP
+    await supabaseClient
+      .from('otp')
+      .delete()
+      .eq('email', email);
+
+      console.log('OTP deleted successfully');
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    console.log('Password hashed successfully');
+
+    // Update password in users table
+    const { error: updateError } = await supabaseClient
+      .from('users')
+      .update({ password: hashedPassword })
+      .eq('email', email)
+      .eq('id', id);
+
+      console.log('Password updated successfully');
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Password change error:', error);
+    res.status(500).json({ message: 'Failed to change password' });
+  }
+};
+
+
+
 
 module.exports = {
+  verifyPassword,
+  sendOtp,
+  changePassword,
   getSchoolSettings,
   updateLogo,
   updateSchoolDetails,

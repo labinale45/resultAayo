@@ -90,7 +90,7 @@ export default function Dnav({ currentPath }) {
         const data = await response.json();
         setUserData(data);
       } catch (err) {
-        setError(err.message);
+        toast.error(err.message);
       }
     };
     fetchUserProfile();
@@ -124,6 +124,8 @@ export default function Dnav({ currentPath }) {
   };
 
   return (
+    <>
+      <Toaster position="top-right" reverseOrder={false} />
     <div className="fixed bg-[#437FC7] dark:bg-[#253553] dark:text-white text-black w-full h-20 shadow-xl z-[100]">
       <div className="flex justify-between items-center w-full h-full px-2 2xl:px-16">
       <div className="bg-transparent w-52 h-20 overflow-hidden flex items-center justify-start"> 
@@ -260,5 +262,6 @@ export default function Dnav({ currentPath }) {
         </div>
       )}
     </div>
+    </>
   );
 }
