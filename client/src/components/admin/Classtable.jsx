@@ -242,7 +242,7 @@ export default function Classtable() {
                                     Teacher
                         
                                     <span className="text-xs font-bold pr-4">
-                                        <label className="mr-2">Class Teacher:</label>
+                                        <label className="mr-2">Assigned Teacher:</label>
                                         <select
                                             value={classTeacher? classTeacher: subjects[0].ctId}
                                             onChange={(e) => setClassTeacher(e.target.value)}

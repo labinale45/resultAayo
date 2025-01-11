@@ -182,7 +182,7 @@ export default function Dnav({ currentPath }) {
                 >
                   <FaUser className="mr-2" /> View Profile
                 </button>
-                {userData?.role === "Admin" && (
+                {/* {userData?.role === "Admin" && (
                   <button
                     onClick={() => {
                       setShowEditProfile(true);
@@ -192,7 +192,7 @@ export default function Dnav({ currentPath }) {
                   >
                     <FaEdit className="mr-2" /> Edit Profile
                   </button>
-                )}
+                )} */}
 
                 <button
                   onClick={() => {
