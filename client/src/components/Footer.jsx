@@ -72,17 +72,17 @@ function Footer() {
         <ul>
           <div className="text-lg font-semibold mb-2">Contact Us</div>
           <li className="mb-1 flex items-center">
-            <FaPhone className="mr-2" /> 912222122
+            <FaPhone className="mr-2" /> 9826175904
           </li>
           <li className="mb-1 flex items-center">
-            <FaEnvelope className="mr-2" /> rays@gmail.com
+            <FaEnvelope className="mr-2" /> resultaayo2024@gmail.com
           </li>
           <li className="mb-1 flex items-center">
             <FaMapMarkerAlt className="mr-2" /> Tanahun, Nepal
           </li>
           <li className="mb-1">
             <Link
-              href="/privacy-policy"
+              href="#"
               className="flex items-center hover:text-gray-300"
             >
               <FaLock className="mr-2" /> Privacy and Policy
@@ -90,7 +90,7 @@ function Footer() {
           </li>
           <li className="mb-1">
             <Link
-              href="/terms-conditions"
+              href="#"
               className="flex items-center hover:text-gray-300"
             >
               <FaFileAlt className="mr-2" /> Terms and Conditions

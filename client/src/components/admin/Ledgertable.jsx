@@ -79,7 +79,7 @@ export default function Ledgertable() {
 
     const groupStudentsByRollNo = (students) => {
       const grouped = {};
-    
+
       students.forEach((student) => {
         const {
           rollNo,
@@ -92,7 +92,7 @@ export default function Ledgertable() {
           TH,
           PR,
         } = student;
-    
+
         // Ensure we have a student record for this rollNo
         if (!grouped[rollNo]) {
           grouped[rollNo] = {
@@ -110,7 +110,7 @@ export default function Ledgertable() {
             totalPracticalMarks: 0, // New field for total practical marks
           };
         }
-    
+
         // Add the marks for the specific subject
         if (!grouped[rollNo].subjects[subjects]) {
           grouped[rollNo].subjects[subjects] = {
@@ -121,47 +121,54 @@ export default function Ledgertable() {
             practicalGPA: 0, // GPA per subject based on practical marks
           };
         }
-    
+
         // Ensure missing marks are handled as 0
         const theoryMarks = TH || 0; // Default to 0 if missing
         const practicalMarks = PR || 0; // Default to 0 if missing
-    
+
         // Aggregate marks for this subject
         grouped[rollNo].subjects[subjects].theory += theoryMarks;
         grouped[rollNo].subjects[subjects].practical += practicalMarks;
-        grouped[rollNo].subjects[subjects].total += theoryMarks + practicalMarks;
-    
+        grouped[rollNo].subjects[subjects].total +=
+          theoryMarks + practicalMarks;
+
         // Update total marks for the student
         grouped[rollNo].totalMarks += theoryMarks + practicalMarks;
-    
+
         // Update total theory and practical marks
         grouped[rollNo].totalTheoryMarks += theoryMarks;
         grouped[rollNo].totalPracticalMarks += practicalMarks;
-    
+
         // Update the total maximum marks for this student (100 for theory and 100 for practical per subject)
         grouped[rollNo].totalMaxMarks += 100; // Each subject has 100 total marks for theory and 100 for practical
       });
-    
+
       // After grouping, calculate GPA (if needed) and return as an array
       Object.values(grouped).forEach((studentData) => {
         // Check if totalMaxMarks is greater than 0 to avoid division by zero
         if (studentData.totalMaxMarks > 0) {
           // Calculate overall percentage based GPA (assuming max GPA is 4)
-          const percentage = (studentData.totalMarks / studentData.totalMaxMarks) * 100;
+          const percentage =
+            (studentData.totalMarks / studentData.totalMaxMarks) * 100;
           const maxGPA = 4.0;
           studentData.totalGPA = ((percentage / 100) * maxGPA).toFixed(2); // GPA out of 4.0
-    
+
           // Calculate GPA for each subject (Theory and Practical separately)
           Object.keys(studentData.subjects).forEach((subject) => {
             const subjectData = studentData.subjects[subject];
-    
+
             // Theory GPA per subject (based on theory marks out of 100)
-            const theoryPercentage = (subjectData.theory /50) * 100; // Max for theory is 50
-            subjectData.theoryGPA = ((theoryPercentage / 100) * maxGPA).toFixed(2); // Theory GPA out of 4.0
-    
+            const theoryPercentage = (subjectData.theory / 50) * 100; // Max for theory is 50
+            subjectData.theoryGPA = ((theoryPercentage / 100) * maxGPA).toFixed(
+              2
+            ); // Theory GPA out of 4.0
+
             // Practical GPA per subject (based on practical marks out of 100)
             const practicalPercentage = (subjectData.practical / 50) * 100; // Max for practical is 50
-            subjectData.practicalGPA = ((practicalPercentage / 100) * maxGPA).toFixed(2); // Practical GPA out of 4.0
+            subjectData.practicalGPA = (
+              (practicalPercentage / 100) *
+              maxGPA
+            ).toFixed(2); // Practical GPA out of 4.0
           });
         } else {
           studentData.totalGPA = 0; // Set GPA to 0 if totalMaxMarks is 0
@@ -169,10 +176,9 @@ export default function Ledgertable() {
           studentData.practicalGPA = 0; // Set practical GPA to 0 if totalMaxMarks is 0
         }
       });
-    
+
       return Object.values(grouped); // Return grouped students as an array
     };
-    
 
     const YearSelect = async () => {
       try {
@@ -520,68 +526,106 @@ export default function Ledgertable() {
     studentsData: students.map((student) => ({
       students: student.name,
       dateOfBirthAD: student.dob,
-      dateOfBirth: student.dob
-        ? adbs.ad2bs(student.dob).en.date
-        : "",
+      dateOfBirth: student.dob ? adbs.ad2bs(student.dob).en.date : "",
       rollNo: student.rollNo,
       examType: selectedExamType,
       year: selectedYear,
       subjects: Object.keys(student.subjects).map((subject) => {
         const subjectData = student.subjects[subject];
-        
+
         // Calculate final grade based on theory and practical GPA for the subject
-        const finalGPA = (parseFloat(subjectData.theoryGPA) + parseFloat(subjectData.practicalGPA)) / 2;
+        const finalGPA =
+          (parseFloat(subjectData.theoryGPA) +
+            parseFloat(subjectData.practicalGPA)) /
+          2;
         const finalGrade =
-          finalGPA >= 3.6 ? "A+" :
-          finalGPA >= 3.2 ? "A" :
-          finalGPA >= 2.8 ? "B+" :
-          finalGPA >= 2.5 ? "B" :
-          finalGPA >= 2.0 ? "C+" :
-          finalGPA >= 1.6 ? "C" :
-          finalGPA >= 1.2 ? "D+" :
-          finalGPA >= 0.8 ? "D" : "NG";
-  
+          finalGPA >= 3.6
+            ? "A+"
+            : finalGPA >= 3.2
+            ? "A"
+            : finalGPA >= 2.8
+            ? "B+"
+            : finalGPA >= 2.5
+            ? "B"
+            : finalGPA >= 2.0
+            ? "C+"
+            : finalGPA >= 1.6
+            ? "C"
+            : finalGPA >= 1.2
+            ? "D+"
+            : finalGPA >= 0.8
+            ? "D"
+            : "NG";
+
         return {
           name: subject,
           th: {
             creditHour: 2, // Add default credit hour for theory
             gpa: subjectData.theoryGPA, // Use the correct theory GPA
-            grade: subjectData.theoryGPA >= 3.6 ? "A+" : 
-                   subjectData.theoryGPA >= 3.2 ? "A" : 
-                   subjectData.theoryGPA >= 2.8 ? "B+" : 
-                   subjectData.theoryGPA >= 2.5 ? "B" : 
-                   subjectData.theoryGPA >= 2.0 ? "C+" : 
-                   subjectData.theoryGPA >= 1.6 ? "C" : 
-                   subjectData.theoryGPA >= 1.2 ? "D+" : 
-                   subjectData.theoryGPA >= 0.8 ? "D" : "NG",
+            grade:
+              subjectData.theoryGPA >= 3.6
+                ? "A+"
+                : subjectData.theoryGPA >= 3.2
+                ? "A"
+                : subjectData.theoryGPA >= 2.8
+                ? "B+"
+                : subjectData.theoryGPA >= 2.5
+                ? "B"
+                : subjectData.theoryGPA >= 2.0
+                ? "C+"
+                : subjectData.theoryGPA >= 1.6
+                ? "C"
+                : subjectData.theoryGPA >= 1.2
+                ? "D+"
+                : subjectData.theoryGPA >= 0.8
+                ? "D"
+                : "NG",
             marks: subjectData.theory,
           },
           pr: {
             creditHour: 2, // Add default credit hour for practical
             gpa: subjectData.practicalGPA, // Use the correct practical GPA
-            grade: subjectData.practicalGPA >= 3.6 ? "A+" : 
-                   subjectData.practicalGPA >= 3.2 ? "A" : 
-                   subjectData.practicalGPA >= 2.8 ? "B+" : 
-                   subjectData.practicalGPA >= 2.5 ? "B" : 
-                   subjectData.practicalGPA >= 2.0 ? "C+" : 
-                   subjectData.practicalGPA >= 1.6 ? "C" : 
-                   subjectData.practicalGPA >= 1.2 ? "D+" : 
-                   subjectData.practicalGPA >= 0.8 ? "D" : "NG",
+            grade:
+              subjectData.practicalGPA >= 3.6
+                ? "A+"
+                : subjectData.practicalGPA >= 3.2
+                ? "A"
+                : subjectData.practicalGPA >= 2.8
+                ? "B+"
+                : subjectData.practicalGPA >= 2.5
+                ? "B"
+                : subjectData.practicalGPA >= 2.0
+                ? "C+"
+                : subjectData.practicalGPA >= 1.6
+                ? "C"
+                : subjectData.practicalGPA >= 1.2
+                ? "D+"
+                : subjectData.practicalGPA >= 0.8
+                ? "D"
+                : "NG",
             marks: subjectData.practical,
           },
           finalGrade,
-          remarks: finalGrade === "A+" ? "Outstanding" :
-          finalGrade === "A" ? "Excellent" :
-          finalGrade === "B+" ? "Very Good" :
-          finalGrade === "B" ? "Good" :
-          finalGrade === "C+" ? "Satisfactory" :
-          finalGrade === "C" ? "Acceptable" :
-          finalGrade === "D+" ? "Basic" : "Not Graded"
-         };
+          remarks:
+            finalGrade === "A+"
+              ? "Outstanding"
+              : finalGrade === "A"
+              ? "Excellent"
+              : finalGrade === "B+"
+              ? "Very Good"
+              : finalGrade === "B"
+              ? "Good"
+              : finalGrade === "C+"
+              ? "Satisfactory"
+              : finalGrade === "C"
+              ? "Acceptable"
+              : finalGrade === "D+"
+              ? "Basic"
+              : "Not Graded",
+        };
       }),
     })),
   };
-  
 
   const isFormComplete = selectedYear && selectedClass && selectedExamType;
 
@@ -617,7 +661,8 @@ export default function Ledgertable() {
         </select>
         <select
           value={selectedExamType}
-          onChange={(e) => {setSelectedExamType(e.target.value);
+          onChange={(e) => {
+            setSelectedExamType(e.target.value);
             setStudents([]);
           }}
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 mr-3"
@@ -660,10 +705,15 @@ export default function Ledgertable() {
         >
           <div className="mb-8 flex flex-col items-center justify-center w-full">
             <h2 className="text-4xl font-semibold">
-              {students[0]?.schoolName || "School Name"}
+              {schoolName || students[0]?.schoolName || "School Name"}
             </h2>
-            <p>{students[0]?.schoolAddress || "School Address"}</p>
-            <p>Estd: {students[0]?.estdYear || "Year Established"}</p>
+            <p>
+              {schoolAddress || students[0]?.schoolAddress || "School Address"}
+            </p>
+            <p>
+              Estd:{" "}
+              {establishmentYear || students[0]?.estdYear || "Year Established"}
+            </p>
             <p className="text-3xl text-center">
               {selectedExamType}-{selectedYear}
             </p>
@@ -715,6 +765,7 @@ export default function Ledgertable() {
               </button>
             </div>
           )}
+
           <table className="min-w-full border-collapse border border-gray-300">
             <thead>
               <tr>
